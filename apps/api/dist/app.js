@@ -5,8 +5,8 @@ export function buildApp() {
         logger: true,
         logController: new LogController({ disableRequestLogging: true }),
     });
-    app.get("/api/v1/health", async () => healthResponseSchema.parse({ status: "ok" }));
-    app.post("/api/v1/analysis-configurations/validate", async (request, reply) => {
+    app.get("/api/v1/health", (_request, reply) => reply.send(healthResponseSchema.parse({ status: "ok" })));
+    app.post("/api/v1/analysis-configurations/validate", (request, reply) => {
         const result = analysisConfigurationSchema.safeParse(request.body);
         if (!result.success) {
             return reply.status(400).send({
@@ -16,7 +16,7 @@ export function buildApp() {
                 },
             });
         }
-        return configurationResponseSchema.parse({ configuration: result.data });
+        return reply.send(configurationResponseSchema.parse({ configuration: result.data }));
     });
     app.setErrorHandler((error, _request, reply) => {
         app.log.error({ code: "REQUEST_FAILED" }, "Request failed");

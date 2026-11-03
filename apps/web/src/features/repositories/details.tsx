@@ -9,10 +9,10 @@ import { api, button, control, type Repository, type Run } from "./api";
 export function RepositoryDetails({
   selected,
   workspaceId,
-}: {
+}: Readonly<{
   selected: Repository;
   workspaceId: string;
-}) {
+}>) {
   const [branches, setBranches] = useState<{ name: string; sha: string }[]>([]);
   const [commits, setCommits] = useState<{ sha: string; message: string }[]>(
     [],
@@ -28,7 +28,7 @@ export function RepositoryDetails({
   const [message, setMessage] = useState("");
   useEffect(() => {
     let current = true;
-    void Promise.all([
+    Promise.all([
       api("branches", { workspaceId, repositoryId: selected.id, page: "1" }),
       api("runs", { workspaceId, repositoryId: selected.id }),
     ])
@@ -66,9 +66,7 @@ export function RepositoryDetails({
   }
   return (
     <>
-      <p role="status" aria-live="polite">
-        {busy ? "Working…" : message}
-      </p>
+      <output aria-live="polite">{busy ? "Working…" : message}</output>
       <section className="flex flex-col gap-4 rounded-xl border border-zinc-300 p-6 dark:border-zinc-700">
         <h2 className="text-xl font-semibold break-all">{selected.fullName}</h2>
         <p className="text-sm">
@@ -76,7 +74,7 @@ export function RepositoryDetails({
           executed.
         </p>
         <label className="flex flex-col gap-2">
-          Branch
+          <span>Branch</span>
           <select
             className={control}
             value={branch}
@@ -99,10 +97,11 @@ export function RepositoryDetails({
           </select>
         </label>
         <button
+          type="button"
           className={button}
           disabled={busy || !hasMoreBranches}
           onClick={() => {
-            void run(async () => {
+            run(async () => {
               const next = branchListSchema.parse(
                 await api("branches", {
                   workspaceId,
@@ -119,10 +118,11 @@ export function RepositoryDetails({
           Load more branches
         </button>
         <button
+          type="button"
           className={button}
           disabled={busy || !branch}
           onClick={() => {
-            void run(async () => {
+            run(async () => {
               const result = commitListSchema.parse(
                 await api("commits", {
                   workspaceId,
@@ -140,7 +140,7 @@ export function RepositoryDetails({
           Load commits
         </button>
         <label className="flex flex-col gap-2">
-          Commit
+          <span>Commit</span>
           <select
             className={control}
             value={ref}
@@ -156,10 +156,11 @@ export function RepositoryDetails({
           </select>
         </label>
         <button
+          type="button"
           className={button}
           disabled={busy || !hasMoreCommits}
           onClick={() => {
-            void run(async () => {
+            run(async () => {
               const next = commitListSchema.parse(
                 await api("commits", {
                   workspaceId,
@@ -177,7 +178,7 @@ export function RepositoryDetails({
           Load more commits
         </button>
         <label className="flex flex-col gap-2">
-          Specific full commit SHA (optional)
+          <span>Specific full commit SHA (optional)</span>
           <input
             className={control}
             value={ref}
@@ -186,10 +187,11 @@ export function RepositoryDetails({
           />
         </label>
         <button
+          type="button"
           className={button}
           disabled={busy || !branch}
           onClick={() => {
-            void run(async () => {
+            run(async () => {
               await api(
                 "ingest",
                 {
@@ -216,10 +218,11 @@ export function RepositoryDetails({
           Ingest selected commit
         </button>
         <button
+          type="button"
           className={button}
           disabled={busy}
           onClick={() => {
-            void run(async () =>
+            run(async () =>
               setRuns(
                 ingestionRunListSchema.parse(
                   await api("runs", {

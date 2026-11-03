@@ -8,3 +8,10 @@ export const foundationJobs = pgTable("foundation_jobs", {
 
 export { WorkspaceService, WorkspaceAccessError } from "./workspaces.js";
 export type { Workspace, WorkspaceRole } from "./workspaces.js";
+export {
+  createDatabasePool,
+  databasePoolOptions,
+  loadDatabaseEnvironment,
+} from "./client.js";
+
+export * as applicationSchema from "./schema.js";

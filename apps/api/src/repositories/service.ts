@@ -131,18 +131,18 @@ export class RepositoryService {
         "UPDATE connected_repositories SET active=false WHERE installation_id=$1",
         [installation],
       );
-      for (const repository of repositories)
-        await client.query(
-          "INSERT INTO connected_repositories (id,installation_id,github_id,full_name,private,default_branch) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (installation_id,github_id) DO UPDATE SET full_name=EXCLUDED.full_name,private=EXCLUDED.private,default_branch=EXCLUDED.default_branch,active=true",
-          [
-            randomUUID(),
-            installation,
-            repository.id,
-            repository.full_name,
-            repository.private,
-            repository.default_branch,
-          ],
-        );
+      const records = repositories.map((repository) => ({
+        id: randomUUID(),
+        installation_id: installation,
+        github_id: repository.id,
+        full_name: repository.full_name,
+        private: repository.private,
+        default_branch: repository.default_branch,
+      }));
+      await client.query(
+        "INSERT INTO connected_repositories (id,installation_id,github_id,full_name,private,default_branch) SELECT id,installation_id,github_id,full_name,private,default_branch FROM jsonb_to_recordset($1::jsonb) AS r(id uuid,installation_id bigint,github_id bigint,full_name text,private boolean,default_branch text) ON CONFLICT (installation_id,github_id) DO UPDATE SET full_name=EXCLUDED.full_name,private=EXCLUDED.private,default_branch=EXCLUDED.default_branch,active=true",
+        [JSON.stringify(records)],
+      );
     });
   }
   async list(actor: string, workspace: string, page: number) {

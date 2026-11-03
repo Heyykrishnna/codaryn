@@ -1,9 +1,10 @@
 services:
   postgres:
+    profiles: [local]
     image: postgres:17-alpine
     environment:
       POSTGRES_USER: codaryn
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-}
       POSTGRES_DB: codaryn
     ports:
       - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
@@ -29,13 +30,11 @@ services:
       context: .
       dockerfile: infrastructure/docker/ingestion.Dockerfile
     environment:
-      DATABASE_URL: ${WORKER_DATABASE_URL:-}
+      DATABASE_URL: ${DATABASE_URL:-}
       REDIS_URL: redis://redis:6379
       GITHUB_APP_ID: ${GITHUB_APP_ID:-}
       GITHUB_APP_PRIVATE_KEY: ${GITHUB_APP_PRIVATE_KEY:-}
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
     read_only: true

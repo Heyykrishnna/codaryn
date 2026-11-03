@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "test": "pnpm run build && node --test dist/*.test.js",
     "auth:migrate": "tsx src/identity/migrate.ts",
-    "test:integration": "pnpm run build && node --test dist/identity/auth.integration.test.js dist/repositories/repositories.integration.test.js"
+    "test:integration": "pnpm run build && node --test dist/identity/auth.integration.test.js dist/repositories/repositories.integration.test.js",
+    "auth:verify": "tsx src/identity/migrate.ts --check"
   },
   "dependencies": {
     "@codaryn/contracts": "workspace:*",

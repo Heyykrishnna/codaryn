@@ -90,6 +90,7 @@ export const workspaceListSchema = z.object({
 export const workspaceDetailsSchema = workspaceSchema.extend({
     members: z.array(z.object({ userId: z.string(), role: workspaceRoleSchema })),
     events: z.array(z.object({
+        id: z.uuid(),
         action: z.string(),
         actorId: z.string(),
         createdAt: z.string(),

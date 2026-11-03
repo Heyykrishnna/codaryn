@@ -1,10 +1,11 @@
 import { GitHubClient } from "@codaryn/github";
 import { registerRepositories } from "./repositories/routes.js";
 import { z } from "zod";
-import { Pool } from "pg";
+import { createDatabasePool, loadDatabaseEnvironment } from "@codaryn/database";
 import { createAuth } from "./identity/auth.js";
 import { registerIdentity } from "./identity/routes.js";
 import { buildApp } from "./app.js";
+loadDatabaseEnvironment();
 const environment = z
     .object({
     PORT: z.coerce.number().int().min(1).max(65535).default(4000),
@@ -22,7 +23,7 @@ const environment = z
 })
     .parse(process.env);
 const app = buildApp();
-const pool = new Pool({ connectionString: environment.DATABASE_URL });
+const pool = createDatabasePool();
 const auth = createAuth(pool, {
     baseURL: environment.AUTH_BASE_URL,
     origin: environment.WEB_ORIGIN,
@@ -45,7 +46,7 @@ registerRepositories(app, auth, pool, environment.WEB_ORIGIN, githubConfiguratio
     ? {
         github: new GitHubClient({
             appId: githubConfiguration.data.GITHUB_APP_ID,
-            privateKey: githubConfiguration.data.GITHUB_APP_PRIVATE_KEY.replace(/\\n/g, "\n"),
+            privateKey: githubConfiguration.data.GITHUB_APP_PRIVATE_KEY.replaceAll("\\n", "\n"),
         }),
         slug: githubConfiguration.data.GITHUB_APP_SLUG,
         webhookSecret: githubConfiguration.data.GITHUB_WEBHOOK_SECRET,

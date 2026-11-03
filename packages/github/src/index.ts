@@ -12,18 +12,17 @@ export const repositorySchema = z.object({
   owner: z.object({ login: z.string() }),
 });
 export type Repository = z.infer<typeof repositorySchema>;
+function githubErrorMessage(status: number) {
+  if (status === 429) return "GitHub rate limit reached";
+  if ([403, 404].includes(status)) return "GitHub access is unavailable";
+  return "GitHub request failed";
+}
 export class GitHubError extends Error {
   constructor(
     readonly status: number,
     readonly retryAfter: number | null = null,
   ) {
-    super(
-      status === 429
-        ? "GitHub rate limit reached"
-        : status === 404 || status === 403
-          ? "GitHub access is unavailable"
-          : "GitHub request failed",
-    );
+    super(githubErrorMessage(status));
   }
 }
 export interface GitHubGateway {
@@ -83,12 +82,9 @@ export class GitHubClient implements GitHubGateway {
           (response.headers.get("x-ratelimit-remaining") === "0" ||
             response.headers.has("retry-after")));
       const retry = Number(response.headers.get("retry-after") ?? 60);
-      throw new GitHubError(
-        limited ? 429 : response.status,
-        limited
-          ? Math.min(3600, Math.max(1, Number.isFinite(retry) ? retry : 60))
-          : null,
-      );
+      const seconds = Number.isFinite(retry) ? retry : 60;
+      const retryAfter = limited ? Math.min(3600, Math.max(1, seconds)) : null;
+      throw new GitHubError(limited ? 429 : response.status, retryAfter);
     }
     return response;
   }

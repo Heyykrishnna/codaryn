@@ -3,30 +3,26 @@ export async function api(
   input: Record<string, string>,
   mutation = false,
 ): Promise<unknown> {
-  const response = await fetch(
-    `/api/v1/github/${path}${mutation ? "" : `?${new URLSearchParams(input)}`}`,
-    {
-      method: mutation ? "POST" : "GET",
-      headers: mutation
-        ? {
-            "content-type": "application/json",
-            "x-codaryn-request": "workspace",
-          }
-        : {},
-      ...(mutation ? { body: JSON.stringify(input) } : {}),
-      cache: "no-store",
-    },
-  );
-  if (!response.ok)
+  const query = mutation ? "" : "?" + new URLSearchParams(input).toString();
+  const response = await fetch(`/api/v1/github/${path}${query}`, {
+    method: mutation ? "POST" : "GET",
+    headers: mutation
+      ? { "content-type": "application/json", "x-codaryn-request": "workspace" }
+      : {},
+    ...(mutation ? { body: JSON.stringify(input) } : {}),
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    const messages: Record<number, string> = {
+      429: "GitHub rate limit reached. Wait before retrying.",
+      401: "Your session expired. Sign in again.",
+      503: "The GitHub App has not been configured.",
+    };
     throw new Error(
-      response.status === 429
-        ? "GitHub rate limit reached. Wait before retrying."
-        : response.status === 401
-          ? "Your session expired. Sign in again."
-          : response.status === 503
-            ? "The GitHub App has not been configured."
-            : "The request failed. Verify your GitHub permissions and try again.",
+      messages[response.status] ??
+        "The request failed. Verify your GitHub permissions and try again.",
     );
+  }
   return response.json();
 }
 export const control =

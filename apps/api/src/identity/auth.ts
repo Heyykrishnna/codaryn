@@ -1,3 +1,4 @@
+import { authPersistenceOptions } from "./persistence.js";
 import { randomUUID } from "node:crypto";
 import { betterAuth } from "better-auth";
 import type { Pool } from "pg";
@@ -17,8 +18,9 @@ export function createAuth(
     throw new Error("Authentication and web origins must match");
   if (process.env.NODE_ENV === "production" && publicURL.protocol !== "https:")
     throw new Error("Production authentication requires HTTPS");
+  const persistence = authPersistenceOptions(pool);
   return betterAuth({
-    database: pool,
+    ...persistence,
     disabledPaths: ["/get-access-token", "/refresh-token"],
     logger: {
       log: (level) => {
@@ -42,11 +44,10 @@ export function createAuth(
       freshAge: 3600,
       cookieCache: { enabled: false },
     },
-    rateLimit: { enabled: true, storage: "database", window: 60, max: 30 },
     advanced: {
+      ...persistence.advanced,
       ipAddress: { ipAddressHeaders: ["x-codaryn-client-ip"] },
       useSecureCookies: config.baseURL.startsWith("https:"),
-      database: { generateId: "uuid" },
     },
     databaseHooks: {
       session: {

@@ -6,3 +6,5 @@ export const foundationJobs = pgTable("foundation_jobs", {
         .defaultNow(),
 });
 export { WorkspaceService, WorkspaceAccessError } from "./workspaces.js";
+export { createDatabasePool, databasePoolOptions, loadDatabaseEnvironment, } from "./client.js";
+export * as applicationSchema from "./schema.js";

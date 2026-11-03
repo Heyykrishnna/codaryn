@@ -1,14 +1,15 @@
 import { Worker } from "bullmq";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Redis } from "ioredis";
-import { Pool } from "pg";
+import { createDatabasePool, loadDatabaseEnvironment } from "@codaryn/database";
 import { z } from "zod";
 import { foundationJobs } from "@codaryn/database";
+loadDatabaseEnvironment();
 const env = z
     .object({ DATABASE_URL: z.url(), REDIS_URL: z.url() })
     .parse(process.env);
 const connection = new Redis(env.REDIS_URL, { maxRetriesPerRequest: null });
-const pool = new Pool({ connectionString: env.DATABASE_URL });
+const pool = createDatabasePool();
 const db = drizzle(pool);
 const worker = new Worker("foundation", async (job) => {
     const id = z.string().min(1).parse(job.id);

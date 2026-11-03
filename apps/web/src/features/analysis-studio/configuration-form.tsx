@@ -25,7 +25,7 @@ export function ConfigurationForm() {
         className="flex flex-col gap-2 text-sm font-medium"
         htmlFor="depth"
       >
-        Analysis depth
+        <span>Analysis depth</span>
         <select
           id="depth"
           name="depth"
@@ -43,7 +43,7 @@ export function ConfigurationForm() {
           name="includeTests"
           className="accent-indigo-600"
         />{" "}
-        Include test files
+        <span>Include test files</span>
       </label>
       <label className="flex items-center gap-2 text-sm">
         <input
@@ -52,16 +52,16 @@ export function ConfigurationForm() {
           defaultChecked
           className="accent-indigo-600"
         />{" "}
-        Exclude generated files
+        <span>Exclude generated files</span>
       </label>
       <button
+        type="submit"
         disabled={pending}
         className="self-start rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:opacity-50"
       >
         {pending ? "Validating…" : "Validate configuration"}
       </button>
-      <p
-        role="status"
+      <output
         aria-live="polite"
         className={
           state.status === "error"
@@ -70,7 +70,7 @@ export function ConfigurationForm() {
         }
       >
         {state.message}
-      </p>
+      </output>
     </form>
   );
 }

@@ -1,10 +1,11 @@
 import { Queue, Worker } from "bullmq";
 import { Redis } from "ioredis";
-import { Pool } from "pg";
+import { createDatabasePool, loadDatabaseEnvironment } from "@codaryn/database";
 import { z } from "zod";
 import { GitHubClient } from "@codaryn/github";
 import { processIngestion } from "./process.js";
 
+loadDatabaseEnvironment();
 const env = z
   .object({
     DATABASE_URL: z.url(),
@@ -13,12 +14,12 @@ const env = z
     GITHUB_APP_PRIVATE_KEY: z.string().min(1),
   })
   .parse(process.env);
-const pool = new Pool({ connectionString: env.DATABASE_URL });
+const pool = createDatabasePool();
 const connection = new Redis(env.REDIS_URL, { maxRetriesPerRequest: null });
 const queue = new Queue("ingestion", { connection });
 const github = new GitHubClient({
   appId: env.GITHUB_APP_ID,
-  privateKey: env.GITHUB_APP_PRIVATE_KEY.replace(/\\n/g, "\n"),
+  privateKey: env.GITHUB_APP_PRIVATE_KEY.replaceAll("\\n", "\n"),
 });
 const worker = new Worker(
   "ingestion",
@@ -44,18 +45,19 @@ async function pump() {
   const queued = await pool.query<{ id: string }>(
     "SELECT id FROM ingestion_runs WHERE status='queued' ORDER BY created_at LIMIT 100",
   );
-  for (const job of queued.rows)
-    await queue.add(
-      "ingest",
-      {},
-      {
+  await queue.addBulk(
+    queued.rows.map((job) => ({
+      name: "ingest",
+      data: {},
+      opts: {
         jobId: job.id,
         attempts: 3,
         backoff: { type: "exponential", delay: 5000 },
         removeOnComplete: { age: 86400 },
         removeOnFail: { age: 604800 },
       },
-    );
+    })),
+  );
 }
 const timer = setInterval(() => {
   if (!stopping && !pumping)

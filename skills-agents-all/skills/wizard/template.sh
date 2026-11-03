@@ -154,12 +154,11 @@ write_env() {
 # to a warning (and records it) if gh is unavailable or unauthenticated.
 set_secret() {
   local name="$1" value="$2"
-  if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
-    if printf '%s' "$value" | gh secret set "$name" >/dev/null 2>&1; then
-      WRITTEN_SECRET+=("$name")
-      printf '  %s✓ set%s GitHub secret %s\n' "$GREEN" "$RESET" "$name"
-      return
-    fi
+  if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1 &&
+    printf '%s' "$value" | gh secret set "$name" >/dev/null 2>&1; then
+    WRITTEN_SECRET+=("$name")
+    printf '  %s✓ set%s GitHub secret %s\n' "$GREEN" "$RESET" "$name"
+    return
   fi
   SKIPPED+=("GitHub secret $name (set it manually: gh secret set $name)")
   warn "skipped GitHub secret $name: gh not ready; set it later"
@@ -168,11 +167,10 @@ set_secret() {
 # set_var NAME VALUE sets a GitHub Actions repo variable (non-secret).
 set_var() {
   local name="$1" value="$2"
-  if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
-    if gh variable set "$name" --body "$value" >/dev/null 2>&1; then
-      printf '  %s✓ set%s GitHub variable %s\n' "$GREEN" "$RESET" "$name"
-      return
-    fi
+  if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1 &&
+    gh variable set "$name" --body "$value" >/dev/null 2>&1; then
+    printf '  %s✓ set%s GitHub variable %s\n' "$GREEN" "$RESET" "$name"
+    return
   fi
   SKIPPED+=("GitHub variable $name")
   warn "skipped GitHub variable $name, gh not ready; set it later"

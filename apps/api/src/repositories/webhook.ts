@@ -70,11 +70,13 @@ export async function receiveWebhook(
           "UPDATE connected_repositories SET active=false WHERE installation_id=$1",
           [id],
         );
-      for (const repository of body.repositories_removed ?? [])
-        await client.query(
-          "UPDATE connected_repositories SET active=false WHERE installation_id=$1 AND github_id=$2",
-          [id, repository.id],
-        );
+      await client.query(
+        "UPDATE connected_repositories SET active=false WHERE installation_id=$1 AND github_id=ANY($2::bigint[])",
+        [
+          id,
+          (body.repositories_removed ?? []).map((repository) => repository.id),
+        ],
+      );
       if (
         event === "repository" &&
         body.action === "deleted" &&

@@ -150,6 +150,7 @@ export declare const workspaceDetailsSchema: z.ZodObject<{
         }>;
     }, z.core.$strip>>;
     events: z.ZodArray<z.ZodObject<{
+        id: z.ZodUUID;
         action: z.ZodString;
         actorId: z.ZodString;
         createdAt: z.ZodString;

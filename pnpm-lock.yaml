@@ -213,6 +213,9 @@ importers:
 
   workers/ingestion:
     dependencies:
+      '@codaryn/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       '@codaryn/github':
         specifier: workspace:*
         version: link:../../packages/github

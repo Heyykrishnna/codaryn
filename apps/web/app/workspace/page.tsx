@@ -28,14 +28,16 @@ async function request(
     ...(body ? { body: JSON.stringify(body) } : {}),
     cache: "no-store",
   });
-  if (!response.ok)
+  if (!response.ok) {
+    const messages: Record<number, string> = {
+      401: "Your session has expired. Sign in again.",
+      404: "Workspace not found or access denied.",
+    };
     throw new Error(
-      response.status === 401
-        ? "Your session has expired. Sign in again."
-        : response.status === 404
-          ? "Workspace not found or access denied."
-          : "The request failed. Check your input and try again.",
+      messages[response.status] ??
+        "The request failed. Check your input and try again.",
     );
+  }
   return response.json();
 }
 
@@ -67,7 +69,7 @@ export default function WorkspacePage() {
   useEffect(() => {
     if (!session) return;
     let current = true;
-    void Promise.all([request("list"), request("invitations")])
+    Promise.all([request("list"), request("invitations")])
       .then(async ([rawList, rawInvitations]) => {
         const list = workspaceListSchema.parse(rawList);
         const selected = list.active ?? list.workspaces[0]?.id;
@@ -106,11 +108,7 @@ export default function WorkspacePage() {
     }
   }
   if (isPending)
-    return (
-      <main className="p-8" role="status">
-        Loading your account…
-      </main>
-    );
+    return <output className="block p-8">Loading your account…</output>;
   if (sessionError)
     return (
       <main className="p-8" role="alert">
@@ -128,9 +126,10 @@ export default function WorkspacePage() {
           Use your GitHub account to manage your workspaces.
         </p>
         <button
+          type="button"
           className={buttonClass}
           onClick={() => {
-            void auth.signIn
+            auth.signIn
               .social({ provider: "github", callbackURL: "/workspace" })
               .then((result) => {
                 if (result.error)
@@ -155,9 +154,10 @@ export default function WorkspacePage() {
           codaryn
         </Link>
         <button
+          type="button"
           className={buttonClass}
           onClick={() => {
-            void auth
+            auth
               .signOut()
               .then((result) => {
                 if (result.error) setMessage("Sign out failed. Please retry.");
@@ -175,14 +175,13 @@ export default function WorkspacePage() {
         Connected repositories
       </Link>
       <h1 className="text-3xl font-semibold">Your workspaces</h1>
-      <p role="status" aria-live="polite">
-        {message}
-      </p>
+      <output aria-live="polite">{message}</output>
       <button
+        type="button"
         className={buttonClass}
         disabled={busy}
         onClick={() => {
-          void run(refresh);
+          run(refresh);
         }}
       >
         Refresh
@@ -209,7 +208,7 @@ export default function WorkspacePage() {
           }}
         >
           <label className="flex-1">
-            Display name
+            <span>Display name</span>
             <input
               name="name"
               required
@@ -218,7 +217,7 @@ export default function WorkspacePage() {
               className={inputClass}
             />
           </label>
-          <button className={buttonClass} disabled={busy}>
+          <button type="submit" className={buttonClass} disabled={busy}>
             Update profile
           </button>
         </form>
@@ -228,7 +227,7 @@ export default function WorkspacePage() {
         <form
           className="flex flex-col gap-3 sm:flex-row"
           action={(form) => {
-            void run(() => request("create", { name: form.get("name") }));
+            run(() => request("create", { name: form.get("name") }));
           }}
         >
           <input
@@ -238,7 +237,7 @@ export default function WorkspacePage() {
             maxLength={100}
             className={inputClass}
           />
-          <button className={buttonClass} disabled={busy}>
+          <button type="submit" className={buttonClass} disabled={busy}>
             Create workspace
           </button>
         </form>
@@ -248,13 +247,13 @@ export default function WorkspacePage() {
       )}
       {workspaces.length > 0 && (
         <label className="flex flex-col gap-2">
-          Active workspace
+          <span>Active workspace</span>
           <select
             className={inputClass}
             value={details?.id ?? ""}
             disabled={busy}
             onChange={(event) => {
-              void run(() => request("switch", { id: event.target.value }));
+              run(() => request("switch", { id: event.target.value }));
             }}
           >
             {workspaces.map((workspace) => (
@@ -272,7 +271,7 @@ export default function WorkspacePage() {
             <form
               className="flex flex-col gap-3 sm:flex-row"
               action={(form) => {
-                void run(() =>
+                run(() =>
                   request("rename", { id: details.id, name: form.get("name") }),
                 );
               }}
@@ -285,7 +284,7 @@ export default function WorkspacePage() {
                 maxLength={100}
                 className={inputClass}
               />
-              <button className={buttonClass} disabled={busy}>
+              <button type="submit" className={buttonClass} disabled={busy}>
                 Rename
               </button>
             </form>
@@ -308,7 +307,7 @@ export default function WorkspacePage() {
                       disabled={busy}
                       value={member.role}
                       onChange={(event) => {
-                        void run(() =>
+                        run(() =>
                           request("member", {
                             id: details.id,
                             userId: member.userId,
@@ -321,10 +320,11 @@ export default function WorkspacePage() {
                       <option value="admin">Admin</option>
                     </select>
                     <button
+                      type="button"
                       className={buttonClass}
                       disabled={busy}
                       onClick={() => {
-                        void run(() =>
+                        run(() =>
                           request("member", {
                             id: details.id,
                             userId: member.userId,
@@ -344,7 +344,7 @@ export default function WorkspacePage() {
             <form
               className="flex flex-col gap-3"
               action={(form) => {
-                void run(() =>
+                run(() =>
                   request("invite", {
                     id: details.id,
                     recipientId: form.get("recipientId"),
@@ -372,25 +372,26 @@ export default function WorkspacePage() {
                 <option value="member">Member</option>
                 <option value="admin">Admin</option>
               </select>
-              <button className={buttonClass} disabled={busy}>
+              <button type="submit" className={buttonClass} disabled={busy}>
                 Invite
               </button>
             </form>
           )}
           <h3 className="font-semibold">Recent activity</h3>
           <ul>
-            {details.events.map((event, index) => (
-              <li key={index} className="py-1 text-sm">
+            {details.events.map((event) => (
+              <li key={event.id} className="py-1 text-sm">
                 {event.action} · {new Date(event.createdAt).toLocaleString()}
               </li>
             ))}
           </ul>
           {details.role !== "owner" && (
             <button
+              type="button"
               className={buttonClass}
               disabled={busy}
               onClick={() => {
-                void run(() =>
+                run(() =>
                   request("member", {
                     id: details.id,
                     userId: session.user.id,
@@ -404,6 +405,7 @@ export default function WorkspacePage() {
           )}
           {details.role === "owner" && (
             <button
+              type="button"
               className={buttonClass}
               disabled={busy}
               onClick={() => {
@@ -412,7 +414,7 @@ export default function WorkspacePage() {
                     "Delete this workspace? Members will lose access.",
                   )
                 )
-                  void run(() => request("delete", { id: details.id }));
+                  run(() => request("delete", { id: details.id }));
               }}
             >
               Delete workspace
@@ -434,10 +436,11 @@ export default function WorkspacePage() {
                 {invitation.name} · {invitation.role}
               </span>
               <button
+                type="button"
                 className={buttonClass}
                 disabled={busy}
                 onClick={() => {
-                  void run(() => request("accept", { id: invitation.id }));
+                  run(() => request("accept", { id: invitation.id }));
                 }}
               >
                 Accept

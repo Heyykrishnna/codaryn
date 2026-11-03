@@ -109,11 +109,12 @@ export class WorkspaceService {
       [id],
     );
     const events = await this.pool.query<{
+      id: string;
       action: string;
       actorId: string;
       createdAt: Date;
     }>(
-      'SELECT action, actor_id AS "actorId", created_at AS "createdAt" FROM audit_events WHERE organization_id=$1 ORDER BY created_at DESC LIMIT 100',
+      'SELECT id, action, actor_id AS "actorId", created_at AS "createdAt" FROM audit_events WHERE organization_id=$1 ORDER BY created_at DESC LIMIT 100',
       [id],
     );
     return { ...result.rows[0], members: members.rows, events: events.rows };

@@ -11,7 +11,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:migrate": "pnpm --filter @codaryn/database migrate",
-    "test:integration": "pnpm --filter @codaryn/database test:integration && pnpm --filter @codaryn/analysis-worker test:integration && pnpm --filter @codaryn/api test:integration && pnpm --filter @codaryn/ingestion-worker test:integration"
+    "test:integration": "pnpm --filter @codaryn/database test:integration && pnpm --filter @codaryn/analysis-worker test:integration && pnpm --filter @codaryn/api test:integration && pnpm --filter @codaryn/ingestion-worker test:integration",
+    "db:verify": "pnpm --filter @codaryn/database verify && pnpm --filter @codaryn/api auth:verify",
+    "db:sync": "pnpm db:migrate && pnpm --filter @codaryn/api auth:migrate && pnpm db:verify"
   },
   "devDependencies": {
     "prettier": "^3.6.2",

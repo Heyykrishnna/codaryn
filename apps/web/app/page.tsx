@@ -16,14 +16,11 @@ async function ApiStatus() {
     available = false;
   }
   return (
-    <div
-      role="status"
-      className="rounded-lg border border-zinc-200 p-4 text-sm dark:border-zinc-800"
-    >
+    <output className="block rounded-lg border border-zinc-200 p-4 text-sm dark:border-zinc-800">
       {available
         ? "API connected"
         : "API unavailable. Start the API to connect."}
-    </div>
+    </output>
   );
 }
 
@@ -53,12 +50,9 @@ export default function Home() {
         </p>
         <Suspense
           fallback={
-            <div
-              role="status"
-              className="rounded-lg border border-zinc-200 p-4 text-sm dark:border-zinc-800"
-            >
+            <output className="block rounded-lg border border-zinc-200 p-4 text-sm dark:border-zinc-800">
               Checking API connection…
-            </div>
+            </output>
           }
         >
           <ApiStatus />

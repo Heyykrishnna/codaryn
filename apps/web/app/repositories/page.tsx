@@ -46,7 +46,7 @@ function Repositories() {
   useEffect(() => {
     if (!session) return;
     let current = true;
-    void Promise.all([
+    Promise.all([
       fetch("/api/v1/workspace/list", { cache: "no-store" }).then(
         (response) => {
           if (!response.ok) throw new Error("Workspaces unavailable");
@@ -84,7 +84,7 @@ function Repositories() {
   useEffect(() => {
     if (!workspaceId || !configuration?.enabled) return;
     let current = true;
-    void refresh()
+    refresh()
       .then((result) => {
         if (current) {
           setRepositories(result.repositories);
@@ -126,11 +126,7 @@ function Repositories() {
         (visibility === "private") === repository.private),
   );
   if (isPending)
-    return (
-      <main className="p-8" role="status">
-        Loading your account…
-      </main>
-    );
+    return <output className="block p-8">Loading your account…</output>;
   if (sessionError)
     return (
       <main className="p-8" role="alert">
@@ -163,14 +159,12 @@ function Repositories() {
         </Link>
       </header>
       <h1 className="text-3xl font-semibold">Repositories</h1>
-      <p role="status" aria-live="polite">
-        {busy ? "Working…" : message}
-      </p>
+      <output aria-live="polite">{busy ? "Working…" : message}</output>
       {workspaces.length === 0 ? (
         <Link href="/workspace">Create a workspace first</Link>
       ) : (
         <label className="flex flex-col gap-2">
-          Workspace
+          <span>Workspace</span>
           <select
             className={control}
             value={workspaceId}
@@ -219,7 +213,7 @@ function Repositories() {
                 <form
                   className="flex flex-wrap gap-3"
                   action={(form) => {
-                    void run(() =>
+                    run(() =>
                       api(
                         "connect",
                         {
@@ -240,7 +234,7 @@ function Repositories() {
                     pattern="[0-9]+"
                     className={control}
                   />
-                  <button className={button} disabled={busy}>
+                  <button type="submit" className={button} disabled={busy}>
                     Connect installation
                   </button>
                 </form>
@@ -259,10 +253,11 @@ function Repositories() {
                 {canManage && (
                   <>
                     <button
+                      type="button"
                       className={button}
                       disabled={busy || !installation.connected}
                       onClick={() => {
-                        void run(() =>
+                        run(() =>
                           api(
                             "sync",
                             { workspaceId, installationId: installation.id },
@@ -274,6 +269,7 @@ function Repositories() {
                       Sync repositories
                     </button>
                     <button
+                      type="button"
                       className={button}
                       disabled={busy || !installation.connected}
                       onClick={() => {
@@ -282,7 +278,7 @@ function Repositories() {
                             "Disconnect this installation from the workspace?",
                           )
                         )
-                          void run(async () => {
+                          run(async () => {
                             await api(
                               "disconnect",
                               { workspaceId, installationId: installation.id },
@@ -337,11 +333,12 @@ function Repositories() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {visible.map((repository) => (
                 <button
+                  type="button"
                   className="rounded-xl border border-zinc-300 p-5 text-left hover:border-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-500 disabled:opacity-50 dark:border-zinc-700"
                   key={repository.id}
                   disabled={busy}
                   onClick={() => {
-                    void choose(repository);
+                    choose(repository);
                   }}
                 >
                   <span className="block font-medium break-all">
@@ -369,10 +366,11 @@ function Repositories() {
                     <tr key={repository.id}>
                       <td className="p-3">
                         <button
+                          type="button"
                           className="text-indigo-600 dark:text-indigo-400"
                           disabled={busy}
                           onClick={() => {
-                            void choose(repository);
+                            choose(repository);
                           }}
                         >
                           {repository.fullName}
@@ -390,6 +388,7 @@ function Repositories() {
           )}
           <div className="flex gap-3">
             <button
+              type="button"
               className={button}
               disabled={busy || page === 1}
               onClick={() => setPage(page - 1)}
@@ -398,6 +397,7 @@ function Repositories() {
             </button>
             <span className="self-center">Page {page}</span>
             <button
+              type="button"
               className={button}
               disabled={busy || repositories.length < 50}
               onClick={() => setPage(page + 1)}
@@ -420,11 +420,7 @@ function Repositories() {
 export default function RepositoryPage() {
   return (
     <Suspense
-      fallback={
-        <main className="p-8" role="status">
-          Loading repositories…
-        </main>
-      }
+      fallback={<output className="block p-8">Loading repositories…</output>}
     >
       <Repositories />
     </Suspense>
