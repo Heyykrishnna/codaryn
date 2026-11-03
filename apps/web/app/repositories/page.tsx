@@ -186,10 +186,35 @@ function Repositories() {
         </label>
       )}
       {configuration && !configuration.enabled && (
-        <p className="rounded-lg border border-zinc-300 p-4 dark:border-zinc-700">
-          Ask your administrator to configure the GitHub App before connecting
-          repositories.
-        </p>
+        <section className="flex flex-col gap-3 rounded-lg border border-zinc-300 p-4 dark:border-zinc-700">
+          <h2 className="text-lg font-semibold">
+            Set up GitHub repository access
+          </h2>
+          <p>
+            You are signed in. Repository access requires a separate GitHub App
+            installation with permission to read the repositories you select.
+          </p>
+          <p>
+            Configure GITHUB_APP_ID, GITHUB_APP_SLUG, GITHUB_APP_PRIVATE_KEY and
+            GITHUB_WEBHOOK_SECRET in the API environment, then restart the API.
+            Use the same App ID and private key for the ingestion worker.
+          </p>
+          <a
+            className="text-indigo-600 underline focus-visible:outline-2 dark:text-indigo-400"
+            href="https://github.com/settings/apps/new"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Create a GitHub App
+          </a>
+          <button
+            type="button"
+            className={button}
+            onClick={() => window.location.reload()}
+          >
+            Check configuration again
+          </button>
+        </section>
       )}
       {configuration?.enabled && workspaceId && (
         <>
@@ -235,7 +260,7 @@ function Repositories() {
                     className={control}
                   />
                   <button type="submit" className={button} disabled={busy}>
-                    Connect installation
+                    Connect and sync repositories
                   </button>
                 </form>
               </>

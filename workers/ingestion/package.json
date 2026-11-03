@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch --include ../../.env src/index.ts",
     "test:integration": "pnpm build && node --test dist/process.integration.test.js"
   },
   "dependencies": {

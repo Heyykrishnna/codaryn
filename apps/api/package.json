@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "tsx watch --include ../../.env src/server.ts",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "pnpm run build && node --test dist/*.test.js",

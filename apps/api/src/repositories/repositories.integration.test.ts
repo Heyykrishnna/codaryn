@@ -52,7 +52,6 @@ test("repositories preserve workspace boundaries, immutable selections and webho
       WorkspaceAccessError,
     );
     await service.connect(owner, workspace, installation, "token");
-    await service.sync(owner, workspace, installation);
     const repositories = await service.list(owner, workspace, 1);
     assert.equal(repositories.length, 1);
     assert.equal(repositories[0].private, true);

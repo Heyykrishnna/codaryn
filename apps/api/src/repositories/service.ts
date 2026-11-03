@@ -80,6 +80,7 @@ export class RepositoryService {
         [randomUUID(), workspace, actor, String(installation)],
       );
     });
+    await this.sync(actor, workspace, installation);
   }
   async installations(actor: string, workspace: string) {
     await this.membership(actor, workspace);

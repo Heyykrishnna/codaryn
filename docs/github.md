@@ -6,7 +6,7 @@ The repository screen at `/repositories` uses the authenticated workspace from P
 
 Create a GitHub App with repository **Contents: read-only** and **Metadata: read-only** permissions. Subscribe to installation, installation-repository and repository events. Set the setup URL to the public website's `/repositories` page and webhook URL to `/api/v1/github/webhook` on that same website. The Next.js proxy forwards this endpoint to Fastify. Configure a randomly generated webhook secret of at least 32 characters.
 
-Set `GITHUB_APP_ID`, `GITHUB_APP_SLUG`, `GITHUB_APP_PRIVATE_KEY` and `GITHUB_WEBHOOK_SECRET` in the API environment. The private key accepts PEM newlines or literal `\n` escapes. Keep it in a secret manager in production. If the App is not configured, authenticated users see an explicit unavailable state; the login and workspace features still operate.
+Set `GITHUB_APP_ID`, `GITHUB_APP_SLUG`, `GITHUB_APP_PRIVATE_KEY` and `GITHUB_WEBHOOK_SECRET` in the API environment. The private key accepts PEM newlines or literal `\n` escapes. Keep it in a secret manager in production. If the App is not configured, authenticated users see setup instructions; the login and workspace features still operate. OAuth login credentials cannot replace these four App settings. After setting them, restart the API and ingestion worker, then use Check configuration again on the repository screen. Configure Contents and Metadata read permissions, the setup callback, and webhooks as described above.
 
 The OAuth login application from Phase 1 remains separate from the GitHub App. Login now requests `read:org` in addition to profile and email scopes so the API can verify organization administrators. Existing users may need to re-authorize GitHub. Provider tokens are decrypted only through the server-side auth API; public access-token and refresh-token routes are disabled. Installation tokens are short-lived and cached only in the App authentication library's process memory, never in PostgreSQL or browser storage.
 
@@ -18,7 +18,7 @@ For the containerized worker, set the canonical `DATABASE_URL` to the Neon runti
 
 1. Sign in, create or select a workspace, and open Repositories.
 2. Install the configured App on an authorized GitHub account. Select the repositories GitHub should grant it access to.
-3. Enter the returned installation ID on the repository screen and connect it. The API independently verifies GitHub ownership and workspace management permission.
+3. Enter the returned installation ID on the repository screen and connect it. The API independently verifies GitHub ownership and workspace management permission, then immediately synchronizes repository metadata. If synchronization fails after linking, the installation remains connected; use Sync repositories to retry.
 4. Sync the installation to refresh repository metadata. The screen provides grid/table views, public/private filters, search within the current page and repository pagination.
 5. Open a repository, choose a branch, load commits or enter a full 40-character SHA. Branch and commit lists support loading additional pages.
 6. Start ingestion. The API resolves the chosen ref to an immutable full SHA before writing the queue request. Refresh status to inspect completion or a safe failure code.
@@ -45,3 +45,7 @@ Redis must retain BullMQ state durably. A running job relies on BullMQ stalled-j
 `pnpm test` includes mocked GitHub transport tests for installation ownership, pinned archive requests, safe redirects, rate limits and token refresh, plus real tar fixtures for extraction limits, links, traversal, duplicates, decompression limits and cleanup. `pnpm test:integration` uses real PostgreSQL/Redis and controlled GitHub gateway fixtures to check workspace isolation, synchronization, immutable selection, webhook revocation/replay and ingestion persistence. The production build and worker image are separate validation steps.
 
 Live GitHub installation, consent, private-repository export and webhook delivery require real OAuth/App credentials and a public endpoint. Those external flows must be validated in staging before release. Automated fixtures do not constitute live provider verification. GitHub's authoritative references are [App installation endpoints](https://docs.github.com/en/rest/apps/installations) and [webhook signature validation](https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries).
+
+## Local environment reload
+
+The API and ingestion worker development watchers include the root `.env`. Restart an already-running watcher once after upgrading the dev script; subsequent edits restart the process and reload the environment. Production services must be restarted after secret changes. A browser reload alone cannot update configuration held by an API process.
