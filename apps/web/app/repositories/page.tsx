@@ -172,6 +172,12 @@ function Repositories() {
         >
           Static Analysis Dashboard
         </Link>
+        <Link
+          href="/graph"
+          className="text-indigo-600 underline dark:text-indigo-400"
+        >
+          Dependency Graph
+        </Link>
       </div>
       <output aria-live="polite">{busy ? "Working…" : message}</output>
       {workspaces.length === 0 ? (

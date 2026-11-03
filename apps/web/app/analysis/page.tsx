@@ -220,6 +220,12 @@ function AnalysisDashboard() {
             >
               Analysis
             </Link>
+            <Link
+              href="/graph"
+              className="hover:text-zinc-900 dark:hover:text-zinc-100"
+            >
+              Graph
+            </Link>
           </nav>
         </div>
         <Link
@@ -346,6 +352,12 @@ function AnalysisDashboard() {
                 </strong>
               </span>
               <span>Retries: {job.retries}</span>
+              <Link
+                href={`/graph?workspaceId=${workspaceId}&jobId=${job.id}`}
+                className="font-medium text-indigo-600 underline dark:text-indigo-400"
+              >
+                Dependency Graph →
+              </Link>
               {job.completedAt && (
                 <span>
                   Duration:{" "}
