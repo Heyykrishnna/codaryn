@@ -23,7 +23,7 @@ pnpm db:verify
 
 `db:sync` applies application migrations, applies Better Auth migrations and verifies both schemas. `db:verify` checks application columns, types, nullability, primary/foreign keys, expected checks, unique constraints, indexes and migration checksums. It also checks Better Auth's pending migrations and authentication UUID types/defaults. Running synchronization twice must leave the schema unchanged. Back up production data and review schema changes before future migrations; this workflow does not copy records from another database.
 
-The supplied Neon target was empty before synchronization. Application migrations and authentication migrations were applied successfully, then synchronization was repeated successfully. The runtime pooled connection was checked over TLS and saw 18 public tables: 13 application/migration tables and five authentication tables. No user records or repository source were seeded into Neon for verification. Integration tests use a separate disposable local PostgreSQL database and Redis.
+The supplied Neon target was empty before synchronization. Application migrations and authentication migrations were applied successfully, then synchronization was repeated successfully. The runtime pooled connection was checked over TLS and saw 21 public tables: 16 application/migration tables and five authentication tables. No user records or repository source were seeded into Neon for verification. Integration tests use a separate disposable local PostgreSQL database and Redis.
 
 ## Tests, CI and deployment
 

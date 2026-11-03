@@ -16,3 +16,5 @@ When implementation changes a contract or behavior, update the relevant guide an
 - [Database configuration and synchronization](database.md): Neon connections, schema verification and isolated test setup.
 
 - [SonarCloud remediation](quality-remediation.md): findings, fixes and cloud verification status.
+
+- [Analysis Studio](phases/03-analysis-studio/README.md): configuration wizard, workspace profiles, analyzer registry and reproducible manifests.

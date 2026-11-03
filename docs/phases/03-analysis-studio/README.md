@@ -70,10 +70,19 @@ Each analyzer declares:
 
 ## Planning and dependencies
 
-**Status:** Planned; none of the acceptance criteria is claimed as complete by this document.
+**Status:** Implemented. See [verification](verification.md) for executed checks and validation limits.
 
 **Dependencies:** Phases 0–2 for contracts, workspace and repository selection.
 
 Implement the scope above with the shared requirements in the [phase index](../README.md). Record design decisions, supported versions, migrations, operational requirements and limitations as implementation progresses. The acceptance criteria above are release obligations; the [acceptance test plan](acceptance-tests.md) turns them into executable scenarios to implement and record.
 
 [Full product specification](../../product-specification.md) · [All phases](../README.md)
+
+## Implementation guides
+
+- [Architecture and contracts](architecture.md)
+- [API reference](api.md)
+- [Operations and security](operations.md)
+- [Verification evidence](verification.md)
+
+The twelve-step wizard is available at `/studio`. Phase 3 creates durable, reproducible analysis manifests with status `configured`; analyzer execution and output rendering belong to subsequent phases.

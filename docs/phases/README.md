@@ -7,7 +7,7 @@ This roadmap contains phases 0–14 from the [product specification](../product-
 | 0 | [Product foundation and system contracts](00-foundation/README.md) | [Acceptance tests](00-foundation/acceptance-tests.md) | In progress |
 | 1 | [Authentication and workspace management](01-authentication-workspaces/README.md) | [Acceptance tests](01-authentication-workspaces/acceptance-tests.md) | In progress |
 | 2 | [GitHub connection and repository management](02-github-repositories/README.md) | [Acceptance tests](02-github-repositories/acceptance-tests.md) | In progress |
-| 3 | [Analysis Studio and user configuration](03-analysis-studio/README.md) | [Acceptance tests](03-analysis-studio/acceptance-tests.md) | Planned |
+| 3 | [Analysis Studio and user configuration](03-analysis-studio/README.md) | [Acceptance tests](03-analysis-studio/acceptance-tests.md) | Implemented |
 | 4 | [TypeScript analysis foundation](04-typescript-foundation/README.md) | [Acceptance tests](04-typescript-foundation/acceptance-tests.md) | Planned |
 | 5 | [Symbol resolution and dependency graph](05-symbol-resolution-graph/README.md) | [Acceptance tests](05-symbol-resolution-graph/acceptance-tests.md) | Planned |
 | 6 | [Frontend architecture intelligence](06-frontend-intelligence/README.md) | [Acceptance tests](06-frontend-intelligence/acceptance-tests.md) | Planned |
