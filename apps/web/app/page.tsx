@@ -1,6 +1,5 @@
 import { healthResponseSchema } from "@codaryn/contracts";
 import { Suspense } from "react";
-import { ConfigurationForm } from "@/src/features/analysis-studio/configuration-form";
 
 async function ApiStatus() {
   let available = false;
@@ -58,10 +57,15 @@ export default function Home() {
           <ApiStatus />
         </Suspense>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Repository analysis and workspace features are under development.
+          Configure repository analysis through the Analysis Studio.
         </p>
       </section>
-      <ConfigurationForm />
+      <a
+        className="self-start rounded-md bg-indigo-600 px-4 py-2 font-medium text-white focus-visible:outline-2 focus-visible:outline-indigo-500"
+        href="/studio"
+      >
+        Open Analysis Studio
+      </a>
     </main>
   );
 }

@@ -1,3 +1,4 @@
+import { z } from "zod";
 import Fastify, { LogController } from "fastify";
 import { analysisConfigurationSchema, configurationResponseSchema, healthResponseSchema, } from "@codaryn/contracts";
 export function buildApp() {
@@ -19,8 +20,20 @@ export function buildApp() {
         return reply.send(configurationResponseSchema.parse({ configuration: result.data }));
     });
     app.setErrorHandler((error, _request, reply) => {
+        const expected = z.object({ statusCode: z.number() }).safeParse(error);
+        if (expected.success &&
+            [400, 413, 415, 429].includes(expected.data.statusCode)) {
+            return reply
+                .status(expected.data.statusCode)
+                .send({
+                error: {
+                    code: "INVALID_REQUEST",
+                    message: "The request is malformed, too large, or exceeds a request limit",
+                },
+            });
+        }
         app.log.error({ code: "REQUEST_FAILED" }, "Request failed");
-        void reply.status(500).send({
+        return reply.status(500).send({
             error: {
                 code: "INTERNAL_ERROR",
                 message: "An unexpected error occurred",

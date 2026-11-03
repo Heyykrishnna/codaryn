@@ -1,3 +1,6 @@
+import { registerStudio } from "./studio/routes.js";
+import { StudioService } from "./studio/service.js";
+import { RepositoryService } from "./repositories/service.js";
 import { GitHubClient } from "@codaryn/github";
 import { registerRepositories } from "./repositories/routes.js";
 import { z } from "zod";
@@ -42,16 +45,20 @@ const githubConfiguration = z
     .safeParse(environment);
 if (environment.GITHUB_APP_ID && !githubConfiguration.success)
     throw new Error("GitHub App configuration is incomplete");
-registerRepositories(app, auth, pool, environment.WEB_ORIGIN, githubConfiguration.success
+const github = githubConfiguration.success
+    ? new GitHubClient({
+        appId: githubConfiguration.data.GITHUB_APP_ID,
+        privateKey: githubConfiguration.data.GITHUB_APP_PRIVATE_KEY.replaceAll(String.raw `\n`, "\n"),
+    })
+    : null;
+registerRepositories(app, auth, pool, environment.WEB_ORIGIN, github && githubConfiguration.success
     ? {
-        github: new GitHubClient({
-            appId: githubConfiguration.data.GITHUB_APP_ID,
-            privateKey: githubConfiguration.data.GITHUB_APP_PRIVATE_KEY.replaceAll(String.raw `\n`, "\n"),
-        }),
+        github,
         slug: githubConfiguration.data.GITHUB_APP_SLUG,
         webhookSecret: githubConfiguration.data.GITHUB_WEBHOOK_SECRET,
     }
     : null);
+registerStudio(app, auth, new StudioService(pool, github ? new RepositoryService(pool, github) : null), environment.WEB_ORIGIN);
 app.addHook("onClose", async () => {
     await pool.end();
 });

@@ -193,6 +193,20 @@ export class RepositoryService {
       page,
     );
   }
+  async resolveSelection(
+    actor: string,
+    workspace: string,
+    id: string,
+    ref: string,
+  ) {
+    const repository = await this.repository(actor, workspace, id);
+    const commitSha = await this.github.resolve(
+      Number(repository.installation_id),
+      repository.full_name,
+      ref,
+    );
+    return { commitSha, generation: repository.generation };
+  }
   async ingest(actor: string, workspace: string, id: string, ref: string) {
     const repository = await this.repository(actor, workspace, id);
     const sha = await this.github.resolve(

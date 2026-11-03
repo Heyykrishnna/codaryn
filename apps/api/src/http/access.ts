@@ -3,7 +3,13 @@ import { fromNodeHeaders } from "better-auth/node";
 import { z } from "zod";
 import { WorkspaceAccessError } from "@codaryn/database";
 import { GitHubError } from "@codaryn/github";
-import type { IdentityAuth } from "../identity/auth.js";
+export type SessionReader = {
+  api: {
+    getSession(input: {
+      headers: Headers;
+    }): Promise<{ user: { id: string }; session: { createdAt: Date } } | null>;
+  };
+};
 
 export function failure(
   reply: FastifyReply,
@@ -23,7 +29,7 @@ export class RequestFailure extends Error {
   }
 }
 export async function requireSession(
-  auth: { api: Pick<IdentityAuth["api"], "getSession"> },
+  auth: SessionReader,
   request: FastifyRequest,
   reply: FastifyReply,
   origin: string,

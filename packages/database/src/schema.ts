@@ -204,3 +204,91 @@ export const migrations = pgTable("schema_migrations", {
     .notNull()
     .defaultNow(),
 });
+
+export const analysisProfiles = pgTable(
+  "analysis_profiles",
+  {
+    id: uuid("id").primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id),
+    name: text("name").notNull(),
+    revision: integer("revision").notNull(),
+    configuration: jsonb("configuration").notNull(),
+    createdBy: text("created_by")
+      .notNull()
+      .references(() => users.id),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    check(
+      "analysis_profiles_name_check",
+      sql`length(trim(${table.name})) BETWEEN 1 AND 100`,
+    ),
+    check("analysis_profiles_revision_check", sql`${table.revision} > 0`),
+    index("analysis_profiles_workspace_idx").on(
+      table.organizationId,
+      table.updatedAt.desc(),
+    ),
+  ],
+);
+export const analysisProfileVersions = pgTable(
+  "analysis_profile_versions",
+  {
+    id: uuid("id").primaryKey(),
+    profileId: uuid("profile_id")
+      .notNull()
+      .references(() => analysisProfiles.id, { onDelete: "cascade" }),
+    revision: integer("revision").notNull(),
+    configuration: jsonb("configuration").notNull(),
+    createdBy: text("created_by")
+      .notNull()
+      .references(() => users.id),
+    createdAt: created(),
+  },
+  (table) => [
+    check(
+      "analysis_profile_versions_revision_check",
+      sql`${table.revision} > 0`,
+    ),
+    unique("analysis_profile_versions_profile_id_revision_key").on(
+      table.profileId,
+      table.revision,
+    ),
+  ],
+);
+export const analysisManifests = pgTable(
+  "analysis_manifests",
+  {
+    id: uuid("id").primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id),
+    repositoryId: uuid("repository_id")
+      .notNull()
+      .references(() => repositories.id),
+    actorId: text("actor_id")
+      .notNull()
+      .references(() => users.id),
+    manifest: jsonb("manifest").notNull(),
+    hash: text("hash").notNull(),
+    status: text("status").notNull().default("configured"),
+    createdAt: created(),
+  },
+  (table) => [
+    check(
+      "analysis_manifests_hash_check",
+      sql`${table.hash} ~ '^[a-f0-9]{64}$'`,
+    ),
+    check(
+      "analysis_manifests_status_check",
+      sql`${table.status} = 'configured'`,
+    ),
+    index("analysis_manifests_workspace_idx").on(
+      table.organizationId,
+      table.createdAt.desc(),
+    ),
+  ],
+);
