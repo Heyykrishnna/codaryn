@@ -1,16 +1,5 @@
 import { z } from "zod";
-export declare const sourceEvidenceSchema: z.ZodObject<{
-    path: z.ZodString;
-    startLine: z.ZodNumber;
-    endLine: z.ZodNumber;
-}, z.core.$strip>;
-export declare const resolutionSchema: z.ZodEnum<{
-    DIRECT: "DIRECT";
-    RESOLVED: "RESOLVED";
-    INFERRED: "INFERRED";
-    PARTIAL: "PARTIAL";
-    UNRESOLVED: "UNRESOLVED";
-}>;
+export * from "./evidence.js";
 export declare const graphNodeSchema: z.ZodObject<{
     id: z.ZodString;
     kind: z.ZodString;
@@ -61,8 +50,6 @@ export declare const sessionSchema: z.ZodObject<{
     workspaceId: z.ZodString;
     expiresAt: z.ZodISODateTime;
 }, z.core.$strip>;
-export type SourceEvidence = z.infer<typeof sourceEvidenceSchema>;
-export type Resolution = z.infer<typeof resolutionSchema>;
 export type AnalysisDiagnostic = z.infer<typeof diagnosticSchema>;
 export interface AnalysisContext {
     readonly repositoryId: string;

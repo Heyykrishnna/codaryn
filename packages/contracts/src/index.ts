@@ -1,21 +1,7 @@
 import { z } from "zod";
+import { sourceEvidenceSchema, resolutionSchema } from "./evidence.js";
 
-export const sourceEvidenceSchema = z
-  .object({
-    path: z.string().min(1),
-    startLine: z.number().int().positive(),
-    endLine: z.number().int().positive(),
-  })
-  .refine((value) => value.endLine >= value.startLine, {
-    message: "End line must not precede start line",
-  });
-export const resolutionSchema = z.enum([
-  "DIRECT",
-  "RESOLVED",
-  "INFERRED",
-  "PARTIAL",
-  "UNRESOLVED",
-]);
+export * from "./evidence.js";
 export const graphNodeSchema = z.object({
   id: z.string().min(1),
   kind: z.string().min(1),
@@ -50,8 +36,6 @@ export const sessionSchema = z.object({
   workspaceId: z.string().min(1),
   expiresAt: z.iso.datetime(),
 });
-export type SourceEvidence = z.infer<typeof sourceEvidenceSchema>;
-export type Resolution = z.infer<typeof resolutionSchema>;
 export type AnalysisDiagnostic = z.infer<typeof diagnosticSchema>;
 export interface AnalysisContext {
   readonly repositoryId: string;
