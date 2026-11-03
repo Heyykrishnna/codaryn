@@ -147,7 +147,7 @@ export const importExportSymbolSchema = z.object({
 
 export type ImportExportSymbol = z.infer<typeof importExportSymbolSchema>;
 
-export const analysisDiagnosticSchema = z.object({
+export const astDiagnosticSchema = z.object({
   id: z.string().min(1),
   path: z.string().min(1),
   message: z.string().min(1),
@@ -156,7 +156,7 @@ export const analysisDiagnosticSchema = z.object({
   location: sourceLocationSchema.optional(),
 });
 
-export type AnalysisDiagnostic = z.infer<typeof analysisDiagnosticSchema>;
+export type AstDiagnostic = z.infer<typeof astDiagnosticSchema>;
 
 export const tsconfigInfoSchema = z.object({
   path: z.string().min(1),
@@ -279,7 +279,7 @@ export type SymbolInventoryResponse = z.infer<
 
 export const diagnosticsResponseSchema = z.object({
   jobId: z.uuid(),
-  diagnostics: z.array(analysisDiagnosticSchema),
+  diagnostics: z.array(astDiagnosticSchema),
   errorCount: z.number().int().nonnegative(),
   warningCount: z.number().int().nonnegative(),
 });

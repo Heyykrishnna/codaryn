@@ -107,6 +107,28 @@ importers:
         specifier: ^5
         version: 5.9.3
 
+  packages/ast:
+    dependencies:
+      '@codaryn/compiler':
+        specifier: workspace:*
+        version: link:../compiler
+      '@codaryn/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@codaryn/symbols':
+        specifier: workspace:*
+        version: link:../symbols
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      zod:
+        specifier: ^4.1.12
+        version: 4.6.7
+    devDependencies:
+      '@types/node':
+        specifier: ^24.10.0
+        version: 24.19.2
+
   packages/compiler:
     dependencies:
       '@codaryn/contracts':
@@ -207,6 +229,22 @@ importers:
       tar:
         specifier: ^7.5.2
         version: 7.5.22
+    devDependencies:
+      '@types/node':
+        specifier: ^24.10.0
+        version: 24.19.2
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/symbols:
+    dependencies:
+      '@codaryn/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      zod:
+        specifier: ^4.1.12
+        version: 4.6.7
     devDependencies:
       '@types/node':
         specifier: ^24.10.0
