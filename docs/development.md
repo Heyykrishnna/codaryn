@@ -1,26 +1,9 @@
 # Development
 
-## Current setup
+This repository uses Node.js 22 or later and pnpm 10.19.0. Install with `pnpm install --frozen-lockfile`. Run `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm format:check` from the root.
 
-Node.js and npm are required. The web application has its own `package-lock.json`; install its dependencies with:
+The web application and API can be started with `pnpm --filter @codaryn/web dev` and `pnpm --filter @codaryn/api dev`. The web application reads `API_URL`, defaulting to `http://127.0.0.1:4000`. The API accepts `HOST` and `PORT`, defaulting to `127.0.0.1` and `4000`. Its health response is validated against the shared contract.
 
-```sh
-npm ci --prefix apps/web
-npm run dev
-```
+For local services, set `POSTGRES_PASSWORD` to a local development password and run `docker compose up -d`. Set `DATABASE_URL` to the corresponding PostgreSQL connection URL and `REDIS_URL` to the local Redis URL. Run `pnpm db:migrate` before starting the worker with `pnpm --filter @codaryn/analysis-worker dev`. Do not use the local Compose configuration as a production deployment.
 
-The web starter listens on the port reported by Next.js. Root scripts delegate to the web package. No database, Redis, API or worker setup is available yet. `docker-compose.yml` is an empty service definition and is not a development environment.
-
-## Checks
-
-```sh
-npm run lint
-npm run typecheck
-npm run build
-```
-
-These check only the existing web app. There is no test runner, CI pipeline, package build, integration test, migration or security scanner configured yet. Build may require network access for the starter's remote fonts. Add meaningful tests and CI as behavior is implemented; do not mistake this scaffold for completion of Phase 0.
-
-## Delivery sequence
-
-Use [phases.md](phases.md) and its acceptance criteria as the implementation backlog. First settle the tooling decisions, then establish validated contracts, API, persistence, queues and isolated workers. Add fixtures with expected evidence and graph outputs alongside each analyzer. Run tenant isolation, malicious archive, resource limit, error and reproducibility tests before processing real private repositories. Record the actual supported versions and limitations for each adapter.
+The worker and migration currently provide only a foundation job record. Authentication, repository ingestion, analyzers, job submission and the full application shell are not implemented. These components must not be used for processing real repositories yet. See [Phase 0](phases/00-foundation/README.md) for outstanding acceptance requirements.

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Product Performance & Security"
+  short_description: "Improve web speed, caching, reliability, and application security"
+policy:
+  allow_implicit_invocation: false

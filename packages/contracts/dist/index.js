@@ -1,0 +1,47 @@
+import { z } from "zod";
+export const sourceEvidenceSchema = z
+    .object({
+    path: z.string().min(1),
+    startLine: z.number().int().positive(),
+    endLine: z.number().int().positive(),
+})
+    .refine((value) => value.endLine >= value.startLine, {
+    message: "End line must not precede start line",
+});
+export const resolutionSchema = z.enum([
+    "DIRECT",
+    "RESOLVED",
+    "INFERRED",
+    "PARTIAL",
+    "UNRESOLVED",
+]);
+export const graphNodeSchema = z.object({
+    id: z.string().min(1),
+    kind: z.string().min(1),
+    label: z.string().min(1),
+});
+export const graphEdgeSchema = z
+    .object({
+    id: z.string().min(1),
+    sourceId: z.string().min(1),
+    targetId: z.string().min(1),
+    kind: z.string().min(1),
+    resolution: resolutionSchema,
+    evidence: z.array(sourceEvidenceSchema),
+})
+    .refine((edge) => !["DIRECT", "RESOLVED"].includes(edge.resolution) ||
+    edge.evidence.length > 0, { message: "Confirmed relationships require evidence" });
+export const diagnosticSchema = z.object({
+    message: z.string().min(1),
+    severity: z.enum(["error", "warning", "info"]),
+    evidence: sourceEvidenceSchema.optional(),
+});
+export const healthResponseSchema = z.object({ status: z.literal("ok") });
+export const apiErrorSchema = z.object({
+    error: z.object({ code: z.string(), message: z.string() }),
+});
+export const sessionSchema = z.object({
+    userId: z.string().min(1),
+    workspaceId: z.string().min(1),
+    expiresAt: z.iso.datetime(),
+});

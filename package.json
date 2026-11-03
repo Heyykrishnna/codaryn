@@ -1,10 +1,21 @@
 {
   "name": "codaryn",
   "private": true,
+  "packageManager": "pnpm@10.19.0",
   "scripts": {
-    "dev": "npm run dev --prefix apps/web",
-    "lint": "npm run lint --prefix apps/web",
-    "typecheck": "npm exec --prefix apps/web -- tsc --noEmit -p apps/web/tsconfig.json",
-    "build": "npm run build --prefix apps/web"
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:migrate": "pnpm --filter @codaryn/database migrate"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "prettier-plugin-tailwindcss": "^0.7.1",
+    "turbo": "^2.5.8",
+    "typescript": "^5.9.3"
   }
 }

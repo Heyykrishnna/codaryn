@@ -1,0 +1,7 @@
+node_modules
+.next
+dist
+pnpm-lock.yaml
+apps/web/package-lock.json
+docs/product-specification.md
+docs/phases

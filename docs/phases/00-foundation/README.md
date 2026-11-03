@@ -54,7 +54,7 @@
 
 ## Planning and dependencies
 
-**Status:** Planned; none of the acceptance criteria is claimed as complete by this document.
+**Status:** In progress. A pnpm workspace, initial contracts, API health route, web shell, migration and worker foundation have been added. The full shell and shared components, graph identity strategy, validated request flow, migration and queue integration tests, and production-ready error handling remain outstanding. Phase 0 is not complete.
 
 **Dependencies:** None; resolve the documented stack and workspace tooling decisions.
 
