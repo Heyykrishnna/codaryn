@@ -159,12 +159,20 @@ function Repositories() {
         </Link>
       </header>
       <h1 className="text-3xl font-semibold">Repositories</h1>
-      <Link
-        href="/studio"
-        className="text-indigo-600 underline dark:text-indigo-400"
-      >
-        Open Analysis Studio
-      </Link>
+      <div className="flex gap-4">
+        <Link
+          href="/studio"
+          className="text-indigo-600 underline dark:text-indigo-400"
+        >
+          Open Analysis Studio
+        </Link>
+        <Link
+          href="/analysis"
+          className="text-indigo-600 underline dark:text-indigo-400"
+        >
+          Static Analysis Dashboard
+        </Link>
+      </div>
       <output aria-live="polite">{busy ? "Working…" : message}</output>
       {workspaces.length === 0 ? (
         <Link href="/workspace">Create a workspace first</Link>

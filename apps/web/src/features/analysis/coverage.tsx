@@ -18,13 +18,10 @@ export function AnalysisCoverageIndicators({
   symbols?: SymbolInventoryResponse | null;
   diagnostics?: DiagnosticsResponse | null;
 }>) {
-  const totalFiles =
-    inventory?.summary.totalFiles ?? job.metrics.filesDiscovered;
-  const analyzedFiles = job.metrics.filesAnalyzed;
-  const parseErrors =
-    diagnostics?.diagnostics.filter((d) => d.severity === "error").length ??
-    job.metrics.parseErrors;
-  const totalSymbols = symbols?.totalSymbols ?? job.metrics.symbolsExtracted;
+  const totalFiles = inventory?.summary.totalFiles ?? job.fileCount;
+  const analyzedFiles = inventory?.files.length ?? job.fileCount;
+  const parseErrors = diagnostics?.errorCount ?? job.diagnosticCount;
+  const totalSymbols = symbols?.totalCount ?? job.symbolCount;
 
   const successRate =
     totalFiles > 0

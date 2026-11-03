@@ -106,8 +106,9 @@ export function DiagnosticsPanel({
                   TS{diag.code}
                 </td>
                 <td className="text-2xs px-3 py-2 font-mono text-zinc-500">
-                  {diag.location.path}:{diag.location.startLine}:
-                  {diag.location.startColumn}
+                  {diag.location
+                    ? `${diag.location.path}:${diag.location.startLine}:${diag.location.startColumn}`
+                    : diag.path}
                 </td>
                 <td className="px-3 py-2 font-mono text-zinc-900 dark:text-zinc-100">
                   {diag.message}
