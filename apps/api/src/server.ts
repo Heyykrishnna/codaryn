@@ -1,5 +1,7 @@
 import { registerStudio } from "./studio/routes.js";
 import { StudioService } from "./studio/service.js";
+import { registerAnalysis } from "./analysis/routes.js";
+import { AnalysisService } from "./analysis/service.js";
 import { RepositoryService } from "./repositories/service.js";
 import { GitHubClient } from "@codaryn/github";
 import { registerRepositories } from "./repositories/routes.js";
@@ -79,6 +81,7 @@ registerStudio(
   new StudioService(pool, github ? new RepositoryService(pool, github) : null),
   environment.WEB_ORIGIN,
 );
+registerAnalysis(app, auth, new AnalysisService(pool), environment.WEB_ORIGIN);
 app.addHook("onClose", async () => {
   await pool.end();
 });
