@@ -221,6 +221,22 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  packages/module-resolver:
+    dependencies:
+      '@codaryn/compiler':
+        specifier: workspace:*
+        version: link:../compiler
+      '@codaryn/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+    devDependencies:
+      '@types/node':
+        specifier: ^24.10.0
+        version: 24.19.2
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/repository-ingestion:
     dependencies:
       ignore:

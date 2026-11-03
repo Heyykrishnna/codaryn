@@ -6,6 +6,9 @@ packages:
   - packages/compiler
   - packages/ast
   - packages/symbols
+  - packages/module-resolver
+  - packages/symbol-resolver
+  - packages/dependency-graph
   - packages/github
   - packages/repository-ingestion
   - workers/analysis
