@@ -95,7 +95,12 @@ export class GitHubClient implements GitHubGateway {
   private async token(installationId: number, refresh = false) {
     try {
       return (
-        await this.auth({ type: "installation", installationId, refresh })
+        await this.auth({
+          type: "installation",
+          installationId,
+          refresh,
+          permissions: { contents: "read", metadata: "read" },
+        })
       ).token;
     } catch (error) {
       const failure = z

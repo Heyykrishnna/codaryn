@@ -233,6 +233,9 @@ export class RepositoryService {
         repository.full_name,
         result.rows[0].commitSha,
       );
-    return result.rows;
+    return result.rows.map((row) => ({
+      ...row,
+      createdAt: row.createdAt.toISOString(),
+    }));
   }
 }
