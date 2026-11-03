@@ -2,7 +2,11 @@ packages:
   - apps/*
   - packages/contracts
   - packages/database
-  - workers/analysis
+  - packages/file-classifier
+  - packages/compiler
+  - packages/ast
+  - packages/symbols
   - packages/github
   - packages/repository-ingestion
+  - workers/analysis
   - workers/ingestion
