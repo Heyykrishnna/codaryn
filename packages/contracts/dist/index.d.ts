@@ -201,9 +201,9 @@ export declare const ingestionRunListSchema: z.ZodObject<{
         id: z.ZodUUID;
         commitSha: z.ZodString;
         status: z.ZodEnum<{
+            completed: "completed";
             queued: "queued";
             running: "running";
-            completed: "completed";
             failed: "failed";
         }>;
         errorCode: z.ZodNullable<z.ZodString>;
@@ -217,3 +217,4 @@ export declare const ingestionRunListSchema: z.ZodObject<{
     }, z.core.$strip>>;
 }, z.core.$strip>;
 export * from "./studio.js";
+export * from "./analysis.js";
