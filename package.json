@@ -1,0 +1,10 @@
+{
+  "name": "codaryn",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix apps/web",
+    "lint": "npm run lint --prefix apps/web",
+    "typecheck": "npm exec --prefix apps/web -- tsc --noEmit -p apps/web/tsconfig.json",
+    "build": "npm run build --prefix apps/web"
+  }
+}
