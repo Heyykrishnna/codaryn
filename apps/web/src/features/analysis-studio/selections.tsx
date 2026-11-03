@@ -31,9 +31,12 @@ export function ModuleSelection({
           .map((item) => (
             <label
               key={item.id}
+              htmlFor={`analyzer-${item.id}`}
+              aria-label={item.id}
               className="flex items-start gap-3 rounded-lg border border-zinc-300 p-4 dark:border-zinc-700"
             >
               <input
+                id={`analyzer-${item.id}`}
                 type="checkbox"
                 checked={configuration.analyzers.includes(item.id)}
                 onChange={(event) =>
@@ -71,7 +74,7 @@ export function ModuleSelection({
               checked={configuration.depth === depth}
               onChange={() => change({ ...configuration, depth })}
             />
-            {depth}
+            <span>{depth}</span>
           </label>
         ))}
         <label className="flex gap-3">
@@ -82,7 +85,7 @@ export function ModuleSelection({
               change({ ...configuration, includeTests: event.target.checked })
             }
           />
-          Include test files (required for testing analyzer)
+          <span>Include test files (required for testing analyzer)</span>
         </label>
       </fieldset>
     );
@@ -100,7 +103,7 @@ export function ModuleSelection({
               })
             }
           />
-          Exclude generated files
+          <span>Exclude generated files</span>
         </label>
         <label className="flex flex-col gap-2">
           <span>Exclusion globs, one per line</span>
@@ -141,8 +144,10 @@ export function ModuleSelection({
                 })
               }
             />
-            {id}
-            {id === "dataflow" ? " (requires deep analysis)" : ""}
+            <span>
+              {id}
+              {id === "dataflow" ? " (requires deep analysis)" : ""}
+            </span>
           </label>
         ))}
       </fieldset>
@@ -165,7 +170,7 @@ export function ModuleSelection({
                 })
               }
             />
-            {id}
+            <span>{id}</span>
           </label>
         ))}
       </fieldset>

@@ -186,7 +186,7 @@ export const studioPresets: {
   },
 ];
 const unique = <T extends string>(values: T[]): T[] =>
-  [...new Set(values)].sort();
+  [...new Set(values)].sort((a, b) => a.localeCompare(b));
 export class StudioConfigurationError extends Error {}
 export function normalizeStudioConfiguration(
   input: unknown,

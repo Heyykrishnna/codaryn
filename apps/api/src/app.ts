@@ -33,15 +33,13 @@ export function buildApp() {
       expected.success &&
       [400, 413, 415, 429].includes(expected.data.statusCode)
     ) {
-      return reply
-        .status(expected.data.statusCode)
-        .send({
-          error: {
-            code: "INVALID_REQUEST",
-            message:
-              "The request is malformed, too large, or exceeds a request limit",
-          },
-        });
+      return reply.status(expected.data.statusCode).send({
+        error: {
+          code: "INVALID_REQUEST",
+          message:
+            "The request is malformed, too large, or exceeds a request limit",
+        },
+      });
     }
     app.log.error({ code: "REQUEST_FAILED" }, "Request failed");
     return reply.status(500).send({

@@ -3,7 +3,6 @@ import { z } from "zod";
 import {
   analyzerRegistry,
   registryVersion,
-  studioDefaults,
   StudioConfigurationError,
 } from "@codaryn/contracts";
 import {

@@ -23,9 +23,7 @@ export function buildApp() {
         const expected = z.object({ statusCode: z.number() }).safeParse(error);
         if (expected.success &&
             [400, 413, 415, 429].includes(expected.data.statusCode)) {
-            return reply
-                .status(expected.data.statusCode)
-                .send({
+            return reply.status(expected.data.statusCode).send({
                 error: {
                     code: "INVALID_REQUEST",
                     message: "The request is malformed, too large, or exceeds a request limit",
