@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { createAuthClient } from "better-auth/react";
+import { authClient as auth } from "@/src/lib/auth-client";
 import {
   workspaceListSchema,
   workspaceDetailsSchema,
@@ -11,7 +11,6 @@ import {
   type WorkspaceDetails,
 } from "@codaryn/contracts";
 
-const auth = createAuthClient();
 const inputClass =
   "w-full rounded-md border border-zinc-300 bg-background px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-indigo-500 dark:border-zinc-700";
 const buttonClass =
@@ -169,6 +168,12 @@ export default function WorkspacePage() {
           Sign out
         </button>
       </header>
+      <Link
+        href="/repositories"
+        className="text-indigo-600 dark:text-indigo-400"
+      >
+        Connected repositories
+      </Link>
       <h1 className="text-3xl font-semibold">Your workspaces</h1>
       <p role="status" aria-live="polite">
         {message}

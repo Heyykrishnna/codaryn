@@ -12,7 +12,7 @@
   "dependencies": {
     "@codaryn/database": "workspace:*",
     "bullmq": "^5.63.0",
-    "drizzle-orm": "^0.44.7",
+    "drizzle-orm": "^0.45.4",
     "ioredis": "^5.8.1",
     "pg": "^8.16.3",
     "zod": "^4.1.12"

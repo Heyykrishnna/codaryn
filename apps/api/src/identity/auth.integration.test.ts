@@ -1,11 +1,13 @@
 import { test } from "node:test";
 import { strict as assert } from "node:assert";
-import { randomUUID } from "node:crypto";
+import { randomUUID, createHmac } from "node:crypto";
 import { Pool } from "pg";
 import { betterAuth } from "better-auth";
 import { getMigrations } from "better-auth/db/migration";
 import { createAuth } from "./auth.js";
 import { registerIdentity } from "./routes.js";
+import { registerRepositories } from "../repositories/routes.js";
+import type { GitHubGateway } from "@codaryn/github";
 import { buildApp } from "../app.js";
 
 const origin = "http://localhost:3000";
@@ -30,6 +32,21 @@ test(
     await runMigrations();
     const app = buildApp();
     registerIdentity(app, auth, pool, origin, origin);
+    const gateway: GitHubGateway = {
+      verifyInstallation: async () => {},
+      repositories: async () => [],
+      branches: async () => [],
+      commits: async () => [],
+      resolve: async () => "a".repeat(40),
+      archive: async () => Buffer.alloc(0),
+    };
+    registerRepositories(app, auth, pool, origin, {
+      github: gateway,
+      slug: "test-app",
+      webhookSecret: "test-webhook-secret",
+    });
+    const delivery = randomUUID();
+
     const users: string[] = [];
     const organizations: string[] = [];
     async function account() {
@@ -55,6 +72,32 @@ test(
       return { id: data.user.id as string, cookie };
     }
     try {
+      const payload =
+        '{ "installation": {"id": 999999999}, "action": "deleted" }';
+      const signature = `sha256=${createHmac("sha256", "test-webhook-secret").update(payload).digest("hex")}`;
+      const hook = () =>
+        app.inject({
+          method: "POST",
+          url: "/api/v1/github/webhook",
+          headers: {
+            "content-type": "application/json",
+            "x-hub-signature-256": signature,
+            "x-github-event": "installation",
+            "x-github-delivery": delivery,
+          },
+          payload,
+        });
+      assert.equal((await hook()).statusCode, 200);
+      assert.equal((await hook()).json().duplicate, true);
+      assert.equal(
+        (
+          await app.inject({
+            method: "GET",
+            url: "/api/v1/github/configuration",
+          })
+        ).statusCode,
+        401,
+      );
       const owner = await account();
       const guest = await account();
       async function api(
@@ -188,6 +231,10 @@ test(
       assert.equal(throttled, true);
     } finally {
       await app.close();
+      await pool.query(
+        "DELETE FROM github_webhook_events WHERE delivery_id=$1",
+        [delivery],
+      );
       for (const id of organizations) {
         await pool.query("DELETE FROM audit_events WHERE organization_id=$1", [
           id,

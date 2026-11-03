@@ -10,3 +10,5 @@ The [product specification](product-specification.md) preserves the supplied blu
 When implementation changes a contract or behavior, update the relevant guide and record decisions here. Phase overviews reproduce the specification’s phase sections for navigation; update both when changing their substance.
 
 - [Authentication and workspaces](authentication.md): OAuth setup, roles, migrations, security boundaries and validation limits.
+
+- [GitHub connections and ingestion](github.md): App configuration, repository permissions, archive limits and worker operation.

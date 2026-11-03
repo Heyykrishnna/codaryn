@@ -129,3 +129,51 @@ export const workspaceInvitationsSchema = z.object({
 });
 export type WorkspaceDetails = z.infer<typeof workspaceDetailsSchema>;
 export type WorkspaceSummary = z.infer<typeof workspaceSchema>;
+
+export const githubConfigurationSchema = z.object({
+  enabled: z.boolean(),
+  installationUrl: z.url().nullable(),
+});
+export const githubInstallationListSchema = z.object({
+  installations: z.array(z.object({ id: z.string(), connected: z.boolean() })),
+});
+export const repositoryListSchema = z.object({
+  repositories: z.array(
+    z.object({
+      id: z.uuid(),
+      fullName: z.string(),
+      private: z.boolean(),
+      defaultBranch: z.string(),
+      installationId: z.string(),
+    }),
+  ),
+});
+export const branchListSchema = z.object({
+  branches: z.array(
+    z.object({ name: z.string(), sha: z.string().regex(/^[a-f0-9]{40}$/) }),
+  ),
+});
+export const commitListSchema = z.object({
+  commits: z.array(
+    z.object({ sha: z.string().regex(/^[a-f0-9]{40}$/), message: z.string() }),
+  ),
+});
+export const ingestionRunListSchema = z.object({
+  runs: z.array(
+    z.object({
+      id: z.uuid(),
+      commitSha: z.string(),
+      status: z.enum(["queued", "running", "completed", "failed"]),
+      errorCode: z.string().nullable(),
+      createdAt: z.string(),
+      inventory: z
+        .object({
+          fileCount: z.number(),
+          packageRoots: z.array(z.string()),
+          archiveSha256: z.string(),
+          monorepo: z.boolean(),
+        })
+        .nullable(),
+    }),
+  ),
+});

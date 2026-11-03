@@ -1,3 +1,3 @@
-# Github
+# GitHub client
 
-Reserved for future implementation. See the [product specification](../../docs/product-specification.md) for scope.
+Typed GitHub App authentication, installation ownership checks, paginated repository metadata, immutable commit resolution and bounded archive download. See [operations](../../docs/github.md).

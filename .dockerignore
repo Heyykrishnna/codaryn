@@ -1,0 +1,11 @@
+.git
+**/node_modules
+**/.next
+**/.turbo
+**/dist
+**/.pnpm-store
+.env
+.env.*
+.codex
+.agents
+.DS_Store

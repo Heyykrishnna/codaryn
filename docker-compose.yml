@@ -23,5 +23,29 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+  ingestion:
+    profiles: [workers]
+    build:
+      context: .
+      dockerfile: infrastructure/docker/ingestion.Dockerfile
+    environment:
+      DATABASE_URL: ${WORKER_DATABASE_URL:-}
+      REDIS_URL: redis://redis:6379
+      GITHUB_APP_ID: ${GITHUB_APP_ID:-}
+      GITHUB_APP_PRIVATE_KEY: ${GITHUB_APP_PRIVATE_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp:size=201326592,mode=1777
+    mem_limit: 512m
+    cpus: 1
+    pids_limit: 64
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+
 volumes:
   postgres_data:

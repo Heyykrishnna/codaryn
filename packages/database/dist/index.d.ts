@@ -39,3 +39,5 @@ export declare const foundationJobs: import("drizzle-orm/pg-core").PgTableWithCo
     };
     dialect: "pg";
 }>;
+export { WorkspaceService, WorkspaceAccessError } from "./workspaces.js";
+export type { Workspace, WorkspaceRole } from "./workspaces.js";

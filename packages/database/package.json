@@ -16,7 +16,7 @@
     "test:integration": "pnpm run build && node --test dist/workspaces.integration.test.js"
   },
   "dependencies": {
-    "drizzle-orm": "^0.44.7",
+    "drizzle-orm": "^0.45.4",
     "pg": "^8.16.3",
     "zod": "^4.1.12"
   },

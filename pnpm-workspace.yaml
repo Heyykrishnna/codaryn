@@ -3,3 +3,6 @@ packages:
   - packages/contracts
   - packages/database
   - workers/analysis
+  - packages/github
+  - packages/repository-ingestion
+  - workers/ingestion

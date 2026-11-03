@@ -55,7 +55,7 @@
 
 ## Planning and dependencies
 
-**Status:** Planned; none of the acceptance criteria is claimed as complete by this document.
+**Status:** Implementation and automated verification are in progress. GitHub App verification, repository APIs/UI, signed webhooks and static ingestion are implemented. See [GitHub setup and limits](../../github.md). Live GitHub installation, private-repository export and webhook delivery require staging credentials and a public endpoint.
 
 **Dependencies:** Phases 0–1 for identity, authorization and storage.
 

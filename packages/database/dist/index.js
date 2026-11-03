@@ -5,3 +5,4 @@ export const foundationJobs = pgTable("foundation_jobs", {
         .notNull()
         .defaultNow(),
 });
+export { WorkspaceService, WorkspaceAccessError } from "./workspaces.js";

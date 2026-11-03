@@ -45,3 +45,95 @@ export const sessionSchema = z.object({
     workspaceId: z.string().min(1),
     expiresAt: z.iso.datetime(),
 });
+export const analysisConfigurationSchema = z.strictObject({
+    depth: z.enum(["overview", "standard", "deep"]),
+    includeTests: z.boolean(),
+    excludeGenerated: z.boolean(),
+});
+export const configurationResponseSchema = z.strictObject({
+    configuration: analysisConfigurationSchema,
+});
+export const graphIdentityInputSchema = z.strictObject({
+    repositoryId: z.string().min(1),
+    commitSha: z.string().regex(/^[a-f0-9]{40}$/),
+    kind: z.string().min(1),
+    path: z.string().min(1),
+    symbol: z.string().min(1),
+    startLine: z.number().int().positive(),
+    startColumn: z.number().int().positive(),
+});
+export function graphIdentity(input) {
+    const value = graphIdentityInputSchema.parse(input);
+    return [
+        "v1",
+        value.repositoryId,
+        value.commitSha,
+        value.kind,
+        value.path,
+        value.symbol,
+        String(value.startLine),
+        String(value.startColumn),
+    ]
+        .map(encodeURIComponent)
+        .join(":");
+}
+export const workspaceRoleSchema = z.enum(["owner", "admin", "member"]);
+export const workspaceSchema = z.object({
+    id: z.uuid(),
+    name: z.string(),
+    role: workspaceRoleSchema,
+});
+export const workspaceListSchema = z.object({
+    workspaces: z.array(workspaceSchema),
+    active: z.uuid().nullable(),
+});
+export const workspaceDetailsSchema = workspaceSchema.extend({
+    members: z.array(z.object({ userId: z.string(), role: workspaceRoleSchema })),
+    events: z.array(z.object({
+        action: z.string(),
+        actorId: z.string(),
+        createdAt: z.string(),
+    })),
+});
+export const workspaceInvitationsSchema = z.object({
+    invitations: z.array(z.object({ id: z.uuid(), name: z.string(), role: z.string() })),
+});
+export const githubConfigurationSchema = z.object({
+    enabled: z.boolean(),
+    installationUrl: z.url().nullable(),
+});
+export const githubInstallationListSchema = z.object({
+    installations: z.array(z.object({ id: z.string(), connected: z.boolean() })),
+});
+export const repositoryListSchema = z.object({
+    repositories: z.array(z.object({
+        id: z.uuid(),
+        fullName: z.string(),
+        private: z.boolean(),
+        defaultBranch: z.string(),
+        installationId: z.string(),
+    })),
+});
+export const branchListSchema = z.object({
+    branches: z.array(z.object({ name: z.string(), sha: z.string().regex(/^[a-f0-9]{40}$/) })),
+});
+export const commitListSchema = z.object({
+    commits: z.array(z.object({ sha: z.string().regex(/^[a-f0-9]{40}$/), message: z.string() })),
+});
+export const ingestionRunListSchema = z.object({
+    runs: z.array(z.object({
+        id: z.uuid(),
+        commitSha: z.string(),
+        status: z.enum(["queued", "running", "completed", "failed"]),
+        errorCode: z.string().nullable(),
+        createdAt: z.string(),
+        inventory: z
+            .object({
+            fileCount: z.number(),
+            packageRoots: z.array(z.string()),
+            archiveSha256: z.string(),
+            monorepo: z.boolean(),
+        })
+            .nullable(),
+    })),
+});

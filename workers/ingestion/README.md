@@ -1,3 +1,3 @@
-# Ingestion
+# Ingestion worker
 
-Reserved for future implementation. See the [product specification](../../docs/product-specification.md) for scope.
+Processes durable PostgreSQL requests through BullMQ and publishes authorized static inventories. See [configuration and deployment](../../docs/github.md).

@@ -19,6 +19,7 @@ export function createAuth(
     throw new Error("Production authentication requires HTTPS");
   return betterAuth({
     database: pool,
+    disabledPaths: ["/get-access-token", "/refresh-token"],
     logger: {
       log: (level) => {
         console.error(JSON.stringify({ event: "identity.diagnostic", level }));
@@ -29,6 +30,7 @@ export function createAuth(
     trustedOrigins: [config.origin],
     socialProviders: {
       github: {
+        scope: ["read:user", "user:email", "read:org"],
         clientId: config.githubClientId,
         clientSecret: config.githubClientSecret,
       },

@@ -17,6 +17,7 @@ try {
     "0001_workspaces.sql",
     "0002_membership.sql",
     "0003_identity_audit.sql",
+    "0004_repositories.sql",
   ]) {
     const sql = await readFile(
       new URL(`../migrations/${migration}`, import.meta.url),

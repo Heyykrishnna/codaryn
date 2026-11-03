@@ -1,3 +1,3 @@
-# Repository Ingestion
+# Repository ingestion
 
-Reserved for future implementation. See the [product specification](../../docs/product-specification.md) for scope.
+Bounded static archive parsing, safe extraction, ignore rules and deterministic file inventories. `withRepositoryArchive` always removes its temporary directory after the callback. See [limits](../../docs/github.md).
