@@ -255,9 +255,24 @@ importers:
 
   workers/analysis:
     dependencies:
+      '@codaryn/ast':
+        specifier: workspace:*
+        version: link:../../packages/ast
+      '@codaryn/compiler':
+        specifier: workspace:*
+        version: link:../../packages/compiler
+      '@codaryn/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@codaryn/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@codaryn/file-classifier':
+        specifier: workspace:*
+        version: link:../../packages/file-classifier
+      '@codaryn/symbols':
+        specifier: workspace:*
+        version: link:../../packages/symbols
       bullmq:
         specifier: ^5.63.0
         version: 5.81.5
@@ -270,6 +285,9 @@ importers:
       pg:
         specifier: ^8.16.3
         version: 8.23.1
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
       zod:
         specifier: ^4.1.12
         version: 4.6.7
@@ -283,9 +301,6 @@ importers:
       tsx:
         specifier: ^4.20.6
         version: 4.23.15
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
 
   workers/ingestion:
     dependencies:

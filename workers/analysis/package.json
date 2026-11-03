@@ -7,14 +7,21 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
+    "test": "pnpm run build && node --test dist/processor.test.js",
     "test:integration": "pnpm run build && node --test dist/integration.test.js"
   },
   "dependencies": {
+    "@codaryn/ast": "workspace:*",
+    "@codaryn/compiler": "workspace:*",
+    "@codaryn/contracts": "workspace:*",
     "@codaryn/database": "workspace:*",
+    "@codaryn/file-classifier": "workspace:*",
+    "@codaryn/symbols": "workspace:*",
     "bullmq": "^5.63.0",
     "drizzle-orm": "^0.45.4",
     "ioredis": "^5.8.1",
     "pg": "^8.16.3",
+    "typescript": "^5.9.3",
     "zod": "^4.1.12"
   },
   "devDependencies": {
