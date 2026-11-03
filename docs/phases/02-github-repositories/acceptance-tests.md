@@ -1,6 +1,6 @@
 # Phase 2: acceptance test plan
 
-**Status:** Planned; these scenarios have not been executed. Scope and original acceptance criteria: [phase overview](README.md).
+**Status:** Automated scenarios have been implemented and exercised with real database/queue services and controlled GitHub fixtures. See the [verification record](verification.md) for evidence and live-provider limits. Scope and original acceptance criteria: [phase overview](README.md).
 
 Implement these scenarios at the appropriate unit, integration, end-to-end or operational layer. Use controlled fixtures with expected outputs, isolate test data, and record the command, environment, actual result and evidence for each run. A scenario passes only when its expected result is observed.
 
