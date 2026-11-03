@@ -8,9 +8,9 @@ Copy `.env.example` to `.env` and fill values locally. Generate `AUTH_SECRET` wi
 
 Set `AUTH_BASE_URL` and `WEB_ORIGIN` to that public origin, `API_URL` to the internal Fastify URL, and `DATABASE_URL` to PostgreSQL. Production requires HTTPS. GitHub login requires the application's real client ID and secret. The OAuth application is separate from the repository-access GitHub App planned for Phase 2; no repository scope is requested here.
 
-Export the variables in the shell running each command. The applications do not automatically load the root `.env` file. For a locally owned `.env`, use `set -a`, `. ./.env`, then `set +a` in a POSIX shell.
+The API, workers and database commands load the ignored root `.env` when present. Production environment values take precedence. Configure the web app's `API_URL` in its own environment. See [database setup](database.md) for Neon pooled/direct connections and schema verification.
 
-Run `docker compose up -d --wait`, `pnpm install --frozen-lockfile`, `pnpm db:migrate`, and `pnpm --filter @codaryn/api auth:migrate`. The first migration command manages application tables with checksums and a transaction lock. The second uses Better Auth's official migration API for its user, session, account, verification and rate-limit tables; review changes and back up production data before library upgrades. Then run `pnpm build` and start the API and web app with their `dev` scripts. Shared dependencies must be built before using package-specific development commands.
+Run `pnpm install --frozen-lockfile`, `pnpm build`, and `pnpm db:sync`. Start Redis with `docker compose up -d --wait redis`. The first migration command manages application tables with checksums and a transaction lock. The second uses Better Auth's official migration API for its user, session, account, verification and rate-limit tables; review changes and back up production data before library upgrades. Then run `pnpm build` and start the API and web app with their `dev` scripts. Shared dependencies must be built before using package-specific development commands.
 
 ## Permissions and lifecycle
 

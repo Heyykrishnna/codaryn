@@ -26,6 +26,7 @@ jobs:
           --health-interval 5s --health-timeout 3s --health-retries 10
     env:
       DATABASE_URL: postgres://codaryn:test-password@127.0.0.1:5432/codaryn
+      DIRECT_DATABASE_URL: postgres://codaryn:test-password@127.0.0.1:5432/codaryn
       REDIS_URL: redis://127.0.0.1:6379
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -40,5 +41,5 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm build
       - run: pnpm test
-      - run: pnpm db:migrate
+      - run: pnpm db:sync
       - run: pnpm test:integration

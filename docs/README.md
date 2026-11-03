@@ -12,3 +12,5 @@ When implementation changes a contract or behavior, update the relevant guide an
 - [Authentication and workspaces](authentication.md): OAuth setup, roles, migrations, security boundaries and validation limits.
 
 - [GitHub connections and ingestion](github.md): App configuration, repository permissions, archive limits and worker operation.
+
+- [Database configuration and synchronization](database.md): Neon connections, schema verification and isolated test setup.

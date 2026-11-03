@@ -35,9 +35,10 @@ export function databasePoolOptions(connectionString: string): PoolConfig {
 
 export function createDatabasePool(migration = false) {
   loadDatabaseEnvironment();
-  const connection = migration
-    ? (process.env.DIRECT_DATABASE_URL ?? process.env.DATABASE_URL)
-    : process.env.DATABASE_URL;
+  const direct = process.env.DIRECT_DATABASE_URL?.trim();
+  const connection = migration && direct ? direct : process.env.DATABASE_URL;
   if (!connection) throw new Error("DATABASE_URL must be configured");
-  return new Pool(databasePoolOptions(connection));
+  const pool = new Pool(databasePoolOptions(connection));
+  pool.on("error", () => console.error("Database connection interrupted"));
+  return pool;
 }

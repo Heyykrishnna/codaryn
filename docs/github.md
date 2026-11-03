@@ -12,7 +12,7 @@ The OAuth login application from Phase 1 remains separate from the GitHub App. L
 
 Run `pnpm install --frozen-lockfile`, `pnpm build` and `pnpm db:migrate` before starting the API and ingestion worker. Start a local worker with `pnpm --filter @codaryn/ingestion-worker dev` after exporting `DATABASE_URL`, `REDIS_URL`, `GITHUB_APP_ID` and `GITHUB_APP_PRIVATE_KEY`. A worker is required for queued ingestions to advance.
 
-For the containerized worker, set `WORKER_DATABASE_URL` using the Compose hostname `postgres` and port `5432`; the Redis URL uses `redis:6379`. Run `docker compose --profile workers up -d --build ingestion`. The worker image runs as a non-root user with a read-only filesystem, bounded temporary storage, 512 MiB memory, one CPU, a PID limit and dropped capabilities. It has no host filesystem or Docker socket mount. Deployments should additionally restrict egress to GitHub's API and codeload endpoints and apply their own secret, monitoring and data-retention policies.
+For the containerized worker, set the canonical `DATABASE_URL` to the Neon runtime URL; the Redis URL uses `redis:6379`. For an opt-in local PostgreSQL deployment, use its Compose hostname `postgres` and port `5432`. Run `docker compose --profile workers up -d --build ingestion`. The worker image runs as a non-root user with a read-only filesystem, bounded temporary storage, 512 MiB memory, one CPU, a PID limit and dropped capabilities. It has no host filesystem or Docker socket mount. Deployments should additionally restrict egress to GitHub's API and codeload endpoints and apply their own secret, monitoring and data-retention policies.
 
 ## User flow
 
