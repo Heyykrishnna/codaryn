@@ -1,9 +1,28 @@
 import Fastify from "fastify";
-import { healthResponseSchema } from "@codaryn/contracts";
+import {
+  analysisConfigurationSchema,
+  configurationResponseSchema,
+  healthResponseSchema,
+} from "@codaryn/contracts";
 export function buildApp() {
   const app = Fastify({ logger: true });
   app.get("/api/v1/health", async () =>
     healthResponseSchema.parse({ status: "ok" }),
+  );
+  app.post(
+    "/api/v1/analysis-configurations/validate",
+    async (request, reply) => {
+      const result = analysisConfigurationSchema.safeParse(request.body);
+      if (!result.success) {
+        return reply.status(400).send({
+          error: {
+            code: "INVALID_CONFIGURATION",
+            message: "The analysis configuration is invalid",
+          },
+        });
+      }
+      return configurationResponseSchema.parse({ configuration: result.data });
+    },
   );
   app.setErrorHandler((error, _request, reply) => {
     app.log.error(error);

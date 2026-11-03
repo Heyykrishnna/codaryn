@@ -82,15 +82,15 @@ Design the page so users see useful content quickly and secondary work does not 
 
 Use only the layers that solve a measured need. A typical web application may use the following layers:
 
-| Layer | Responsibility | Suitable content | Key safeguards |
-|---|---|---|---|
-| CDN / edge cache | Reuse public responses close to users | Fingerprinted assets, public pages, public catalog data | Never share personalized responses; define explicit cache headers and purge rules |
-| Framework/server cache | Reuse server-rendered output or server data | Static and revalidatable route data | Use version-correct APIs and explicit tags, paths, or revalidation policies |
-| Redis | Reuse expensive database or upstream reads across server instances | Frequently accessed, reusable records and computed results | Namespaced keys, TTLs, authorization-aware key design, invalidation, monitoring |
-| Process memory | Reuse small data within one server process | Tiny immutable configuration or short-lived computations | Not shared across instances; bound memory; do not rely on it for correctness |
-| Browser memory | Reuse data during the current page/session | Current route state and short-lived UI data | Clear or partition on account changes; not authoritative |
-| IndexedDB | Persist larger structured client data across visits | Non-sensitive offline data, drafts, bounded read models | Schema versioning, expiry, quota handling, account isolation, cleanup |
-| Cache API / service worker | Reuse request/response assets and explicitly designed offline resources | Static assets and approved public GET responses | Explicit allowlist; never cache authenticated API responses by default |
+| Layer                      | Responsibility                                                          | Suitable content                                           | Key safeguards                                                                    |
+| -------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| CDN / edge cache           | Reuse public responses close to users                                   | Fingerprinted assets, public pages, public catalog data    | Never share personalized responses; define explicit cache headers and purge rules |
+| Framework/server cache     | Reuse server-rendered output or server data                             | Static and revalidatable route data                        | Use version-correct APIs and explicit tags, paths, or revalidation policies       |
+| Redis                      | Reuse expensive database or upstream reads across server instances      | Frequently accessed, reusable records and computed results | Namespaced keys, TTLs, authorization-aware key design, invalidation, monitoring   |
+| Process memory             | Reuse small data within one server process                              | Tiny immutable configuration or short-lived computations   | Not shared across instances; bound memory; do not rely on it for correctness      |
+| Browser memory             | Reuse data during the current page/session                              | Current route state and short-lived UI data                | Clear or partition on account changes; not authoritative                          |
+| IndexedDB                  | Persist larger structured client data across visits                     | Non-sensitive offline data, drafts, bounded read models    | Schema versioning, expiry, quota handling, account isolation, cleanup             |
+| Cache API / service worker | Reuse request/response assets and explicitly designed offline resources | Static assets and approved public GET responses            | Explicit allowlist; never cache authenticated API responses by default            |
 
 Do not store an identical full data set in every layer. Assign each resource a clear caching policy and choose the smallest layer that provides the benefit.
 
@@ -98,15 +98,15 @@ Do not store an identical full data set in every layer. Assign each resource a c
 
 Classify every response or data resource before caching it:
 
-| Class | Examples | Default policy |
-|---|---|---|
-| Public immutable | Hashed JS/CSS bundles, versioned images, fonts | Long-lived CDN/browser cache with immutable URLs |
-| Public, slowly changing | Public documentation, public catalog, published content | CDN and/or server cache with bounded TTL and on-demand invalidation |
-| Public, frequently changing | Public status or live aggregate | Short TTL or stale-while-revalidate, based on freshness requirements |
-| User-specific, non-sensitive | A user's display preferences or non-sensitive dashboard summary | Private, identity-scoped cache only when justified; short TTL and explicit invalidation |
-| Tenant-specific | Organization settings, tenant catalog, team dashboard | Tenant-scoped keys and authorization on every request; never shared across tenants |
-| Sensitive or security-critical | Credentials, payment details, private messages, permission decisions | Do not cache by default; use `no-store` for sensitive HTTP responses |
-| Transactional or correctness-critical | Balances, inventory reservations, payment state, entitlements | Read from the authoritative source or use a specifically reviewed consistency strategy |
+| Class                                 | Examples                                                             | Default policy                                                                          |
+| ------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Public immutable                      | Hashed JS/CSS bundles, versioned images, fonts                       | Long-lived CDN/browser cache with immutable URLs                                        |
+| Public, slowly changing               | Public documentation, public catalog, published content              | CDN and/or server cache with bounded TTL and on-demand invalidation                     |
+| Public, frequently changing           | Public status or live aggregate                                      | Short TTL or stale-while-revalidate, based on freshness requirements                    |
+| User-specific, non-sensitive          | A user's display preferences or non-sensitive dashboard summary      | Private, identity-scoped cache only when justified; short TTL and explicit invalidation |
+| Tenant-specific                       | Organization settings, tenant catalog, team dashboard                | Tenant-scoped keys and authorization on every request; never shared across tenants      |
+| Sensitive or security-critical        | Credentials, payment details, private messages, permission decisions | Do not cache by default; use `no-store` for sensitive HTTP responses                    |
+| Transactional or correctness-critical | Balances, inventory reservations, payment state, entitlements        | Read from the authoritative source or use a specifically reviewed consistency strategy  |
 
 When classification is unclear, do not cache until the data owner and security policy are understood.
 
@@ -151,14 +151,14 @@ Never include passwords, tokens, session IDs, API keys, or other secrets in keys
 
 Starting TTLs are hypotheses, not universal defaults. Tune from product freshness requirements and measured hit rates.
 
-| Resource type | Initial TTL to evaluate |
-|---|---:|
-| Public, slowly changing reference data | 5-30 minutes |
-| Public catalog or listing | 1-10 minutes |
-| Non-sensitive user dashboard summary | 15-60 seconds |
-| User preferences | 1-5 minutes, plus write invalidation |
-| Permission or entitlement state | Prefer authoritative checks; if cached, use a very short, explicitly reviewed TTL and immediate revocation strategy |
-| Transactional state | No general cache; use a correctness-specific design |
+| Resource type                          |                                                                                             Initial TTL to evaluate |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------: |
+| Public, slowly changing reference data |                                                                                                        5-30 minutes |
+| Public catalog or listing              |                                                                                                        1-10 minutes |
+| Non-sensitive user dashboard summary   |                                                                                                       15-60 seconds |
+| User preferences                       |                                                                                1-5 minutes, plus write invalidation |
+| Permission or entitlement state        | Prefer authoritative checks; if cached, use a very short, explicitly reviewed TTL and immediate revocation strategy |
+| Transactional state                    |                                                                 No general cache; use a correctness-specific design |
 
 ### Cache stampede and Redis failure handling
 

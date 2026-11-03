@@ -1,6 +1,8 @@
 import { healthResponseSchema } from "@codaryn/contracts";
+import { Suspense } from "react";
+import { ConfigurationForm } from "@/src/features/analysis-studio/configuration-form";
 
-export default async function Home() {
+async function ApiStatus() {
   let available = false;
   try {
     const response = await fetch(
@@ -13,6 +15,19 @@ export default async function Home() {
   } catch {
     available = false;
   }
+  return (
+    <div
+      role="status"
+      className="rounded-lg border border-zinc-200 p-4 text-sm dark:border-zinc-800"
+    >
+      {available
+        ? "API connected"
+        : "API unavailable. Start the API to connect."}
+    </div>
+  );
+}
+
+export default function Home() {
   return (
     <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-12 px-6 py-8">
       <header className="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-200 pb-6 dark:border-zinc-800">
@@ -36,18 +51,23 @@ export default async function Home() {
         <p className="text-lg text-zinc-600 dark:text-zinc-300">
           An evidence-backed architecture map of your codebase.
         </p>
-        <div
-          role="status"
-          className="rounded-lg border border-zinc-200 p-4 text-sm dark:border-zinc-800"
+        <Suspense
+          fallback={
+            <div
+              role="status"
+              className="rounded-lg border border-zinc-200 p-4 text-sm dark:border-zinc-800"
+            >
+              Checking API connection…
+            </div>
+          }
         >
-          {available
-            ? "API connected"
-            : "API unavailable. Start the API to connect."}
-        </div>
+          <ApiStatus />
+        </Suspense>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
           Repository analysis and workspace features are under development.
         </p>
       </section>
+      <ConfigurationForm />
     </main>
   );
 }

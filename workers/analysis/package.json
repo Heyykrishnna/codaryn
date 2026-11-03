@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:integration": "pnpm run build && node --test dist/integration.test.js"
   },
   "dependencies": {
     "@codaryn/database": "workspace:*",

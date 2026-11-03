@@ -10,7 +10,8 @@
     "test": "turbo test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "db:migrate": "pnpm --filter @codaryn/database migrate"
+    "db:migrate": "pnpm --filter @codaryn/database migrate",
+    "test:integration": "pnpm --filter @codaryn/analysis-worker test:integration"
   },
   "devDependencies": {
     "prettier": "^3.6.2",

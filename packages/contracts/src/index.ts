@@ -66,3 +66,38 @@ export interface Analyzer {
   supports(context: AnalysisContext): Promise<boolean>;
   analyze(context: AnalysisContext): Promise<AnalyzerResult>;
 }
+
+export const analysisConfigurationSchema = z.strictObject({
+  depth: z.enum(["overview", "standard", "deep"]),
+  includeTests: z.boolean(),
+  excludeGenerated: z.boolean(),
+});
+export const configurationResponseSchema = z.strictObject({
+  configuration: analysisConfigurationSchema,
+});
+export const graphIdentityInputSchema = z.strictObject({
+  repositoryId: z.string().min(1),
+  commitSha: z.string().regex(/^[a-f0-9]{40}$/),
+  kind: z.string().min(1),
+  path: z.string().min(1),
+  symbol: z.string().min(1),
+  startLine: z.number().int().positive(),
+  startColumn: z.number().int().positive(),
+});
+export function graphIdentity(
+  input: z.infer<typeof graphIdentityInputSchema>,
+): string {
+  const value = graphIdentityInputSchema.parse(input);
+  return [
+    "v1",
+    value.repositoryId,
+    value.commitSha,
+    value.kind,
+    value.path,
+    value.symbol,
+    String(value.startLine),
+    String(value.startColumn),
+  ]
+    .map(encodeURIComponent)
+    .join(":");
+}

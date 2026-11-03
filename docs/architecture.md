@@ -25,3 +25,7 @@ Keep dependency direction from applications and workers toward shared contracts 
 ## Open decisions
 
 Select an authentication provider, deployment topology, graph identity/versioning, storage retention, queue semantics and isolation mechanism before depending on them. The specification's stack is a target recommendation, not evidence of installed components.
+
+## Graph identity
+
+The version 1 identity encodes repository ID, full commit SHA, node kind, repository-relative path, symbol name and one-based source location as individually percent-encoded fields. It is deterministic for identical input and scoped to an immutable snapshot. Source movement or a new commit changes the identity; cross-snapshot matching requires an explicit comparison strategy in a later phase. Consumers must treat the identity as opaque.
