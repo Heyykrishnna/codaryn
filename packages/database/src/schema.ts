@@ -292,3 +292,188 @@ export const analysisManifests = pgTable(
     ),
   ],
 );
+
+export const analysisJobs = pgTable(
+  "analysis_jobs",
+  {
+    id: uuid("id").primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id),
+    repositoryId: uuid("repository_id")
+      .notNull()
+      .references(() => repositories.id),
+    manifestId: uuid("manifest_id")
+      .notNull()
+      .references(() => analysisManifests.id),
+    actorId: text("actor_id")
+      .notNull()
+      .references(() => users.id),
+    ref: text("ref").notNull(),
+    commitSha: text("commit_sha").notNull(),
+    status: text("status").notNull().default("queued"),
+    currentStage: text("current_stage").notNull().default("inventory"),
+    retries: integer("retries").notNull().default(0),
+    maxRetries: integer("max_retries").notNull().default(3),
+    failureReason: text("failure_reason"),
+    fileCount: integer("file_count").notNull().default(0),
+    symbolCount: integer("symbol_count").notNull().default(0),
+    diagnosticCount: integer("diagnostic_count").notNull().default(0),
+    createdAt: created(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+  },
+  (table) => [
+    check(
+      "analysis_jobs_commit_sha_check",
+      sql`${table.commitSha} ~ '^[a-f0-9]{40}$'`,
+    ),
+    check(
+      "analysis_jobs_status_check",
+      sql`${table.status} IN ('queued','running','completed','failed','cancelled')`,
+    ),
+    check(
+      "analysis_jobs_current_stage_check",
+      sql`${table.currentStage} IN ('inventory','configuration','parsing','symbols','diagnostics','completed')`,
+    ),
+    index("analysis_jobs_workspace_idx").on(
+      table.organizationId,
+      table.createdAt.desc(),
+    ),
+    index("analysis_jobs_repo_idx").on(
+      table.repositoryId,
+      table.createdAt.desc(),
+    ),
+    index("analysis_jobs_active_idx")
+      .on(table.status)
+      .where(sql`${table.status} IN ('queued', 'running')`),
+  ],
+);
+
+export const analysisStages = pgTable(
+  "analysis_stages",
+  {
+    id: uuid("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    stage: text("stage").notNull(),
+    status: text("status").notNull().default("pending"),
+    itemsTotal: integer("items_total").notNull().default(0),
+    itemsCompleted: integer("items_completed").notNull().default(0),
+    durationMs: integer("duration_ms"),
+    message: text("message"),
+    createdAt: created(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    check(
+      "analysis_stages_stage_check",
+      sql`${table.stage} IN ('inventory','configuration','parsing','symbols','diagnostics','completed')`,
+    ),
+    check(
+      "analysis_stages_status_check",
+      sql`${table.status} IN ('pending','running','completed','failed','skipped')`,
+    ),
+    unique("analysis_stages_job_id_stage_key").on(table.jobId, table.stage),
+  ],
+);
+
+export const analysisFiles = pgTable(
+  "analysis_files",
+  {
+    id: uuid("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    path: text("path").notNull(),
+    extension: text("extension").notNull(),
+    language: text("language").notNull(),
+    role: text("role").notNull(),
+    sizeBytes: integer("size_bytes").notNull().default(0),
+    linesOfCode: integer("lines_of_code").notNull().default(0),
+    frameworks: jsonb("frameworks")
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    createdAt: created(),
+  },
+  (table) => [
+    unique("analysis_files_job_id_path_key").on(table.jobId, table.path),
+    index("analysis_files_job_path_idx").on(table.jobId, table.path),
+  ],
+);
+
+export const analysisSymbols = pgTable(
+  "analysis_symbols",
+  {
+    id: text("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    path: text("path").notNull(),
+    name: text("name").notNull(),
+    kind: text("kind").notNull(),
+    data: jsonb("data").notNull(),
+    location: jsonb("location").notNull(),
+    createdAt: created(),
+  },
+  (table) => [
+    check(
+      "analysis_symbols_kind_check",
+      sql`${table.kind} IN ('function','method','class','interface','typeAlias','import','export')`,
+    ),
+    index("analysis_symbols_job_kind_idx").on(table.jobId, table.kind),
+    index("analysis_symbols_job_path_idx").on(table.jobId, table.path),
+  ],
+);
+
+export const analysisDiagnostics = pgTable(
+  "analysis_diagnostics",
+  {
+    id: text("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    path: text("path").notNull(),
+    code: text("code").notNull(),
+    severity: text("severity").notNull(),
+    message: text("message").notNull(),
+    location: jsonb("location"),
+    createdAt: created(),
+  },
+  (table) => [
+    check(
+      "analysis_diagnostics_severity_check",
+      sql`${table.severity} IN ('error','warning','info')`,
+    ),
+    index("analysis_diagnostics_job_severity_idx").on(
+      table.jobId,
+      table.severity,
+    ),
+  ],
+);
+
+export const analysisLogs = pgTable(
+  "analysis_logs",
+  {
+    id: uuid("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    stage: text("stage").notNull(),
+    level: text("level").notNull(),
+    message: text("message").notNull(),
+    createdAt: created(),
+  },
+  (table) => [
+    check(
+      "analysis_logs_level_check",
+      sql`${table.level} IN ('info','warn','error')`,
+    ),
+    index("analysis_logs_job_time_idx").on(table.jobId, table.createdAt),
+  ],
+);
