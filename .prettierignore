@@ -6,3 +6,4 @@ apps/web/package-lock.json
 docs/product-specification.md
 docs/phases
 .pnpm-store/
+fixtures/**
