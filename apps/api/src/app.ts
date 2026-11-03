@@ -1,11 +1,14 @@
-import Fastify from "fastify";
+import Fastify, { LogController } from "fastify";
 import {
   analysisConfigurationSchema,
   configurationResponseSchema,
   healthResponseSchema,
 } from "@codaryn/contracts";
 export function buildApp() {
-  const app = Fastify({ logger: true });
+  const app = Fastify({
+    logger: true,
+    logController: new LogController({ disableRequestLogging: true }),
+  });
   app.get("/api/v1/health", async () =>
     healthResponseSchema.parse({ status: "ok" }),
   );
@@ -25,7 +28,7 @@ export function buildApp() {
     },
   );
   app.setErrorHandler((error, _request, reply) => {
-    app.log.error(error);
+    app.log.error({ code: "REQUEST_FAILED" }, "Request failed");
     void reply.status(500).send({
       error: {
         code: "INTERNAL_ERROR",

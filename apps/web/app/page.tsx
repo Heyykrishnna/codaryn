@@ -35,9 +35,9 @@ export default function Home() {
         <nav aria-label="Main navigation">
           <a
             className="rounded text-sm text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-4 dark:text-zinc-300"
-            href="#overview"
+            href="/workspace"
           >
-            Overview
+            Workspace
           </a>
         </nav>
       </header>

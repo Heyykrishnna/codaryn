@@ -29,3 +29,9 @@ Select an authentication provider, deployment topology, graph identity/versionin
 ## Graph identity
 
 The version 1 identity encodes repository ID, full commit SHA, node kind, repository-relative path, symbol name and one-based source location as individually percent-encoded fields. It is deterministic for identical input and scoped to an immutable snapshot. Source movement or a new commit changes the identity; cross-snapshot matching requires an explicit comparison strategy in a later phase. Consumers must treat the identity as opaque.
+
+## Workspace identity boundary
+
+The database package contains an internal workspace service. It takes an actor identifier that must come from a verified server-side session; callers must never accept that identifier from request input. Better Auth supplies verified sessions to the protected Fastify workspace routes; origin and custom-header checks protect mutations. Workspace creation and renaming atomically record audit events; membership-scoped queries enforce owner and admin permissions for renaming. GitHub identity, invitations, session lifecycle and membership administration are implemented. Live OAuth consent and tenant isolation for future repository resources require additional verification.
+
+Migrations use an advisory transaction lock and record checksums. An existing installation from the initial foundation predates migration tracking: the first migration is reapplied with its existing `IF NOT EXISTS` behavior and recorded; review existing schema compatibility before applying this change to any non-disposable database. Never edit an applied migration; add a new migration.

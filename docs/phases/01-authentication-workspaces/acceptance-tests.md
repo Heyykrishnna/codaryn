@@ -1,6 +1,6 @@
 # Phase 1: acceptance test plan
 
-**Status:** Planned; these scenarios have not been executed. Scope and original acceptance criteria: [phase overview](README.md).
+**Status:** API and database scenarios have been implemented and exercised. Live provider and signed-in browser verification remain pending; see [verification record](verification.md). Scope and original acceptance criteria: [phase overview](README.md).
 
 Implement these scenarios at the appropriate unit, integration, end-to-end or operational layer. Use controlled fixtures with expected outputs, isolate test data, and record the command, environment, actual result and evidence for each run. A scenario passes only when its expected result is observed.
 

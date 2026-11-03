@@ -10,10 +10,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@codaryn/contracts": "workspace:*",
+    "better-auth": "^1.7.15",
     "next": "16.4.4",
     "react": "19.3.0",
-    "react-dom": "19.3.0",
-    "@codaryn/contracts": "workspace:*"
+    "react-dom": "19.3.0"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "4.3.4",

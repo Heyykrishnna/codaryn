@@ -12,7 +12,8 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "migrate": "tsx src/migrate.ts"
+    "migrate": "tsx src/migrate.ts",
+    "test:integration": "pnpm run build && node --test dist/workspaces.integration.test.js"
   },
   "dependencies": {
     "drizzle-orm": "^0.44.7",

@@ -41,7 +41,7 @@
 
 ## Planning and dependencies
 
-**Status:** Planned; none of the acceptance criteria is claimed as complete by this document.
+**Status:** Implementation and automated API/database verification are present. GitHub login, account profile, sessions, workspace creation/selection/settings, invitations, role enforcement and audit storage are wired. Live GitHub consent and production HTTPS validation require real OAuth credentials and deployment configuration. The signed-in browser flows and future repository-resource isolation still need end-to-end verification; the phase is not release-validated. See [authentication setup and verification](../../authentication.md).
 
 **Dependencies:** Phase 0 contracts, persistence and API foundation.
 

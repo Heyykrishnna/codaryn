@@ -101,3 +101,31 @@ export function graphIdentity(
     .map(encodeURIComponent)
     .join(":");
 }
+
+export const workspaceRoleSchema = z.enum(["owner", "admin", "member"]);
+export const workspaceSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  role: workspaceRoleSchema,
+});
+export const workspaceListSchema = z.object({
+  workspaces: z.array(workspaceSchema),
+  active: z.uuid().nullable(),
+});
+export const workspaceDetailsSchema = workspaceSchema.extend({
+  members: z.array(z.object({ userId: z.string(), role: workspaceRoleSchema })),
+  events: z.array(
+    z.object({
+      action: z.string(),
+      actorId: z.string(),
+      createdAt: z.string(),
+    }),
+  ),
+});
+export const workspaceInvitationsSchema = z.object({
+  invitations: z.array(
+    z.object({ id: z.uuid(), name: z.string(), role: z.string() }),
+  ),
+});
+export type WorkspaceDetails = z.infer<typeof workspaceDetailsSchema>;
+export type WorkspaceSummary = z.infer<typeof workspaceSchema>;
