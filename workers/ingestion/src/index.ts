@@ -19,7 +19,7 @@ const connection = new Redis(env.REDIS_URL, { maxRetriesPerRequest: null });
 const queue = new Queue("ingestion", { connection });
 const github = new GitHubClient({
   appId: env.GITHUB_APP_ID,
-  privateKey: env.GITHUB_APP_PRIVATE_KEY.replaceAll("\\n", "\n"),
+  privateKey: env.GITHUB_APP_PRIVATE_KEY.replaceAll(String.raw`\n`, "\n"),
 });
 const worker = new Worker(
   "ingestion",

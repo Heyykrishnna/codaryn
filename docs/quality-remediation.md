@@ -60,3 +60,34 @@ Baseline: analysis of commit `657aa41600e7f62ccfceb25f031fb33753b921e4`, with 52
 All original source locations were reviewed. Local SonarJS/TypeScript checks cover cognitive complexity, nested expressions and async behavior; these are supplemental and do not replace a cloud analysis. Project formatting, lint, types, builds and regression tests remain required.
 
 The Neon migration is documented separately in [database operations](database.md). Credentials are excluded from source control and build contexts.
+
+## Follow-up analysis
+
+SonarCloud analyzed commit `134ad4a12a09a038be6f12629af532ce1216276f` and reported Security A, Maintainability A, zero duplicated new lines and 100% reviewed security hotspots. The original 52 findings were no longer open. Reliability remained C because 18 UI callbacks now exposed floating promises. The 22 follow-up findings below are addressed in the working source; another cloud analysis is required to verify the resulting gate.
+
+UI callbacks now await their operation runner, which handles failures and restores the busy state. Literal private-key newline matching uses `String.raw`, and worker database imports are consolidated.
+
+| Finding              | Rule             | Source                                           | Remediation                                 |
+| -------------------- | ---------------- | ------------------------------------------------ | ------------------------------------------- |
+| AaGi8Qsx9E8XQ8rsjwSQ | typescript:S7780 | `apps/api/src/server.ts`                         | Use String.raw for literal escaped newline  |
+| AaGi8QuD9E8XQ8rsjwSR | typescript:S9383 | `apps/web/app/repositories/page.tsx`             | Await the operation in an async UI callback |
+| AaGi8QuD9E8XQ8rsjwSS | typescript:S9383 | `apps/web/app/repositories/page.tsx`             | Await the operation in an async UI callback |
+| AaGi8QuD9E8XQ8rsjwST | typescript:S9383 | `apps/web/app/repositories/page.tsx`             | Await the operation in an async UI callback |
+| AaGi8QuI9E8XQ8rsjwSU | typescript:S9383 | `apps/web/app/workspace/page.tsx`                | Await the operation in an async UI callback |
+| AaGi8QuI9E8XQ8rsjwSV | typescript:S9383 | `apps/web/app/workspace/page.tsx`                | Await the operation in an async UI callback |
+| AaGi8QuI9E8XQ8rsjwSW | typescript:S9383 | `apps/web/app/workspace/page.tsx`                | Await the operation in an async UI callback |
+| AaGi8QuI9E8XQ8rsjwSX | typescript:S9383 | `apps/web/app/workspace/page.tsx`                | Await the operation in an async UI callback |
+| AaGi8QuI9E8XQ8rsjwSY | typescript:S9383 | `apps/web/app/workspace/page.tsx`                | Await the operation in an async UI callback |
+| AaGi8QuI9E8XQ8rsjwSZ | typescript:S9383 | `apps/web/app/workspace/page.tsx`                | Await the operation in an async UI callback |
+| AaGi8QuI9E8XQ8rsjwSa | typescript:S9383 | `apps/web/app/workspace/page.tsx`                | Await the operation in an async UI callback |
+| AaGi8QuI9E8XQ8rsjwSb | typescript:S9383 | `apps/web/app/workspace/page.tsx`                | Await the operation in an async UI callback |
+| AaGi8QuI9E8XQ8rsjwSc | typescript:S9383 | `apps/web/app/workspace/page.tsx`                | Await the operation in an async UI callback |
+| AaGi8QuI9E8XQ8rsjwSd | typescript:S9383 | `apps/web/app/workspace/page.tsx`                | Await the operation in an async UI callback |
+| AaGi8QuO9E8XQ8rsjwSe | typescript:S9383 | `apps/web/src/features/repositories/details.tsx` | Await the operation in an async UI callback |
+| AaGi8QuO9E8XQ8rsjwSf | typescript:S9383 | `apps/web/src/features/repositories/details.tsx` | Await the operation in an async UI callback |
+| AaGi8QuO9E8XQ8rsjwSg | typescript:S9383 | `apps/web/src/features/repositories/details.tsx` | Await the operation in an async UI callback |
+| AaGi8QuO9E8XQ8rsjwSh | typescript:S9383 | `apps/web/src/features/repositories/details.tsx` | Await the operation in an async UI callback |
+| AaGi8QuO9E8XQ8rsjwSi | typescript:S9383 | `apps/web/src/features/repositories/details.tsx` | Await the operation in an async UI callback |
+| AaGi8QuX9E8XQ8rsjwSk | typescript:S3863 | `workers/analysis/src/index.ts`                  | Consolidate database imports                |
+| AaGi8QuT9E8XQ8rsjwSj | typescript:S7780 | `workers/ingestion/src/index.ts`                 | Use String.raw for literal escaped newline  |
+| AaGi8QuX9E8XQ8rsjwSl | typescript:S3863 | `workers/analysis/src/index.ts`                  | Consolidate database imports                |

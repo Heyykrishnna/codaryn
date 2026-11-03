@@ -59,7 +59,7 @@ registerRepositories(
           appId: githubConfiguration.data.GITHUB_APP_ID,
           privateKey:
             githubConfiguration.data.GITHUB_APP_PRIVATE_KEY.replaceAll(
-              "\\n",
+              String.raw`\n`,
               "\n",
             ),
         }),

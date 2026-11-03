@@ -46,7 +46,7 @@ registerRepositories(app, auth, pool, environment.WEB_ORIGIN, githubConfiguratio
     ? {
         github: new GitHubClient({
             appId: githubConfiguration.data.GITHUB_APP_ID,
-            privateKey: githubConfiguration.data.GITHUB_APP_PRIVATE_KEY.replaceAll("\\n", "\n"),
+            privateKey: githubConfiguration.data.GITHUB_APP_PRIVATE_KEY.replaceAll(String.raw `\n`, "\n"),
         }),
         slug: githubConfiguration.data.GITHUB_APP_SLUG,
         webhookSecret: githubConfiguration.data.GITHUB_WEBHOOK_SECRET,

@@ -212,8 +212,8 @@ function Repositories() {
                 </p>
                 <form
                   className="flex flex-wrap gap-3"
-                  action={(form) => {
-                    run(() =>
+                  action={async (form) => {
+                    await run(() =>
                       api(
                         "connect",
                         {
@@ -256,8 +256,8 @@ function Repositories() {
                       type="button"
                       className={button}
                       disabled={busy || !installation.connected}
-                      onClick={() => {
-                        run(() =>
+                      onClick={async () => {
+                        await run(() =>
                           api(
                             "sync",
                             { workspaceId, installationId: installation.id },
@@ -272,13 +272,13 @@ function Repositories() {
                       type="button"
                       className={button}
                       disabled={busy || !installation.connected}
-                      onClick={() => {
+                      onClick={async () => {
                         if (
                           window.confirm(
                             "Disconnect this installation from the workspace?",
                           )
                         )
-                          run(async () => {
+                          await run(async () => {
                             await api(
                               "disconnect",
                               { workspaceId, installationId: installation.id },

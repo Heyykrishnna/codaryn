@@ -100,8 +100,8 @@ export function RepositoryDetails({
           type="button"
           className={button}
           disabled={busy || !hasMoreBranches}
-          onClick={() => {
-            run(async () => {
+          onClick={async () => {
+            await run(async () => {
               const next = branchListSchema.parse(
                 await api("branches", {
                   workspaceId,
@@ -121,8 +121,8 @@ export function RepositoryDetails({
           type="button"
           className={button}
           disabled={busy || !branch}
-          onClick={() => {
-            run(async () => {
+          onClick={async () => {
+            await run(async () => {
               const result = commitListSchema.parse(
                 await api("commits", {
                   workspaceId,
@@ -159,8 +159,8 @@ export function RepositoryDetails({
           type="button"
           className={button}
           disabled={busy || !hasMoreCommits}
-          onClick={() => {
-            run(async () => {
+          onClick={async () => {
+            await run(async () => {
               const next = commitListSchema.parse(
                 await api("commits", {
                   workspaceId,
@@ -190,8 +190,8 @@ export function RepositoryDetails({
           type="button"
           className={button}
           disabled={busy || !branch}
-          onClick={() => {
-            run(async () => {
+          onClick={async () => {
+            await run(async () => {
               await api(
                 "ingest",
                 {
@@ -221,8 +221,8 @@ export function RepositoryDetails({
           type="button"
           className={button}
           disabled={busy}
-          onClick={() => {
-            run(async () =>
+          onClick={async () => {
+            await run(async () =>
               setRuns(
                 ingestionRunListSchema.parse(
                   await api("runs", {

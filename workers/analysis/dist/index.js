@@ -1,9 +1,8 @@
 import { Worker } from "bullmq";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Redis } from "ioredis";
-import { createDatabasePool, loadDatabaseEnvironment } from "@codaryn/database";
+import { createDatabasePool, foundationJobs, loadDatabaseEnvironment, } from "@codaryn/database";
 import { z } from "zod";
-import { foundationJobs } from "@codaryn/database";
 loadDatabaseEnvironment();
 const env = z
     .object({ DATABASE_URL: z.url(), REDIS_URL: z.url() })

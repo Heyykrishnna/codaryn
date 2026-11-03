@@ -180,8 +180,8 @@ export default function WorkspacePage() {
         type="button"
         className={buttonClass}
         disabled={busy}
-        onClick={() => {
-          run(refresh);
+        onClick={async () => {
+          await run(refresh);
         }}
       >
         Refresh
@@ -226,8 +226,8 @@ export default function WorkspacePage() {
         <h2 className="text-lg font-semibold">Create a workspace</h2>
         <form
           className="flex flex-col gap-3 sm:flex-row"
-          action={(form) => {
-            run(() => request("create", { name: form.get("name") }));
+          action={async (form) => {
+            await run(() => request("create", { name: form.get("name") }));
           }}
         >
           <input
@@ -252,8 +252,8 @@ export default function WorkspacePage() {
             className={inputClass}
             value={details?.id ?? ""}
             disabled={busy}
-            onChange={(event) => {
-              run(() => request("switch", { id: event.target.value }));
+            onChange={async (event) => {
+              await run(() => request("switch", { id: event.target.value }));
             }}
           >
             {workspaces.map((workspace) => (
@@ -270,8 +270,8 @@ export default function WorkspacePage() {
           {details.role !== "member" && (
             <form
               className="flex flex-col gap-3 sm:flex-row"
-              action={(form) => {
-                run(() =>
+              action={async (form) => {
+                await run(() =>
                   request("rename", { id: details.id, name: form.get("name") }),
                 );
               }}
@@ -306,8 +306,8 @@ export default function WorkspacePage() {
                       className={inputClass}
                       disabled={busy}
                       value={member.role}
-                      onChange={(event) => {
-                        run(() =>
+                      onChange={async (event) => {
+                        await run(() =>
                           request("member", {
                             id: details.id,
                             userId: member.userId,
@@ -323,8 +323,8 @@ export default function WorkspacePage() {
                       type="button"
                       className={buttonClass}
                       disabled={busy}
-                      onClick={() => {
-                        run(() =>
+                      onClick={async () => {
+                        await run(() =>
                           request("member", {
                             id: details.id,
                             userId: member.userId,
@@ -343,8 +343,8 @@ export default function WorkspacePage() {
           {details.role !== "member" && (
             <form
               className="flex flex-col gap-3"
-              action={(form) => {
-                run(() =>
+              action={async (form) => {
+                await run(() =>
                   request("invite", {
                     id: details.id,
                     recipientId: form.get("recipientId"),
@@ -390,8 +390,8 @@ export default function WorkspacePage() {
               type="button"
               className={buttonClass}
               disabled={busy}
-              onClick={() => {
-                run(() =>
+              onClick={async () => {
+                await run(() =>
                   request("member", {
                     id: details.id,
                     userId: session.user.id,
@@ -408,13 +408,13 @@ export default function WorkspacePage() {
               type="button"
               className={buttonClass}
               disabled={busy}
-              onClick={() => {
+              onClick={async () => {
                 if (
                   window.confirm(
                     "Delete this workspace? Members will lose access.",
                   )
                 )
-                  run(() => request("delete", { id: details.id }));
+                  await run(() => request("delete", { id: details.id }));
               }}
             >
               Delete workspace
@@ -439,8 +439,8 @@ export default function WorkspacePage() {
                 type="button"
                 className={buttonClass}
                 disabled={busy}
-                onClick={() => {
-                  run(() => request("accept", { id: invitation.id }));
+                onClick={async () => {
+                  await run(() => request("accept", { id: invitation.id }));
                 }}
               >
                 Accept

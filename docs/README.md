@@ -14,3 +14,5 @@ When implementation changes a contract or behavior, update the relevant guide an
 - [GitHub connections and ingestion](github.md): App configuration, repository permissions, archive limits and worker operation.
 
 - [Database configuration and synchronization](database.md): Neon connections, schema verification and isolated test setup.
+
+- [SonarCloud remediation](quality-remediation.md): findings, fixes and cloud verification status.
