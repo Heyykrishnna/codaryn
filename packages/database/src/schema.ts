@@ -7,6 +7,7 @@ import {
   boolean,
   integer,
   jsonb,
+  numeric,
   pgTable,
   primaryKey,
   text,
@@ -475,5 +476,142 @@ export const analysisLogs = pgTable(
       sql`${table.level} IN ('info','warn','error')`,
     ),
     index("analysis_logs_job_time_idx").on(table.jobId, table.createdAt),
+  ],
+);
+
+export const analysisGraphNodes = pgTable(
+  "analysis_graph_nodes",
+  {
+    id: text("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    path: text("path").notNull(),
+    name: text("name").notNull(),
+    language: text("language"),
+    linesOfCode: integer("lines_of_code"),
+    createdAt: created(),
+  },
+  (table) => [
+    check(
+      "analysis_graph_nodes_kind_check",
+      sql`${table.kind} IN ('file','symbol','module','external')`,
+    ),
+    index("analysis_graph_nodes_job_kind_idx").on(table.jobId, table.kind),
+    index("analysis_graph_nodes_job_path_idx").on(table.jobId, table.path),
+  ],
+);
+
+export const analysisGraphEdges = pgTable(
+  "analysis_graph_edges",
+  {
+    id: text("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    sourceId: text("source_id")
+      .notNull()
+      .references(() => analysisGraphNodes.id, { onDelete: "cascade" }),
+    targetId: text("target_id")
+      .notNull()
+      .references(() => analysisGraphNodes.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    resolution: text("resolution").notNull(),
+    evidence: jsonb("evidence")
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    weight: integer("weight").notNull().default(1),
+    createdAt: created(),
+  },
+  (table) => [
+    check(
+      "analysis_graph_edges_kind_check",
+      sql`${table.kind} IN ('imports','exports','re_exports','calls','instantiates','extends','implements','references')`,
+    ),
+    check(
+      "analysis_graph_edges_resolution_check",
+      sql`${table.resolution} IN ('DIRECT','RESOLVED','INFERRED','PARTIAL','UNRESOLVED')`,
+    ),
+    index("analysis_graph_edges_job_source_idx").on(
+      table.jobId,
+      table.sourceId,
+    ),
+    index("analysis_graph_edges_job_target_idx").on(
+      table.jobId,
+      table.targetId,
+    ),
+    index("analysis_graph_edges_job_resolution_idx").on(
+      table.jobId,
+      table.resolution,
+    ),
+  ],
+);
+
+export const analysisGraphCycles = pgTable(
+  "analysis_graph_cycles",
+  {
+    id: text("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    length: integer("length").notNull(),
+    nodeIds: jsonb("node_ids")
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    path: jsonb("path")
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    createdAt: created(),
+  },
+  (table) => [index("analysis_graph_cycles_job_idx").on(table.jobId)],
+);
+
+export const analysisGraphMetrics = pgTable(
+  "analysis_graph_metrics",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    path: text("path").notNull(),
+    afferentCoupling: integer("afferent_coupling").notNull().default(0),
+    efferentCoupling: integer("efferent_coupling").notNull().default(0),
+    instability: numeric("instability", { precision: 5, scale: 4 })
+      .notNull()
+      .default("0"),
+    depth: integer("depth").notNull().default(0),
+    createdAt: created(),
+  },
+  (table) => [
+    unique("analysis_graph_metrics_job_path_key").on(table.jobId, table.path),
+    index("analysis_graph_metrics_job_idx").on(table.jobId),
+  ],
+);
+
+export const analysisUnresolvedReferences = pgTable(
+  "analysis_unresolved_references",
+  {
+    id: text("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    sourceFile: text("source_file").notNull(),
+    sourceSymbolName: text("source_symbol_name").notNull(),
+    localAlias: text("local_alias"),
+    moduleSpecifier: text("module_specifier").notNull(),
+    status: text("status").notNull(),
+    evidence: jsonb("evidence").notNull(),
+    createdAt: created(),
+  },
+  (table) => [
+    check(
+      "analysis_unresolved_refs_status_check",
+      sql`${table.status} IN ('resolved','unresolved','ambiguous','external')`,
+    ),
+    index("analysis_unresolved_refs_job_status_idx").on(
+      table.jobId,
+      table.status,
+    ),
   ],
 );
