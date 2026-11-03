@@ -174,6 +174,7 @@ export const analysisStageIdSchema = z.enum([
   "configuration",
   "parsing",
   "symbols",
+  "graph",
   "diagnostics",
   "completed",
 ]);

@@ -1,6 +1,10 @@
 import { randomUUID } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
-import type { AnalysisStageId } from "@codaryn/contracts";
+import type {
+  AnalysisStageId,
+  SourceFileClassification,
+  TsconfigInfo,
+} from "@codaryn/contracts";
 import {
   classifyRepositoryFiles,
   type FileInput,
@@ -11,6 +15,11 @@ import {
   type VirtualFileSystem,
 } from "@codaryn/compiler";
 import { extractFileSymbols } from "@codaryn/ast";
+import {
+  SymbolLinker,
+  type FileSymbolInventory,
+} from "@codaryn/symbol-resolver";
+import { DependencyGraphBuilder } from "@codaryn/dependency-graph";
 
 export type AnalysisJobPayload = {
   jobId: string;
@@ -38,9 +47,13 @@ export class AnalysisProcessor {
         ([path, content]) => ({ path, content }),
       );
 
+      let classifiedFiles: SourceFileClassification[] = [];
+      let discoveredConfigs: TsconfigInfo[] = [];
+      const fileInventories: FileSymbolInventory[] = [];
+
       await this.runStage(client, jobId, "inventory", async () => {
-        const classified = classifyRepositoryFiles(fileInputs);
-        for (const file of classified) {
+        classifiedFiles = classifyRepositoryFiles(fileInputs);
+        for (const file of classifiedFiles) {
           await client.query(
             "INSERT INTO analysis_files (id,job_id,path,extension,language,role,size_bytes,lines_of_code,frameworks) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT (job_id,path) DO NOTHING",
             [
@@ -58,28 +71,28 @@ export class AnalysisProcessor {
         }
         await client.query(
           "UPDATE analysis_jobs SET file_count=$1, updated_at=now() WHERE id=$2",
-          [classified.length, jobId],
+          [classifiedFiles.length, jobId],
         );
         return {
-          itemsTotal: classified.length,
-          itemsCompleted: classified.length,
+          itemsTotal: classifiedFiles.length,
+          itemsCompleted: classifiedFiles.length,
         };
       });
 
       if (await this.checkCancellation(client, jobId)) return;
 
       await this.runStage(client, jobId, "configuration", async () => {
-        const tsconfigs = discoverTsconfigs(fileMap);
+        discoveredConfigs = discoverTsconfigs(fileMap);
         await this.log(
           client,
           jobId,
           "configuration",
           "info",
-          `Discovered ${tsconfigs.length} tsconfig configurations`,
+          `Discovered ${discoveredConfigs.length} tsconfig configurations`,
         );
         return {
-          itemsTotal: tsconfigs.length,
-          itemsCompleted: tsconfigs.length,
+          itemsTotal: discoveredConfigs.length,
+          itemsCompleted: discoveredConfigs.length,
         };
       });
 
@@ -100,6 +113,18 @@ export class AnalysisProcessor {
           if (await this.checkCancellation(client, jobId)) break;
 
           const analysis = extractFileSymbols(sourceFile);
+          const normalizedPath = sourceFile.fileName
+            .replace(/\\/g, "/")
+            .replace(/^\/+/, "");
+
+          fileInventories.push({
+            path: normalizedPath,
+            functions: analysis.inventory.functions,
+            classes: analysis.inventory.classes,
+            interfaces: analysis.inventory.interfaces,
+            types: analysis.inventory.types,
+            importsExports: analysis.inventory.importsExports,
+          });
 
           for (const fn of analysis.inventory.functions) {
             await client.query(
@@ -214,6 +239,127 @@ export class AnalysisProcessor {
         return { itemsTotal: extractedCount, itemsCompleted: extractedCount };
       });
 
+      if (await this.checkCancellation(client, jobId)) return;
+
+      await this.runStage(client, jobId, "graph", async () => {
+        const rootConfig =
+          discoveredConfigs.find((c) => c.path === "tsconfig.json") ??
+          discoveredConfigs[0];
+        const resolverOptions = {
+          baseUrl:
+            typeof rootConfig?.compilerOptions?.baseUrl === "string"
+              ? rootConfig.compilerOptions.baseUrl
+              : ".",
+          paths: rootConfig?.compilerOptions?.paths as
+            Record<string, string[]> | undefined,
+        };
+
+        const linker = new SymbolLinker(fileInventories, resolverOptions);
+        const references = linker.resolveAllReferences(fileInventories);
+
+        const graphBuilder = new DependencyGraphBuilder(
+          jobId,
+          classifiedFiles.map((c) => ({
+            path: c.path,
+            language: c.language,
+            linesOfCode: c.linesOfCode,
+          })),
+        );
+        graphBuilder.addReferences(references);
+        const snapshot = graphBuilder.buildSnapshot();
+
+        for (const node of snapshot.nodes) {
+          await client.query(
+            "INSERT INTO analysis_graph_nodes (id,job_id,kind,path,name,language,lines_of_code) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING",
+            [
+              node.id,
+              jobId,
+              node.kind,
+              node.path,
+              node.name,
+              node.language ?? null,
+              node.linesOfCode ?? null,
+            ],
+          );
+        }
+
+        for (const edge of snapshot.edges) {
+          await client.query(
+            "INSERT INTO analysis_graph_edges (id,job_id,source_id,target_id,kind,resolution,evidence,weight) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (id) DO NOTHING",
+            [
+              edge.id,
+              jobId,
+              edge.sourceId,
+              edge.targetId,
+              edge.kind,
+              edge.resolution,
+              JSON.stringify(edge.evidence),
+              edge.weight,
+            ],
+          );
+        }
+
+        for (const cycle of snapshot.cycles) {
+          await client.query(
+            "INSERT INTO analysis_graph_cycles (id,job_id,length,node_ids,path) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (id) DO NOTHING",
+            [
+              cycle.id,
+              jobId,
+              cycle.length,
+              JSON.stringify(cycle.nodeIds),
+              JSON.stringify(cycle.path),
+            ],
+          );
+        }
+
+        for (const metric of snapshot.metrics) {
+          await client.query(
+            "INSERT INTO analysis_graph_metrics (job_id,path,afferent_coupling,efferent_coupling,instability,depth) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (job_id,path) DO NOTHING",
+            [
+              jobId,
+              metric.path,
+              metric.afferentCoupling,
+              metric.efferentCoupling,
+              metric.instability,
+              metric.depth,
+            ],
+          );
+        }
+
+        for (const ref of references) {
+          if (ref.status === "unresolved") {
+            await client.query(
+              "INSERT INTO analysis_unresolved_references (id,job_id,source_file,source_symbol_name,local_alias,module_specifier,status,evidence) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (id) DO NOTHING",
+              [
+                ref.id,
+                jobId,
+                ref.sourceFile,
+                ref.sourceSymbolName,
+                ref.localAlias ?? null,
+                ref.moduleSpecifier,
+                ref.status,
+                JSON.stringify(ref.evidence),
+              ],
+            );
+          }
+        }
+
+        await this.log(
+          client,
+          jobId,
+          "graph",
+          "info",
+          `Graph synthesized: ${snapshot.totalNodes} nodes, ${snapshot.totalEdges} edges, ${snapshot.totalCycles} cycles`,
+        );
+
+        return {
+          itemsTotal: snapshot.totalNodes + snapshot.totalEdges,
+          itemsCompleted: snapshot.totalNodes + snapshot.totalEdges,
+        };
+      });
+
+      if (await this.checkCancellation(client, jobId)) return;
+
       await this.runStage(client, jobId, "diagnostics", async () => {
         await client.query(
           "UPDATE analysis_jobs SET diagnostic_count=$1, updated_at=now() WHERE id=$2",
@@ -258,63 +404,72 @@ export class AnalysisProcessor {
     stage: AnalysisStageId,
     execute: () => Promise<{ itemsTotal: number; itemsCompleted: number }>,
   ): Promise<void> {
+    const stageId = randomUUID();
     const startTime = Date.now();
+
+    await client.query(
+      "INSERT INTO analysis_stages (id,job_id,stage,status,items_total,items_completed) VALUES ($1,$2,$3,'running',0,0) ON CONFLICT (job_id,stage) DO UPDATE SET status='running', updated_at=now()",
+      [stageId, jobId, stage],
+    );
     await client.query(
       "UPDATE analysis_jobs SET current_stage=$1, updated_at=now() WHERE id=$2",
       [stage, jobId],
     );
 
-    const stageId = randomUUID();
-    await client.query(
-      "INSERT INTO analysis_stages (id,job_id,stage,status,created_at,updated_at) VALUES ($1,$2,$3,'running',now(),now()) ON CONFLICT (job_id,stage) DO UPDATE SET status='running', updated_at=now()",
-      [stageId, jobId, stage],
-    );
+    try {
+      const { itemsTotal, itemsCompleted } = await execute();
+      const durationMs = Date.now() - startTime;
 
-    const { itemsTotal, itemsCompleted } = await execute();
-    const durationMs = Date.now() - startTime;
+      await client.query(
+        "UPDATE analysis_stages SET status='completed', items_total=$1, items_completed=$2, duration_ms=$3, updated_at=now() WHERE job_id=$4 AND stage=$5",
+        [itemsTotal, itemsCompleted, durationMs, jobId, stage],
+      );
+    } catch (err) {
+      const durationMs = Date.now() - startTime;
+      const message = err instanceof Error ? err.message : String(err);
 
-    await client.query(
-      "UPDATE analysis_stages SET status='completed', items_total=$1, items_completed=$2, duration_ms=$3, updated_at=now() WHERE job_id=$4 AND stage=$5",
-      [itemsTotal, itemsCompleted, durationMs, jobId, stage],
-    );
+      await client.query(
+        "UPDATE analysis_stages SET status='failed', duration_ms=$1, message=$2, updated_at=now() WHERE job_id=$3 AND stage=$4",
+        [durationMs, message, jobId, stage],
+      );
+      throw err;
+    }
   }
 
   private async handleFailure(
     client: PoolClient,
     jobId: string,
-    reason: string,
+    message: string,
   ): Promise<void> {
-    const jobRes = await client.query<{ retries: number; max_retries: number }>(
-      "SELECT retries, max_retries FROM analysis_jobs WHERE id=$1",
-      [jobId],
-    );
-    const job = jobRes.rows[0];
-    const currentRetries = (job?.retries ?? 0) + 1;
-    const maxRetries = job?.max_retries ?? 3;
+    const jobRes = await client.query<{
+      retries: number;
+      max_retries: number;
+    }>("SELECT retries, max_retries FROM analysis_jobs WHERE id=$1", [jobId]);
 
-    if (currentRetries < maxRetries) {
+    const job = jobRes.rows[0];
+    if (job && job.retries < job.max_retries) {
       await client.query(
-        "UPDATE analysis_jobs SET retries=$1, failure_reason=$2, updated_at=now() WHERE id=$3",
-        [currentRetries, reason, jobId],
+        "UPDATE analysis_jobs SET retries=retries+1, status='queued', failure_reason=$1, updated_at=now() WHERE id=$2",
+        [message, jobId],
       );
       await this.log(
         client,
         jobId,
-        "inventory",
+        "completed",
         "warn",
-        `Job execution failed (attempt ${currentRetries}/${maxRetries}): ${reason}. Retry scheduled.`,
+        `Job failed: ${message}. Retrying (${job.retries + 1}/${job.max_retries})`,
       );
     } else {
       await client.query(
-        "UPDATE analysis_jobs SET status='failed', failure_reason=$1, retries=$2, completed_at=now(), updated_at=now() WHERE id=$3",
-        [reason, currentRetries, jobId],
+        "UPDATE analysis_jobs SET status='failed', failure_reason=$1, updated_at=now() WHERE id=$2",
+        [message, jobId],
       );
       await this.log(
         client,
         jobId,
         "completed",
         "error",
-        `Job failed permanently after ${currentRetries} attempts: ${reason}`,
+        `Job permanently failed: ${message}`,
       );
     }
   }
@@ -327,7 +482,7 @@ export class AnalysisProcessor {
     message: string,
   ): Promise<void> {
     await client.query(
-      "INSERT INTO analysis_logs (id,job_id,stage,level,message,created_at) VALUES ($1,$2,$3,$4,$5,now())",
+      "INSERT INTO analysis_job_logs (id,job_id,stage,level,message) VALUES ($1,$2,$3,$4,$5)",
       [randomUUID(), jobId, stage, level, message],
     );
   }

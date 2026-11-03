@@ -1,3 +1,9 @@
+ALTER TABLE analysis_jobs DROP CONSTRAINT IF EXISTS analysis_jobs_current_stage_check;
+ALTER TABLE analysis_jobs ADD CONSTRAINT analysis_jobs_current_stage_check CHECK (current_stage IN ('inventory','configuration','parsing','symbols','graph','diagnostics','completed'));
+
+ALTER TABLE analysis_stages DROP CONSTRAINT IF EXISTS analysis_stages_stage_check;
+ALTER TABLE analysis_stages ADD CONSTRAINT analysis_stages_stage_check CHECK (stage IN ('inventory','configuration','parsing','symbols','graph','diagnostics','completed'));
+
 CREATE TABLE analysis_graph_nodes (
   id text PRIMARY KEY,
   job_id uuid NOT NULL REFERENCES analysis_jobs(id) ON DELETE CASCADE,

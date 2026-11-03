@@ -13,6 +13,11 @@ function createMockPool(initialStatus: string = "queued"): {
     symbols: Record<string, unknown>[];
     diagnostics: Record<string, unknown>[];
     logs: Record<string, unknown>[];
+    nodes: Record<string, unknown>[];
+    edges: Record<string, unknown>[];
+    cycles: Record<string, unknown>[];
+    metrics: Record<string, unknown>[];
+    unresolved: Record<string, unknown>[];
   };
 } {
   const queries: { sql: string; values?: unknown[] }[] = [];
@@ -23,6 +28,11 @@ function createMockPool(initialStatus: string = "queued"): {
     symbols: [] as Record<string, unknown>[],
     diagnostics: [] as Record<string, unknown>[],
     logs: [] as Record<string, unknown>[],
+    nodes: [] as Record<string, unknown>[],
+    edges: [] as Record<string, unknown>[],
+    cycles: [] as Record<string, unknown>[],
+    metrics: [] as Record<string, unknown>[],
+    unresolved: [] as Record<string, unknown>[],
   };
 
   const client = {
@@ -70,6 +80,48 @@ function createMockPool(initialStatus: string = "queued"): {
         tables.stages.push({
           stage: values?.[2],
           status: "running",
+        });
+        return { rowCount: 1 };
+      }
+      if (sql.includes("INSERT INTO analysis_graph_nodes")) {
+        tables.nodes.push({
+          id: values?.[0],
+          jobId: values?.[1],
+          kind: values?.[2],
+          path: values?.[3],
+        });
+        return { rowCount: 1 };
+      }
+      if (sql.includes("INSERT INTO analysis_graph_edges")) {
+        tables.edges.push({
+          id: values?.[0],
+          sourceId: values?.[2],
+          targetId: values?.[3],
+          kind: values?.[4],
+        });
+        return { rowCount: 1 };
+      }
+      if (sql.includes("INSERT INTO analysis_graph_cycles")) {
+        tables.cycles.push({
+          id: values?.[0],
+          length: values?.[2],
+        });
+        return { rowCount: 1 };
+      }
+      if (sql.includes("INSERT INTO analysis_graph_metrics")) {
+        tables.metrics.push({
+          jobId: values?.[0],
+          path: values?.[1],
+          afferentCoupling: values?.[2],
+          efferentCoupling: values?.[3],
+        });
+        return { rowCount: 1 };
+      }
+      if (sql.includes("INSERT INTO analysis_unresolved_references")) {
+        tables.unresolved.push({
+          id: values?.[0],
+          sourceFile: values?.[2],
+          sourceSymbolName: values?.[3],
         });
         return { rowCount: 1 };
       }
@@ -147,4 +199,28 @@ test("AnalysisProcessor respects job cancellation and halts processing immediate
 
   assert.equal(tables.jobs[0].status, "cancelled");
   assert.equal(tables.symbols.length, 0);
+});
+
+test("AnalysisProcessor constructs dependency graph, detects cycles, and saves metrics", async () => {
+  const { pool, tables } = createMockPool();
+  const processor = new AnalysisProcessor(pool);
+
+  const files = {
+    "src/a.ts":
+      "import { bFn } from './b'; export function aFn() { return bFn(); }",
+    "src/b.ts":
+      "import { aFn } from './a'; export function bFn() { return aFn(); }",
+    "src/c.ts":
+      "import { nonExistent } from './missing'; export function cFn() {}",
+  };
+
+  await processor.processJob({ jobId: "job-1", files });
+
+  assert.equal(tables.jobs[0].status, "completed");
+  assert.ok(tables.nodes.length >= 3);
+  assert.ok(tables.edges.length >= 2);
+  assert.equal(tables.cycles.length, 1);
+  assert.equal(tables.metrics.length, 3);
+  assert.ok(tables.unresolved.length >= 1);
+  assert.ok(tables.stages.some((s) => s.stage === "graph"));
 });

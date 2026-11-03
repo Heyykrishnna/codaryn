@@ -318,9 +318,18 @@ importers:
       '@codaryn/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@codaryn/dependency-graph':
+        specifier: workspace:*
+        version: link:../../packages/dependency-graph
       '@codaryn/file-classifier':
         specifier: workspace:*
         version: link:../../packages/file-classifier
+      '@codaryn/module-resolver':
+        specifier: workspace:*
+        version: link:../../packages/module-resolver
+      '@codaryn/symbol-resolver':
+        specifier: workspace:*
+        version: link:../../packages/symbol-resolver
       '@codaryn/symbols':
         specifier: workspace:*
         version: link:../../packages/symbols
