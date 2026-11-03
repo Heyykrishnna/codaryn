@@ -12,6 +12,14 @@ import { registerStudio } from "./routes.js";
 import { StudioService } from "./service.js";
 const origin = "http://localhost:3000";
 test("studio enforces authorization, versioning, canonical manifests and revoked installation access", async () => {
+  if (!process.env.DATABASE_URL) {
+    try {
+      process.loadEnvFile();
+    } catch {}
+    try {
+      process.loadEnvFile(new URL("../../../../.env", import.meta.url));
+    } catch {}
+  }
   assert.ok(process.env.DATABASE_URL);
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
   const owner = randomUUID(),

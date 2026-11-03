@@ -7,6 +7,15 @@ import { Queue, QueueEvents } from "bullmq";
 import { Redis } from "ioredis";
 import { Pool } from "pg";
 
+if (!process.env.DATABASE_URL) {
+  try {
+    process.loadEnvFile();
+  } catch {}
+  try {
+    process.loadEnvFile(new URL("../../../.env", import.meta.url));
+  } catch {}
+}
+
 const databaseUrl = process.env.DATABASE_URL;
 const redisUrl = process.env.REDIS_URL;
 

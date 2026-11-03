@@ -10,6 +10,14 @@ import { AnalysisService } from "./service.js";
 const origin = "http://localhost:3000";
 
 test("analysis endpoints enforce authorization, job lifecycle, and inventory inspection", async () => {
+  if (!process.env.DATABASE_URL) {
+    try {
+      process.loadEnvFile();
+    } catch {}
+    try {
+      process.loadEnvFile(new URL("../../../../.env", import.meta.url));
+    } catch {}
+  }
   if (!process.env.DATABASE_URL) return;
 
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -115,7 +123,7 @@ test("analysis endpoints enforce authorization, job lifecycle, and inventory ins
     const job = started.json();
     assert.equal(job.status, "queued");
     assert.equal(job.currentStage, "inventory");
-    assert.equal(job.stages.length, 5);
+    assert.equal(job.stages.length, 6);
 
     const fetched = await app.inject({
       method: "GET",
@@ -154,8 +162,38 @@ test("analysis endpoints enforce authorization, job lifecycle, and inventory ins
     assert.equal(symbols.json().totalCount, 0);
   } finally {
     if (workspace) {
+      await pool.query("DELETE FROM audit_events WHERE organization_id=$1", [
+        workspace,
+      ]);
+      await pool.query(
+        "DELETE FROM analysis_stages WHERE job_id IN (SELECT id FROM analysis_jobs WHERE organization_id=$1)",
+        [workspace],
+      );
+      await pool.query("DELETE FROM analysis_jobs WHERE organization_id=$1", [
+        workspace,
+      ]);
+      await pool.query(
+        "DELETE FROM analysis_manifests WHERE organization_id=$1",
+        [workspace],
+      );
+      await pool.query(
+        "DELETE FROM connected_repositories WHERE installation_id=$1",
+        [installation],
+      );
+      await pool.query(
+        "DELETE FROM github_installations WHERE organization_id=$1",
+        [workspace],
+      );
+      await pool.query(
+        "DELETE FROM organization_members WHERE organization_id=$1",
+        [workspace],
+      );
       await pool.query("DELETE FROM organizations WHERE id=$1", [workspace]);
     }
+    await pool.query("DELETE FROM app_users WHERE id IN ($1, $2)", [
+      owner,
+      outsider,
+    ]);
     await pool.end();
   }
 });

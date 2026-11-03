@@ -15,6 +15,14 @@ test(
   "sessions protect tenant lifecycle, CSRF, invitations and revocation",
   { timeout: 60000 },
   async () => {
+    if (!process.env.DATABASE_URL) {
+      try {
+        process.loadEnvFile();
+      } catch {}
+      try {
+        process.loadEnvFile(new URL("../../../../.env", import.meta.url));
+      } catch {}
+    }
     assert.ok(process.env.DATABASE_URL);
     const pool = new Pool({ connectionString: process.env.DATABASE_URL });
     const production = createAuth(pool, {

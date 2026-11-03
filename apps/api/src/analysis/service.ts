@@ -89,6 +89,7 @@ export class AnalysisService {
         "configuration",
         "parsing",
         "symbols",
+        "graph",
         "diagnostics",
       ];
       for (const stage of stages) {

@@ -4,6 +4,15 @@ import { test } from "node:test";
 import { Pool } from "pg";
 import { WorkspaceAccessError, WorkspaceService } from "./workspaces.js";
 
+if (!process.env.DATABASE_URL) {
+  try {
+    process.loadEnvFile();
+  } catch {}
+  try {
+    process.loadEnvFile(new URL("../../../.env", import.meta.url));
+  } catch {}
+}
+
 const connectionString = process.env.DATABASE_URL;
 
 test("workspaces enforce membership and audit changes atomically", async () => {

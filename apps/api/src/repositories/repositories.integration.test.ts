@@ -10,6 +10,14 @@ import { receiveWebhook, validSignature } from "./webhook.js";
 
 const sha = "a".repeat(40);
 test("repositories preserve workspace boundaries, immutable selections and webhook revocation", async () => {
+  if (!process.env.DATABASE_URL) {
+    try {
+      process.loadEnvFile();
+    } catch {}
+    try {
+      process.loadEnvFile(new URL("../../../../.env", import.meta.url));
+    } catch {}
+  }
   assert.ok(process.env.DATABASE_URL);
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
   const owner = randomUUID(),

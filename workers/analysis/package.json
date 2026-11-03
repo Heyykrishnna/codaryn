@@ -8,7 +8,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "pnpm run build && node --test dist/processor.test.js",
-    "test:integration": "pnpm run build && node --test dist/integration.test.js"
+    "test:integration": "pnpm run build && node --env-file-if-exists=../../.env --test dist/integration.test.js"
   },
   "dependencies": {
     "@codaryn/ast": "workspace:*",

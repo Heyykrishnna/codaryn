@@ -7,7 +7,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "dev": "tsx watch --include ../../.env src/index.ts",
-    "test:integration": "pnpm build && node --test dist/process.integration.test.js"
+    "test:integration": "pnpm build && node --env-file-if-exists=../../.env --test dist/process.integration.test.js"
   },
   "dependencies": {
     "@codaryn/github": "workspace:*",

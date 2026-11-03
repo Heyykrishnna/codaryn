@@ -10,6 +10,14 @@ import type { GitHubGateway } from "@codaryn/github";
 import { processIngestion } from "./process.js";
 
 test("ingestion persists an immutable inventory, is repeatable, and rejects revoked workspaces", async () => {
+  if (!process.env.DATABASE_URL) {
+    try {
+      process.loadEnvFile();
+    } catch {}
+    try {
+      process.loadEnvFile(new URL("../../../.env", import.meta.url));
+    } catch {}
+  }
   assert.ok(process.env.DATABASE_URL);
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
   const user = randomUUID(),
