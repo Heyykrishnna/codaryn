@@ -253,6 +253,25 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  packages/symbol-resolver:
+    dependencies:
+      '@codaryn/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@codaryn/module-resolver':
+        specifier: workspace:*
+        version: link:../module-resolver
+      '@codaryn/symbols':
+        specifier: workspace:*
+        version: link:../symbols
+    devDependencies:
+      '@types/node':
+        specifier: ^24.10.0
+        version: 24.19.2
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/symbols:
     dependencies:
       '@codaryn/contracts':
