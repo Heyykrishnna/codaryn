@@ -25,6 +25,12 @@ function createMockPool(initialStatus: string = "queued"): {
     frontendRoutes: Record<string, unknown>[];
     frontendState: Record<string, unknown>[];
     frontendApiClients: Record<string, unknown>[];
+    backendRoutes: Record<string, unknown>[];
+    backendControllers: Record<string, unknown>[];
+    backendServices: Record<string, unknown>[];
+    backendRepositories: Record<string, unknown>[];
+    backendMiddleware: Record<string, unknown>[];
+    backendRequestFlows: Record<string, unknown>[];
   };
 } {
   const queries: { sql: string; values?: unknown[] }[] = [];
@@ -55,6 +61,12 @@ function createMockPool(initialStatus: string = "queued"): {
     frontendRoutes: [] as Record<string, unknown>[],
     frontendState: [] as Record<string, unknown>[],
     frontendApiClients: [] as Record<string, unknown>[],
+    backendRoutes: [] as Record<string, unknown>[],
+    backendControllers: [] as Record<string, unknown>[],
+    backendServices: [] as Record<string, unknown>[],
+    backendRepositories: [] as Record<string, unknown>[],
+    backendMiddleware: [] as Record<string, unknown>[],
+    backendRequestFlows: [] as Record<string, unknown>[],
   };
 
   const client = {
@@ -213,6 +225,61 @@ function createMockPool(initialStatus: string = "queued"): {
         });
         return { rowCount: 1 };
       }
+      if (sql.includes("INSERT INTO analysis_backend_routes")) {
+        tables.backendRoutes.push({
+          id: values?.[0],
+          jobId: values?.[1],
+          framework: values?.[2],
+          method: values?.[3],
+          path: values?.[4],
+          handlerName: values?.[6],
+        });
+        return { rowCount: 1 };
+      }
+      if (sql.includes("INSERT INTO analysis_backend_controllers")) {
+        tables.backendControllers.push({
+          id: values?.[0],
+          jobId: values?.[1],
+          name: values?.[2],
+          framework: values?.[4],
+        });
+        return { rowCount: 1 };
+      }
+      if (sql.includes("INSERT INTO analysis_backend_services")) {
+        tables.backendServices.push({
+          id: values?.[0],
+          jobId: values?.[1],
+          name: values?.[2],
+        });
+        return { rowCount: 1 };
+      }
+      if (sql.includes("INSERT INTO analysis_backend_repositories")) {
+        tables.backendRepositories.push({
+          id: values?.[0],
+          jobId: values?.[1],
+          name: values?.[2],
+          ormType: values?.[4],
+        });
+        return { rowCount: 1 };
+      }
+      if (sql.includes("INSERT INTO analysis_backend_middleware")) {
+        tables.backendMiddleware.push({
+          id: values?.[0],
+          jobId: values?.[1],
+          name: values?.[2],
+          kind: values?.[4],
+        });
+        return { rowCount: 1 };
+      }
+      if (sql.includes("INSERT INTO analysis_backend_request_flows")) {
+        tables.backendRequestFlows.push({
+          id: values?.[0],
+          jobId: values?.[1],
+          routeId: values?.[2],
+          routePath: values?.[3],
+        });
+        return { rowCount: 1 };
+      }
       if (sql.includes("UPDATE analysis_jobs SET status='running'")) {
         tables.jobs[0].status = "running";
         return { rowCount: 1 };
@@ -362,4 +429,57 @@ export default function DashboardPage() {
         c.name === "Button" || c.name === "Card" || c.name === "DashboardPage",
     ),
   );
+});
+
+test("AnalysisProcessor extracts backend architecture intelligence", async () => {
+  const { pool, tables } = createMockPool();
+  const processor = new AnalysisProcessor(pool);
+
+  const files = {
+    "src/middleware/auth.ts": `
+export function authMiddleware(req: any, res: any, next: any) { next(); }
+`,
+    "src/repositories/UserRepository.ts": `
+import { eq } from "drizzle-orm";
+export class UserRepository {
+  constructor(private db: any) {}
+  async findById(id: string) { return this.db.select(); }
+}
+`,
+    "src/services/UserService.ts": `
+import { UserRepository } from "../repositories/UserRepository";
+export class UserService {
+  constructor(private userRepository: UserRepository) {}
+  async getUser(id: string) { return this.userRepository.findById(id); }
+}
+`,
+    "src/controllers/UserController.ts": `
+import { Controller, Get, Param, UseGuards } from "@nestjs/common";
+import { UserService } from "../services/UserService";
+@Controller("api/v1/users")
+export class UserController {
+  constructor(private userService: UserService) {}
+  @Get(":id")
+  async getUser(@Param("id") id: string) { return this.userService.getUser(id); }
+}
+`,
+    "src/routes/api.ts": `
+import { Router } from "express";
+import { authMiddleware } from "../middleware/auth";
+const router = Router();
+router.get("/health", authMiddleware, (req, res) => res.json({ status: "ok" }));
+export default router;
+`,
+  };
+
+  await processor.processJob({ jobId: "job-1", files });
+
+  assert.equal(tables.jobs[0].status, "completed");
+  assert.ok(tables.stages.some((s) => s.stage === "backend"));
+  assert.ok(tables.backendRoutes.length >= 2);
+  assert.ok(tables.backendControllers.length >= 1);
+  assert.ok(tables.backendServices.length >= 1);
+  assert.ok(tables.backendRepositories.length >= 1);
+  assert.ok(tables.backendMiddleware.length >= 1);
+  assert.ok(tables.backendRequestFlows.length >= 1);
 });

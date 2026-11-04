@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@codaryn/ast": "workspace:*",
+    "@codaryn/backend-analyzer": "workspace:*",
     "@codaryn/compiler": "workspace:*",
     "@codaryn/contracts": "workspace:*",
     "@codaryn/database": "workspace:*",

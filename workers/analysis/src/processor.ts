@@ -26,6 +26,21 @@ import {
   extractRoutes,
   extractStateAndApiCalls,
 } from "@codaryn/frontend-analyzer";
+import {
+  extractExpressRoutes,
+  extractFastifyRoutes,
+  extractNestJsControllersAndRoutes,
+  extractServicesAndRepositories,
+  linkRequestFlows,
+} from "@codaryn/backend-analyzer";
+import type {
+  BackendRoute,
+  BackendController,
+  BackendService,
+  BackendRepository,
+  BackendMiddleware,
+  RequestFlow,
+} from "@codaryn/contracts";
 
 export type AnalysisJobPayload = {
   jobId: string;
@@ -549,6 +564,170 @@ export class AnalysisProcessor {
         return {
           itemsTotal: totalComponents + totalRoutes,
           itemsCompleted: totalComponents + totalRoutes,
+        };
+      });
+
+      if (await this.checkCancellation(client, jobId)) return;
+
+      await this.runStage(client, jobId, "backend", async () => {
+        const allRoutes: BackendRoute[] = [];
+        const allControllers: BackendController[] = [];
+        const allServices: BackendService[] = [];
+        const allRepositories: BackendRepository[] = [];
+        const allMiddleware: BackendMiddleware[] = [];
+
+        for (const sf of sourceFiles) {
+          const filePath = sf.fileName.replace(/\\/g, "/").replace(/^\/+/, "");
+          if (
+            !filePath.endsWith(".ts") &&
+            !filePath.endsWith(".js") &&
+            !filePath.endsWith(".tsx") &&
+            !filePath.endsWith(".jsx")
+          ) {
+            continue;
+          }
+
+          const expressRoutes = extractExpressRoutes(sf, filePath);
+          allRoutes.push(...expressRoutes);
+
+          const fastifyRoutes = extractFastifyRoutes(sf, filePath);
+          allRoutes.push(...fastifyRoutes);
+
+          const nestRes = extractNestJsControllersAndRoutes(sf, filePath);
+          allControllers.push(...nestRes.controllers);
+          allRoutes.push(...nestRes.routes);
+
+          const srRes = extractServicesAndRepositories(sf, filePath);
+          allServices.push(...srRes.services);
+          allRepositories.push(...srRes.repositories);
+          allMiddleware.push(...srRes.middleware);
+        }
+
+        const requestFlows = linkRequestFlows(
+          allRoutes,
+          allControllers,
+          allServices,
+          allRepositories,
+        );
+
+        for (const route of allRoutes) {
+          await client.query(
+            "INSERT INTO analysis_backend_routes (id,job_id,framework,method,path,file_path,handler_name,handler_symbol_id,controller_name,middleware,is_dynamic,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) ON CONFLICT (id) DO NOTHING",
+            [
+              route.id,
+              jobId,
+              route.framework,
+              route.method,
+              route.path,
+              route.filePath,
+              route.handlerName,
+              route.handlerSymbolId ?? null,
+              route.controllerName ?? null,
+              route.middleware,
+              route.isDynamic,
+              JSON.stringify(route.sourceEvidence),
+            ],
+          );
+        }
+
+        for (const ctrl of allControllers) {
+          await client.query(
+            "INSERT INTO analysis_backend_controllers (id,job_id,name,path,framework,routes_count,base_path,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (id) DO NOTHING",
+            [
+              ctrl.id,
+              jobId,
+              ctrl.name,
+              ctrl.filePath,
+              ctrl.framework,
+              ctrl.routesCount,
+              ctrl.basePath ?? null,
+              JSON.stringify(ctrl.sourceEvidence),
+            ],
+          );
+        }
+
+        for (const svc of allServices) {
+          await client.query(
+            "INSERT INTO analysis_backend_services (id,job_id,name,path,methods,injected_dependencies,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING",
+            [
+              svc.id,
+              jobId,
+              svc.name,
+              svc.filePath,
+              svc.methods,
+              svc.injectedDependencies,
+              JSON.stringify(svc.sourceEvidence),
+            ],
+          );
+        }
+
+        for (const repo of allRepositories) {
+          await client.query(
+            "INSERT INTO analysis_backend_repositories (id,job_id,name,path,orm_type,methods,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING",
+            [
+              repo.id,
+              jobId,
+              repo.name,
+              repo.filePath,
+              repo.ormType,
+              repo.methods,
+              JSON.stringify(repo.sourceEvidence),
+            ],
+          );
+        }
+
+        for (const mw of allMiddleware) {
+          await client.query(
+            "INSERT INTO analysis_backend_middleware (id,job_id,name,path,kind,scope,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING",
+            [
+              mw.id,
+              jobId,
+              mw.name,
+              mw.filePath,
+              mw.kind,
+              mw.scope,
+              JSON.stringify(mw.sourceEvidence),
+            ],
+          );
+        }
+
+        for (const flow of requestFlows) {
+          await client.query(
+            "INSERT INTO analysis_backend_request_flows (id,job_id,route_id,route_path,http_method,controller_name,service_names,repository_names,middleware_chain,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT (id) DO NOTHING",
+            [
+              flow.id,
+              jobId,
+              flow.routeId,
+              flow.routePath,
+              flow.httpMethod,
+              flow.controllerName ?? null,
+              flow.serviceNames,
+              flow.repositoryNames,
+              flow.middlewareChain,
+              JSON.stringify(flow.sourceEvidence),
+            ],
+          );
+        }
+
+        await this.log(
+          client,
+          jobId,
+          "backend",
+          "info",
+          `Backend intelligence extracted: ${allRoutes.length} routes, ${allControllers.length} controllers, ${allServices.length} services, ${allRepositories.length} repositories, ${allMiddleware.length} middleware, ${requestFlows.length} request flows`,
+        );
+
+        const itemsCount =
+          allRoutes.length +
+          allControllers.length +
+          allServices.length +
+          allRepositories.length +
+          allMiddleware.length +
+          requestFlows.length;
+
+        return {
+          itemsTotal: itemsCount,
+          itemsCompleted: itemsCount,
         };
       });
 
