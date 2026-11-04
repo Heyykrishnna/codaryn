@@ -218,6 +218,22 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  packages/frontend-analyzer:
+    dependencies:
+      '@codaryn/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@codaryn/symbols':
+        specifier: workspace:*
+        version: link:../symbols
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+    devDependencies:
+      '@types/node':
+        specifier: ^24.10.0
+        version: 24.19.2
+
   packages/github:
     dependencies:
       '@octokit/auth-app':

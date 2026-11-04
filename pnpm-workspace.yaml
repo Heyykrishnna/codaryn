@@ -9,6 +9,7 @@ packages:
   - packages/module-resolver
   - packages/symbol-resolver
   - packages/dependency-graph
+  - packages/frontend-analyzer
   - packages/github
   - packages/repository-ingestion
   - workers/analysis
