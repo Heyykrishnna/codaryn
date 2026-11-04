@@ -4,6 +4,8 @@ import { registerAnalysis } from "./analysis/routes.js";
 import { AnalysisService } from "./analysis/service.js";
 import { registerGraph } from "./graph/routes.js";
 import { GraphService } from "./graph/service.js";
+import { registerFrontend } from "./frontend/routes.js";
+import { FrontendService } from "./frontend/service.js";
 import { RepositoryService } from "./repositories/service.js";
 import { GitHubClient } from "@codaryn/github";
 import { registerRepositories } from "./repositories/routes.js";
@@ -85,6 +87,7 @@ registerStudio(
 );
 registerAnalysis(app, auth, new AnalysisService(pool), environment.WEB_ORIGIN);
 registerGraph(app, auth, new GraphService(pool), environment.WEB_ORIGIN);
+registerFrontend(app, auth, new FrontendService(pool), environment.WEB_ORIGIN);
 app.addHook("onClose", async () => {
   await pool.end();
 });
