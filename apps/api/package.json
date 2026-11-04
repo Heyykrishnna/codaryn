@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit",
     "test": "pnpm run build && node --test dist/*.test.js dist/studio/manifest.test.js",
     "auth:migrate": "tsx src/identity/migrate.ts",
-    "test:integration": "pnpm run build && node --env-file-if-exists=../../.env --test dist/identity/auth.integration.test.js dist/repositories/repositories.integration.test.js dist/studio/studio.integration.test.js dist/analysis/analysis.integration.test.js dist/graph/graph.integration.test.js dist/frontend/frontend.integration.test.js dist/backend/backend.integration.test.js",
+    "test:integration": "pnpm run build && node --env-file-if-exists=../../.env --test dist/identity/auth.integration.test.js dist/repositories/repositories.integration.test.js dist/studio/studio.integration.test.js dist/analysis/analysis.integration.test.js dist/graph/graph.integration.test.js dist/frontend/frontend.integration.test.js dist/backend/backend.integration.test.js dist/schema/schema.integration.test.js",
     "auth:verify": "tsx src/identity/migrate.ts --check"
   },
   "dependencies": {
