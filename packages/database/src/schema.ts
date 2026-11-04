@@ -804,3 +804,168 @@ export const analysisFrontendApiClients = pgTable(
     index("idx_analysis_frontend_api_comp").on(table.jobId, table.componentId),
   ],
 );
+
+export const analysisBackendRoutes = pgTable(
+  "analysis_backend_routes",
+  {
+    id: text("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    framework: text("framework").notNull(),
+    method: text("method").notNull(),
+    path: text("path").notNull(),
+    filePath: text("file_path").notNull(),
+    handlerName: text("handler_name").notNull(),
+    handlerSymbolId: text("handler_symbol_id"),
+    controllerName: text("controller_name"),
+    middleware: text("middleware")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    isDynamic: boolean("is_dynamic").notNull().default(false),
+    sourceEvidence: jsonb("source_evidence")
+      .notNull()
+      .default(sql`'{}'::jsonb`),
+    createdAt: created(),
+  },
+  (table) => [
+    index("idx_analysis_backend_routes_job_path").on(table.jobId, table.path),
+    index("idx_analysis_backend_routes_job_method").on(
+      table.jobId,
+      table.method,
+    ),
+  ],
+);
+
+export const analysisBackendControllers = pgTable(
+  "analysis_backend_controllers",
+  {
+    id: text("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    path: text("path").notNull(),
+    framework: text("framework").notNull(),
+    routesCount: integer("routes_count").notNull().default(0),
+    basePath: text("base_path"),
+    sourceEvidence: jsonb("source_evidence")
+      .notNull()
+      .default(sql`'{}'::jsonb`),
+    createdAt: created(),
+  },
+  (table) => [
+    index("idx_analysis_backend_controllers_job").on(table.jobId, table.name),
+  ],
+);
+
+export const analysisBackendServices = pgTable(
+  "analysis_backend_services",
+  {
+    id: text("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    path: text("path").notNull(),
+    methods: text("methods")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    injectedDependencies: text("injected_dependencies")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    sourceEvidence: jsonb("source_evidence")
+      .notNull()
+      .default(sql`'{}'::jsonb`),
+    createdAt: created(),
+  },
+  (table) => [
+    index("idx_analysis_backend_services_job").on(table.jobId, table.name),
+  ],
+);
+
+export const analysisBackendRepositories = pgTable(
+  "analysis_backend_repositories",
+  {
+    id: text("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    path: text("path").notNull(),
+    ormType: text("orm_type").notNull(),
+    methods: text("methods")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    sourceEvidence: jsonb("source_evidence")
+      .notNull()
+      .default(sql`'{}'::jsonb`),
+    createdAt: created(),
+  },
+  (table) => [
+    index("idx_analysis_backend_repositories_job").on(table.jobId, table.name),
+  ],
+);
+
+export const analysisBackendMiddleware = pgTable(
+  "analysis_backend_middleware",
+  {
+    id: text("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    path: text("path").notNull(),
+    kind: text("kind").notNull(),
+    scope: text("scope").notNull(),
+    sourceEvidence: jsonb("source_evidence")
+      .notNull()
+      .default(sql`'{}'::jsonb`),
+    createdAt: created(),
+  },
+  (table) => [
+    index("idx_analysis_backend_middleware_job").on(table.jobId, table.name),
+  ],
+);
+
+export const analysisBackendRequestFlows = pgTable(
+  "analysis_backend_request_flows",
+  {
+    id: text("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    routeId: text("route_id")
+      .notNull()
+      .references(() => analysisBackendRoutes.id, { onDelete: "cascade" }),
+    routePath: text("route_path").notNull(),
+    httpMethod: text("http_method").notNull(),
+    controllerName: text("controller_name"),
+    serviceNames: text("service_names")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    repositoryNames: text("repository_names")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    middlewareChain: text("middleware_chain")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    sourceEvidence: jsonb("source_evidence")
+      .notNull()
+      .default(sql`'{}'::jsonb`),
+    createdAt: created(),
+  },
+  (table) => [
+    index("idx_analysis_backend_request_flows_job").on(
+      table.jobId,
+      table.routeId,
+    ),
+  ],
+);
