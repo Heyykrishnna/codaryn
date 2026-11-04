@@ -10,7 +10,7 @@ This roadmap contains phases 0–14 from the [product specification](../product-
 | 3 | [Analysis Studio and user configuration](03-analysis-studio/README.md) | [Acceptance tests](03-analysis-studio/acceptance-tests.md) | Implemented |
 | 4 | [TypeScript analysis foundation](04-typescript-foundation/README.md) | [Acceptance tests](04-typescript-foundation/acceptance-tests.md) | Implemented |
 | 5 | [Symbol resolution and dependency graph](05-symbol-resolution-graph/README.md) | [Acceptance tests](05-symbol-resolution-graph/acceptance-tests.md) | Implemented |
-| 6 | [Frontend architecture intelligence](06-frontend-intelligence/README.md) | [Acceptance tests](06-frontend-intelligence/acceptance-tests.md) | Planned |
+| 6 | [Frontend architecture intelligence](06-frontend-intelligence/README.md) | [Acceptance tests](06-frontend-intelligence/acceptance-tests.md) | Implemented |
 | 7 | [Backend architecture and API intelligence](07-backend-api-intelligence/README.md) | [Acceptance tests](07-backend-api-intelligence/acceptance-tests.md) | Planned |
 | 8 | [Schema Studio and database intelligence](08-schema-studio/README.md) | [Acceptance tests](08-schema-studio/acceptance-tests.md) | Planned |
 | 9 | [Call graphs, execution and data flow](09-execution-data-flow/README.md) | [Acceptance tests](09-execution-data-flow/acceptance-tests.md) | Planned |
