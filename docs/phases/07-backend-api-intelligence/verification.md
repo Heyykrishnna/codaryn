@@ -2,7 +2,7 @@
 
 ## Summary of Verification Commands
 
-All validations below were executed and confirmed passing prior to release.
+The table below records the initial phase verification. A subsequent full CI run failed during web lint, so these results did not establish a passing release pipeline. See [CI remediation](../../ci.md) for the reproduced failures, fixes and validation workflow.
 
 | Check | Command | Result |
 |---|---|---|

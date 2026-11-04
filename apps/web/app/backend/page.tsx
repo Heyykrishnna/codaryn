@@ -57,15 +57,25 @@ function BackendDashboard() {
   const [requestFlows, setRequestFlows] = useState<RequestFlow[]>([]);
 
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
-  const [routeDetail, setRouteDetail] =
-    useState<BackendRouteDetailResponse | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
+  const [routeResult, setRouteResult] = useState<{
+    key: string;
+    detail: BackendRouteDetailResponse | null;
+  } | null>(null);
 
   const [activeTab, setActiveTab] = useState<
     "endpoints" | "architecture" | "middleware" | "flows"
   >("endpoints");
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState("");
+  const [loadedKey, setLoadedKey] = useState("");
+  const [feedback, setFeedback] = useState({ key: "", message: "" });
+  const dataKey = JSON.stringify([workspaceId, jobId]);
+  const routeKey = JSON.stringify([workspaceId, jobId, selectedRouteId]);
+  const busy = Boolean(workspaceId && jobId && loadedKey !== dataKey);
+  const detailLoading = Boolean(
+    workspaceId && jobId && selectedRouteId && routeResult?.key !== routeKey,
+  );
+  const routeDetail = routeResult?.key === routeKey ? routeResult.detail : null;
+  const message =
+    feedback.key === dataKey || feedback.key === "" ? feedback.message : "";
 
   useEffect(() => {
     if (!session) return;
@@ -90,7 +100,11 @@ function BackendDashboard() {
         }
       })
       .catch(() => {
-        if (current) setMessage("Unable to load workspaces. Reload to retry.");
+        if (current)
+          setFeedback({
+            key: "",
+            message: "Unable to load workspaces. Reload to retry.",
+          });
       });
     return () => {
       current = false;
@@ -100,9 +114,6 @@ function BackendDashboard() {
   useEffect(() => {
     if (!workspaceId || !jobId) return;
     let current = true;
-    setBusy(true);
-    setMessage("");
-
     Promise.all([
       fetchBackendOverview(workspaceId, jobId),
       fetchBackendRoutes(workspaceId, jobId),
@@ -121,52 +132,55 @@ function BackendDashboard() {
           setRepositories(repo.repositories);
           setMiddleware(mw.middleware);
           setRequestFlows(f.flows);
-          setBusy(false);
+          setLoadedKey(dataKey);
+          setFeedback({ key: dataKey, message: "" });
         }
       })
       .catch((err) => {
         if (current) {
-          setMessage(
-            err instanceof Error
-              ? err.message
-              : "Failed to load backend intelligence",
-          );
-          setBusy(false);
+          setOverview(null);
+          setRoutes([]);
+          setControllers([]);
+          setServices([]);
+          setRepositories([]);
+          setMiddleware([]);
+          setRequestFlows([]);
+          setFeedback({
+            key: dataKey,
+            message:
+              err instanceof Error
+                ? err.message
+                : "Failed to load backend intelligence",
+          });
+          setLoadedKey(dataKey);
         }
       });
 
     return () => {
       current = false;
     };
-  }, [workspaceId, jobId]);
+  }, [workspaceId, jobId, dataKey]);
 
   useEffect(() => {
-    if (!workspaceId || !jobId || !selectedRouteId) {
-      setRouteDetail(null);
-      return;
-    }
-
+    if (!workspaceId || !jobId || !selectedRouteId) return;
     let current = true;
-    setDetailLoading(true);
 
     fetchBackendRouteDetail(workspaceId, jobId, selectedRouteId)
       .then((detail) => {
         if (current) {
-          setRouteDetail(detail);
-          setDetailLoading(false);
+          setRouteResult({ key: routeKey, detail });
         }
       })
       .catch(() => {
         if (current) {
-          setRouteDetail(null);
-          setDetailLoading(false);
+          setRouteResult({ key: routeKey, detail: null });
         }
       });
 
     return () => {
       current = false;
     };
-  }, [workspaceId, jobId, selectedRouteId]);
+  }, [workspaceId, jobId, selectedRouteId, routeKey]);
 
   const handleLookup = (e: React.FormEvent) => {
     e.preventDefault();
@@ -280,7 +294,10 @@ function BackendDashboard() {
             <select
               id="be-workspace-select"
               value={workspaceId}
-              onChange={(e) => setWorkspaceId(e.target.value)}
+              onChange={(e) => {
+                setWorkspaceId(e.target.value);
+                setSelectedRouteId(null);
+              }}
               className={control}
             >
               {workspaces.map((w) => (
@@ -324,7 +341,7 @@ function BackendDashboard() {
         )}
       </div>
 
-      {overview && (
+      {overview && !busy && (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           <div className="flex flex-col gap-1 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
             <span className="text-[11px] font-medium tracking-wider text-zinc-500 uppercase">

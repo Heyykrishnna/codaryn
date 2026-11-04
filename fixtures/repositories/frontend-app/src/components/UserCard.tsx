@@ -14,7 +14,7 @@ export function UserCard({ userId, name }: UserCardProps) {
       const data = await res.json();
       setStatus(data.status);
     }
-    loadStatus();
+    loadStatus().catch(() => setStatus("error"));
   }, [userId]);
 
   return (

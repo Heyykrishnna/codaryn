@@ -12,6 +12,7 @@ export const migrationNames = [
   "0007_dependency_graph.sql",
   "0008_frontend_intelligence.sql",
   "0009_backend_intelligence.sql",
+  "0010_frontend_indexes.sql",
 ];
 export async function migrationContent(name: string) {
   const sql = await readFile(

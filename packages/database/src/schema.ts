@@ -606,7 +606,7 @@ export const analysisUnresolvedReferences = pgTable(
   },
   (table) => [
     check(
-      "analysis_unresolved_refs_status_check",
+      "analysis_unresolved_references_status_check",
       sql`${table.status} IN ('resolved','unresolved','ambiguous','external')`,
     ),
     index("analysis_unresolved_refs_job_status_idx").on(
@@ -660,9 +660,10 @@ export const analysisFrontendJsxElements = pgTable(
       () => analysisFrontendComponents.id,
       { onDelete: "set null" },
     ),
-    props: jsonb("props")
+    props: text("props")
+      .array()
       .notNull()
-      .default(sql`'[]'::jsonb`),
+      .default(sql`'{}'::text[]`),
     isConditional: boolean("is_conditional").notNull().default(false),
     sourceEvidence: jsonb("source_evidence")
       .notNull()
@@ -689,7 +690,7 @@ export const analysisFrontendHooks = pgTable(
       .references(() => analysisFrontendComponents.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     kind: text("kind").notNull(),
-    dependencies: jsonb("dependencies"),
+    dependencies: text("dependencies").array(),
     sourceEvidence: jsonb("source_evidence")
       .notNull()
       .default(sql`'{}'::jsonb`),
@@ -713,12 +714,14 @@ export const analysisFrontendContexts = pgTable(
     name: text("name").notNull(),
     path: text("path").notNull(),
     defaultValue: text("default_value"),
-    providerComponentIds: jsonb("provider_component_ids")
+    providerComponentIds: text("provider_component_ids")
+      .array()
       .notNull()
-      .default(sql`'[]'::jsonb`),
-    consumerComponentIds: jsonb("consumer_component_ids")
+      .default(sql`'{}'::text[]`),
+    consumerComponentIds: text("consumer_component_ids")
+      .array()
       .notNull()
-      .default(sql`'[]'::jsonb`),
+      .default(sql`'{}'::text[]`),
     sourceEvidence: jsonb("source_evidence")
       .notNull()
       .default(sql`'{}'::jsonb`),
@@ -744,9 +747,10 @@ export const analysisFrontendRoutes = pgTable(
       () => analysisFrontendComponents.id,
       { onDelete: "set null" },
     ),
-    dynamicParams: jsonb("dynamic_params")
+    dynamicParams: text("dynamic_params")
+      .array()
       .notNull()
-      .default(sql`'[]'::jsonb`),
+      .default(sql`'{}'::text[]`),
     isLayout: boolean("is_layout").notNull().default(false),
     sourceEvidence: jsonb("source_evidence")
       .notNull()

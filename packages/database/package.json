@@ -15,7 +15,7 @@
     "migrate": "tsx src/migrate.ts",
     "test:integration": "pnpm run build && node --env-file-if-exists=../../.env --test dist/workspaces.integration.test.js",
     "verify": "tsx src/verify.ts",
-    "test": "pnpm build && node --test dist/client.test.js"
+    "test": "pnpm build && node --test dist/client.test.js dist/column-type.test.js"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.4",

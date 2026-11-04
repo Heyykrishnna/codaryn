@@ -1,4 +1,5 @@
-import { z } from "zod";
+import { backendRouteDetailResponseSchema } from "@codaryn/contracts";
+import { workspaceRequest } from "@/src/lib/workspace-request";
 import type {
   BackendOverviewResponse,
   BackendRoutesResponse,
@@ -10,35 +11,19 @@ import type {
   BackendRouteDetailResponse,
 } from "@codaryn/contracts";
 
-export async function backendRequest(
+export function backendRequest(
   action: string,
   workspaceId: string,
   input: Record<string, unknown> = {},
 ): Promise<unknown> {
-  const query = new URLSearchParams({ workspaceId });
-  for (const [key, value] of Object.entries(input)) {
-    if (value !== undefined && value !== null) query.set(key, String(value));
-  }
-
-  const response = await fetch(`/api/v1/backend/${action}?${query}`, {
-    method: "GET",
-    headers: {},
-    cache: "no-store",
-    signal: AbortSignal.timeout(30000),
-  });
-
-  if (!response.ok) {
-    const error = z
-      .object({ error: z.object({ message: z.string() }) })
-      .safeParse(await response.json().catch(() => null));
-    throw new Error(
-      error.success
-        ? error.data.error.message
-        : "Backend request failed. Reload and try again.",
-    );
-  }
-
-  return response.json();
+  return workspaceRequest(
+    "backend",
+    action,
+    workspaceId,
+    input,
+    false,
+    "Backend request failed. Reload and try again.",
+  );
 }
 
 export async function fetchBackendOverview(
@@ -61,32 +46,19 @@ export async function fetchBackendRoutes(
   return res as BackendRoutesResponse;
 }
 
-export async function fetchBackendRouteDetail(
+export function fetchBackendRouteDetail(
   workspaceId: string,
   jobId: string,
   routeId: string,
 ): Promise<BackendRouteDetailResponse> {
-  const query = new URLSearchParams({ workspaceId, jobId });
-  const response = await fetch(
-    `/api/v1/backend/routes/${encodeURIComponent(routeId)}?${query}`,
-    {
-      method: "GET",
-      headers: {},
-      cache: "no-store",
-      signal: AbortSignal.timeout(30000),
-    },
-  );
-
-  if (!response.ok) {
-    const error = z
-      .object({ error: z.object({ message: z.string() }) })
-      .safeParse(await response.json().catch(() => null));
-    throw new Error(
-      error.success ? error.data.error.message : "Route detail request failed.",
-    );
-  }
-
-  return response.json() as Promise<BackendRouteDetailResponse>;
+  return workspaceRequest(
+    "backend",
+    `routes/${encodeURIComponent(routeId)}`,
+    workspaceId,
+    { jobId },
+    false,
+    "Route detail request failed.",
+  ).then((value) => backendRouteDetailResponseSchema.parse(value));
 }
 
 export async function fetchBackendControllers(

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { workspaceRequest } from "@/src/lib/workspace-request";
 import type {
   DependencyCycle,
   DependencyEdge,
@@ -8,35 +8,19 @@ import type {
   UnresolvedReferencesResponse,
 } from "@codaryn/contracts";
 
-export async function graphRequest(
+export function graphRequest(
   action: string,
   workspaceId: string,
   input: Record<string, unknown> = {},
 ): Promise<unknown> {
-  const query = new URLSearchParams({ workspaceId });
-  for (const [key, value] of Object.entries(input)) {
-    if (value !== undefined && value !== null) query.set(key, String(value));
-  }
-
-  const response = await fetch(`/api/v1/graph/${action}?${query}`, {
-    method: "GET",
-    headers: {},
-    cache: "no-store",
-    signal: AbortSignal.timeout(30000),
-  });
-
-  if (!response.ok) {
-    const error = z
-      .object({ error: z.object({ message: z.string() }) })
-      .safeParse(await response.json().catch(() => null));
-    throw new Error(
-      error.success
-        ? error.data.error.message
-        : "Graph request failed. Reload and try again.",
-    );
-  }
-
-  return response.json();
+  return workspaceRequest(
+    "graph",
+    action,
+    workspaceId,
+    input,
+    false,
+    "Graph request failed. Reload and try again.",
+  );
 }
 
 export async function fetchGraphSnapshot(

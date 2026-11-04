@@ -69,6 +69,37 @@ export function extractStateAndApiCalls(
   const stateList: FrontendState[] = [];
   const apiCalls: FrontendApiClientCall[] = [];
 
+  function recordState(
+    node: ts.Node,
+    componentId: string,
+    kind: StateKind,
+    identifier: string,
+    initial: Pick<FrontendState, "initialValue"> = {},
+  ) {
+    const start = sourceFile.getLineAndCharacterOfPosition(
+      node.getStart(sourceFile),
+    );
+    const end = sourceFile.getLineAndCharacterOfPosition(node.getEnd());
+    const startLine = start.line + 1;
+    stateList.push({
+      id: generateSymbolId(
+        filePath,
+        "state",
+        `${componentId}_${identifier}`,
+        startLine,
+        start.character + 1,
+      ),
+      componentId,
+      kind,
+      identifier,
+      ...initial,
+      sourceEvidence: {
+        path: filePath,
+        startLine,
+        endLine: Math.max(startLine, end.line + 1),
+      },
+    });
+  }
   function visit(node: ts.Node): void {
     if (ts.isVariableStatement(node)) {
       for (const decl of node.declarationList.declarations) {
@@ -99,35 +130,8 @@ export function extractStateAndApiCalls(
 
               const initialValue =
                 decl.initializer.arguments[0]?.getText(sourceFile);
-              const start = sourceFile.getLineAndCharacterOfPosition(
-                node.getStart(sourceFile),
-              );
-              const end = sourceFile.getLineAndCharacterOfPosition(
-                node.getEnd(),
-              );
-              const startLine = start.line + 1;
-              const startColumn = start.character + 1;
-              const endLine = Math.max(startLine, end.line + 1);
-
-              const id = generateSymbolId(
-                filePath,
-                "state",
-                `${enclosingComp.id}_${identifier}`,
-                startLine,
-                startColumn,
-              );
-
-              stateList.push({
-                id,
-                componentId: enclosingComp.id,
-                kind: "local",
-                identifier,
-                initialValue,
-                sourceEvidence: {
-                  path: filePath,
-                  startLine,
-                  endLine,
-                },
+              recordState(node, enclosingComp.id, "local", identifier, {
+                initialValue: initialValue,
               });
             }
           } else if (callText === "useContext") {
@@ -140,35 +144,8 @@ export function extractStateAndApiCalls(
               const identifier = decl.name.text;
               const contextArg =
                 decl.initializer.arguments[0]?.getText(sourceFile);
-              const start = sourceFile.getLineAndCharacterOfPosition(
-                node.getStart(sourceFile),
-              );
-              const end = sourceFile.getLineAndCharacterOfPosition(
-                node.getEnd(),
-              );
-              const startLine = start.line + 1;
-              const startColumn = start.character + 1;
-              const endLine = Math.max(startLine, end.line + 1);
-
-              const id = generateSymbolId(
-                filePath,
-                "state",
-                `${enclosingComp.id}_${identifier}`,
-                startLine,
-                startColumn,
-              );
-
-              stateList.push({
-                id,
-                componentId: enclosingComp.id,
-                kind: "context",
-                identifier,
+              recordState(node, enclosingComp.id, "context", identifier, {
                 initialValue: contextArg,
-                sourceEvidence: {
-                  path: filePath,
-                  startLine,
-                  endLine,
-                },
               });
             }
           } else if (callText === "useSelector" || callText === "useDispatch") {
@@ -179,35 +156,7 @@ export function extractStateAndApiCalls(
             );
             if (enclosingComp && ts.isIdentifier(decl.name)) {
               const identifier = decl.name.text;
-              const start = sourceFile.getLineAndCharacterOfPosition(
-                node.getStart(sourceFile),
-              );
-              const end = sourceFile.getLineAndCharacterOfPosition(
-                node.getEnd(),
-              );
-              const startLine = start.line + 1;
-              const startColumn = start.character + 1;
-              const endLine = Math.max(startLine, end.line + 1);
-
-              const id = generateSymbolId(
-                filePath,
-                "state",
-                `${enclosingComp.id}_${identifier}`,
-                startLine,
-                startColumn,
-              );
-
-              stateList.push({
-                id,
-                componentId: enclosingComp.id,
-                kind: "redux",
-                identifier,
-                sourceEvidence: {
-                  path: filePath,
-                  startLine,
-                  endLine,
-                },
-              });
+              recordState(node, enclosingComp.id, "redux", identifier);
             }
           } else if (callText === "useQuery" || callText === "useMutation") {
             const enclosingComp = findEnclosingComponent(
@@ -222,35 +171,7 @@ export function extractStateAndApiCalls(
               } else if (ts.isObjectBindingPattern(decl.name)) {
                 identifier = decl.name.getText(sourceFile);
               }
-              const start = sourceFile.getLineAndCharacterOfPosition(
-                node.getStart(sourceFile),
-              );
-              const end = sourceFile.getLineAndCharacterOfPosition(
-                node.getEnd(),
-              );
-              const startLine = start.line + 1;
-              const startColumn = start.character + 1;
-              const endLine = Math.max(startLine, end.line + 1);
-
-              const id = generateSymbolId(
-                filePath,
-                "state",
-                `${enclosingComp.id}_${identifier}`,
-                startLine,
-                startColumn,
-              );
-
-              stateList.push({
-                id,
-                componentId: enclosingComp.id,
-                kind: "query",
-                identifier,
-                sourceEvidence: {
-                  path: filePath,
-                  startLine,
-                  endLine,
-                },
-              });
+              recordState(node, enclosingComp.id, "query", identifier);
             }
           } else if (callText === "create" || callText.endsWith(".create")) {
             const enclosingComp = findEnclosingComponent(
@@ -262,33 +183,7 @@ export function extractStateAndApiCalls(
             const identifier = ts.isIdentifier(decl.name)
               ? decl.name.text
               : "zustandStore";
-            const start = sourceFile.getLineAndCharacterOfPosition(
-              node.getStart(sourceFile),
-            );
-            const end = sourceFile.getLineAndCharacterOfPosition(node.getEnd());
-            const startLine = start.line + 1;
-            const startColumn = start.character + 1;
-            const endLine = Math.max(startLine, end.line + 1);
-
-            const id = generateSymbolId(
-              filePath,
-              "state",
-              `${compId}_${identifier}`,
-              startLine,
-              startColumn,
-            );
-
-            stateList.push({
-              id,
-              componentId: compId,
-              kind: "zustand",
-              identifier,
-              sourceEvidence: {
-                path: filePath,
-                startLine,
-                endLine,
-              },
-            });
+            recordState(node, compId, "zustand", identifier);
           }
         }
       }

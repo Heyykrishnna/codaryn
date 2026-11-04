@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { workspaceRequest } from "@/src/lib/workspace-request";
 import type {
   FrontendOverviewResponse,
   FrontendComponentsResponse,
@@ -10,35 +10,19 @@ import type {
   FrontendApiClientsResponse,
 } from "@codaryn/contracts";
 
-export async function frontendRequest(
+export function frontendRequest(
   action: string,
   workspaceId: string,
   input: Record<string, unknown> = {},
 ): Promise<unknown> {
-  const query = new URLSearchParams({ workspaceId });
-  for (const [key, value] of Object.entries(input)) {
-    if (value !== undefined && value !== null) query.set(key, String(value));
-  }
-
-  const response = await fetch(`/api/v1/frontend/${action}?${query}`, {
-    method: "GET",
-    headers: {},
-    cache: "no-store",
-    signal: AbortSignal.timeout(30000),
-  });
-
-  if (!response.ok) {
-    const error = z
-      .object({ error: z.object({ message: z.string() }) })
-      .safeParse(await response.json().catch(() => null));
-    throw new Error(
-      error.success
-        ? error.data.error.message
-        : "Frontend request failed. Reload and try again.",
-    );
-  }
-
-  return response.json();
+  return workspaceRequest(
+    "frontend",
+    action,
+    workspaceId,
+    input,
+    false,
+    "Frontend request failed. Reload and try again.",
+  );
 }
 
 export async function fetchFrontendOverview(

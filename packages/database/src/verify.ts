@@ -1,3 +1,4 @@
+import { columnTypeMatches } from "./column-type.js";
 import { getTableConfig } from "drizzle-orm/pg-core";
 import { foundationJobs } from "./index.js";
 import * as schema from "./schema.js";
@@ -10,8 +11,10 @@ try {
     column_name: string;
     is_nullable: string;
     udt_name: string;
+    numeric_precision: number | null;
+    numeric_scale: number | null;
   }>(
-    "SELECT table_name,column_name,is_nullable,udt_name FROM information_schema.columns WHERE table_schema='public'",
+    "SELECT table_name,column_name,is_nullable,udt_name,numeric_precision,numeric_scale FROM information_schema.columns WHERE table_schema='public'",
   );
   const constraints = await pool.query<{
     table_name: string;
@@ -64,16 +67,7 @@ try {
       }
       if (column.notNull && found.is_nullable !== "NO")
         failures.push(`${expected.name}.${column.name}: nullable`);
-      const types: Record<string, string> = {
-        text: "text",
-        uuid: "uuid",
-        bigint: "int8",
-        integer: "int4",
-        boolean: "bool",
-        jsonb: "jsonb",
-        "timestamp with time zone": "timestamptz",
-      };
-      if (types[column.getSQLType()] !== found.udt_name)
+      if (!columnTypeMatches(column.getSQLType(), found))
         failures.push(`${expected.name}.${column.name}: type mismatch`);
     }
   }
