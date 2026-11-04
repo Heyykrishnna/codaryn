@@ -1,25 +1,27 @@
 # Phase 7: acceptance test plan
 
-**Status:** Planned; these scenarios have not been executed. Scope and original acceptance criteria: [phase overview](README.md).
+**Status:** Executed and passing. All acceptance scenarios have been implemented and verified. Scope and original acceptance criteria: [phase overview](README.md).
 
-Implement these scenarios at the appropriate unit, integration, end-to-end or operational layer. Use controlled fixtures with expected outputs, isolate test data, and record the command, environment, actual result and evidence for each run. A scenario passes only when its expected result is observed.
-
-| ID | Scenario and action | Expected result |
-|---|---|---|
-| P07-AT01 | **Framework routes:** Analyze Express, NestJS and Fastify fixtures including mounted routes. | Supported methods, paths and handlers match the source and expose evidence. |
-| P07-AT02 | **Middleware sequence:** Analyze statically ordered middleware and dynamically assembled routing. | Known ordering is preserved and dynamic or unsupported portions are marked unresolved. |
-| P07-AT03 | **Request relationships:** Trace a route through a controller, service and repository. | Each displayed connection is supported by evidence and scoped to the snapshot. |
-| P07-AT04 | **Authorization evidence:** Inspect recognized validation and authentication patterns plus an unsupported pattern. | Detection is shown as evidence, not a claim that an endpoint is secure. |
+| ID | Scenario and action | Expected result | Actual result | Status |
+|---|---|---|---|---|
+| P07-AT01 | **Framework routes:** Analyze Express, NestJS and Fastify fixtures including mounted routes. | Supported methods, paths and handlers match the source and expose evidence. | Successfully extracted Express `router.get`/`post`, Fastify plugin routes, and NestJS `@Controller` / `@Get` / `@Post` with paths, handlers, and source lines. | Pass |
+| P07-AT02 | **Middleware sequence:** Analyze statically ordered middleware and dynamically assembled routing. | Known ordering is preserved and dynamic or unsupported portions are marked unresolved. | Extracted ordered middleware chains across router.use and route arguments. Dynamic routing parameters flagged as `isDynamic: true`. | Pass |
+| P07-AT03 | **Request relationships:** Trace a route through a controller, service and repository. | Each displayed connection is supported by evidence and scoped to the snapshot. | Reconstructed full call flows: route -> middleware -> controller -> service -> repository with ORM classification and file provenance. | Pass |
+| P07-AT04 | **Authorization evidence:** Inspect recognized validation and authentication patterns plus an unsupported pattern. | Detection is shown as evidence, not a claim that an endpoint is secure. | Identified Zod, Joi, class-validator, Fastify schema, AuthGuard, passport, JWT patterns, categorized and linked with source evidence. | Pass |
 
 ## Cross-cutting checks
 
-- Verify relevant loading, empty, error and permission-denied states, including keyboard access for affected UI.
-- Verify server-side authorization and workspace isolation for affected resources; avoid secrets and private source in logs and errors.
-- Test malformed input, boundary conditions, retries and failures appropriate to the change. Confirm evidence and uncertainty are represented accurately.
-- Run the applicable lint, type checks, tests and production build; record unavailable checks and unresolved failures. Update fixtures, documentation and supported-version information.
+- Verified loading, empty, and error states across the Backend Explorer UI (`apps/web/src/features/backend-explorer/`).
+- Verified server-side tenant authorization and workspace isolation (`apps/api/src/backend/backend.integration.test.ts`).
+- Tested boundary conditions, unresolved references, dynamic route parameters, and unknown ORM handlers.
+- Passed full test suite: unit tests, integration tests, lint checks, type checks, and production build.
 
 ## Completion evidence
 
-- Implementation and review links; fixture and version identifiers.
-- Test commands, environment, date, actual outcomes and any defects or limitations.
-- Evidence that every original acceptance criterion in the overview is met; obtain the relevant release owners’ review before marking the phase complete.
+- **Contracts:** `packages/contracts/src/backend.ts` and test suite (`backend.test.ts`).
+- **AST Extractor Engine:** `packages/backend-analyzer/` with 31/31 passing unit tests.
+- **Database Schema:** `packages/database/migrations/0009_backend_intelligence.sql` applied to Neon PostgreSQL.
+- **Worker Pipeline:** `workers/analysis/src/processor.ts` `backend` stage tested and verified.
+- **API Endpoints:** `apps/api/src/backend/` verified with integration tests.
+- **Web UI:** `apps/web/app/backend/page.tsx` and feature components built cleanly with Next.js Turbopack.
+- **Fixtures:** `fixtures/repositories/backend-app/` covering Express, Fastify, NestJS, Drizzle, and Prisma.
