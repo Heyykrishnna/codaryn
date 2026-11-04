@@ -57,6 +57,7 @@ export default function StudioPage() {
         <Link href="/analysis">Analysis</Link>
         <Link href="/graph">Graph</Link>
         <Link href="/frontend">Frontend</Link>
+        <Link href="/backend">Backend</Link>
         <Link href="/workspace">Workspace settings</Link>
       </header>
       <h1 className="text-3xl font-semibold">Analysis Studio</h1>

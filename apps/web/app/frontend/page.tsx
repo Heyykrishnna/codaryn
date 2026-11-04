@@ -243,6 +243,12 @@ function FrontendDashboard() {
             >
               Frontend Explorer
             </Link>
+            <Link
+              href="/backend"
+              className="hover:text-zinc-900 dark:hover:text-zinc-100"
+            >
+              Backend Explorer
+            </Link>
           </nav>
         </div>
         <Link

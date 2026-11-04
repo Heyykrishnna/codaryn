@@ -184,6 +184,12 @@ function Repositories() {
         >
           Frontend Explorer
         </Link>
+        <Link
+          href="/backend"
+          className="text-indigo-600 underline dark:text-indigo-400"
+        >
+          Backend Explorer
+        </Link>
       </div>
       <output aria-live="polite">{busy ? "Working…" : message}</output>
       {workspaces.length === 0 ? (

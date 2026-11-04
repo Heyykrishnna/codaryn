@@ -232,6 +232,12 @@ function AnalysisDashboard() {
             >
               Frontend Explorer
             </Link>
+            <Link
+              href="/backend"
+              className="hover:text-zinc-900 dark:hover:text-zinc-100"
+            >
+              Backend Explorer
+            </Link>
           </nav>
         </div>
         <Link
@@ -369,6 +375,12 @@ function AnalysisDashboard() {
                 className="font-medium text-indigo-600 underline dark:text-indigo-400"
               >
                 Frontend Explorer →
+              </Link>
+              <Link
+                href={`/backend?workspaceId=${workspaceId}&jobId=${job.id}`}
+                className="font-medium text-indigo-600 underline dark:text-indigo-400"
+              >
+                Backend Explorer →
               </Link>
               {job.completedAt && (
                 <span>
