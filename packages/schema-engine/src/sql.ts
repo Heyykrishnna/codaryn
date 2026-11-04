@@ -95,17 +95,16 @@ function constraint(
     label = tokens[1]?.value ?? "";
     at = 2;
   }
-  const first = tokens[at]?.value.toUpperCase();
-  const kind =
-    first === "PRIMARY"
-      ? "primary-key"
-      : first === "FOREIGN"
-        ? "foreign-key"
-        : first === "UNIQUE"
-          ? "unique"
-          : first === "CHECK"
-            ? "check"
-            : "index";
+  const kinds: Record<
+    string,
+    "primary-key" | "foreign-key" | "unique" | "check" | "index"
+  > = {
+    PRIMARY: "primary-key",
+    FOREIGN: "foreign-key",
+    UNIQUE: "unique",
+    CHECK: "check",
+  };
+  const kind = kinds[tokens[at]?.value.toUpperCase()] ?? "index";
   const open = tokens.findIndex(
     (token, index) => index >= at && token.value === "(",
   );
@@ -147,41 +146,13 @@ function column(
     return;
   }
   const name = tokens[0].value;
-  let end = 1;
-  let depth = 0;
-  while (end < tokens.length) {
-    const token = tokens[end];
-    if (
-      depth === 0 &&
-      !token.quoted &&
-      modifiers.has(token.value.toUpperCase())
-    )
-      break;
-    if (token.value === "(") depth++;
-    if (token.value === ")") depth--;
-    end++;
-  }
+  const end = modifierBoundary(tokens, 1);
   const primary = tokens.some(
     (token, index) => is(token, "PRIMARY") && is(tokens[index + 1], "KEY"),
   );
   const unique = tokens.some((token) => is(token, "UNIQUE"));
   const defaultAt = tokens.findIndex((token) => is(token, "DEFAULT"));
-  let defaultEnd = defaultAt + 1;
-  depth = 0;
-  if (defaultAt >= 0)
-    while (defaultEnd < tokens.length) {
-      const token = tokens[defaultEnd];
-      if (
-        defaultEnd > defaultAt + 1 &&
-        depth === 0 &&
-        !token.quoted &&
-        modifiers.has(token.value.toUpperCase())
-      )
-        break;
-      if (token.value === "(") depth++;
-      if (token.value === ")") depth--;
-      defaultEnd++;
-    }
+  const defaultEnd = modifierBoundary(tokens, defaultAt + 1);
   target.columns.push({
     id: identity(target.id, name),
     name,
@@ -249,151 +220,24 @@ function applyStatement(
   const upper = tokens.map((token) => token.value.toUpperCase());
   const typeAt = upper.indexOf("TYPE");
   if (is(tokens[0], "CREATE") && typeAt === 1 && upper.includes("ENUM")) {
-    const name = qualified(tokens, 2);
-    const open = tokens.findIndex((token) => token.value === "(");
-    if (open < 0) throw new Error("Missing enum values");
-    result.enums.push({
-      id: identity("sql", name.namespace, name.name),
-      adapter: "sql",
-      name: `${name.namespace}.${name.name}`,
-      values: names(tokens.slice(open + 1, matching(tokens, open))),
-      evidence: evidence(
-        path,
-        source,
-        tokens[0].start,
-        tokens[tokens.length - 1].end,
-      ),
-    });
+    createEnum(tokens, path, source, result);
     return;
   }
   const tableAt = upper.indexOf("TABLE");
   if (is(tokens[0], "CREATE") && tableAt === 1) {
-    const nameAt = is(tokens[2], "IF") ? 5 : 2;
-    const name = qualified(tokens, nameAt);
-    const open = name.next;
-    if (tokens[open]?.value !== "(")
-      throw new Error("CREATE TABLE requires a column list");
-    if (
-      result.tables.some(
-        (item) => item.id === tableId("sql", name.namespace, name.name),
-      )
-    ) {
-      diagnostic(
-        result,
-        path,
-        source,
-        tokens[0].start,
-        "DUPLICATE_TABLE",
-        "Table is already declared; subsequent CREATE was not applied.",
-      );
-      return;
-    }
-    const target = table(
-      "sql",
-      name.name,
-      path,
-      source,
-      tokens[0].start,
-      tokens[tokens.length - 1].end,
-      name.namespace,
-    );
-    for (const part of split(tokens.slice(open + 1, matching(tokens, open))))
-      column(target, part, path, source, result);
-    result.tables.push(target);
+    createTable(tokens, path, source, result);
     return;
   }
   if (is(tokens[0], "CREATE") && upper.includes("INDEX")) {
-    const indexAt = upper.indexOf("INDEX");
-    const on = upper.indexOf("ON");
-    const name = qualified(tokens, on + 1);
-    const target = result.tables.find(
-      (item) => item.id === tableId("sql", name.namespace, name.name),
-    );
-    if (!target) throw new Error("Index target is unavailable");
-    const open = tokens.findIndex(
-      (token, index) => index > on && token.value === "(",
-    );
-    if (open < 0) throw new Error("Missing index columns");
-    const label =
-      tokens[is(tokens[indexAt + 1], "IF") ? indexAt + 4 : indexAt + 1]
-        ?.value ?? "index";
-    target.constraints.push({
-      id: identity(target.id, label),
-      name: label,
-      kind: upper.includes("UNIQUE") ? "unique" : "index",
-      columns: names(tokens.slice(open + 1, matching(tokens, open))),
-      expression: slice(source, tokens.slice(open)),
-      evidence: evidence(
-        path,
-        source,
-        tokens[0].start,
-        tokens[tokens.length - 1].end,
-      ),
-    });
+    createIndex(tokens, path, source, result);
     return;
   }
   if (is(tokens[0], "ALTER") && tableAt === 1) {
-    const name = qualified(tokens, 2);
-    const target = result.tables.find(
-      (item) => item.id === tableId("sql", name.namespace, name.name),
-    );
-    if (!target) throw new Error("ALTER target is unavailable");
-    for (const action of split(tokens.slice(name.next))) {
-      if (is(action[0], "ADD")) {
-        const content = is(action[1], "COLUMN")
-          ? action.slice(2)
-          : action.slice(1);
-        column(target, content, path, source, result);
-      } else if (is(action[0], "DROP") && is(action[1], "COLUMN")) {
-        const name = action[2]?.value;
-        target.columns = target.columns.filter((item) => item.name !== name);
-        target.constraints = target.constraints.filter(
-          (item) => !item.columns.includes(name),
-        );
-        result.relations = result.relations.filter(
-          (item) =>
-            item.sourceTableId !== target.id || !item.columns.includes(name),
-        );
-      } else if (is(action[0], "ALTER") && is(action[1], "COLUMN")) {
-        const item = target.columns.find(
-          (item) => item.name === action[2]?.value,
-        );
-        if (!item) throw new Error("Unknown ALTER column");
-        if (is(action[3], "TYPE")) item.type = slice(source, action.slice(4));
-        else if (is(action[3], "SET") && is(action[4], "NOT"))
-          item.nullable = false;
-        else if (is(action[3], "DROP") && is(action[4], "NOT"))
-          item.nullable = true;
-        else if (is(action[3], "SET") && is(action[4], "DEFAULT"))
-          item.defaultValue = slice(source, action.slice(5));
-        else if (is(action[3], "DROP") && is(action[4], "DEFAULT"))
-          item.defaultValue = null;
-        else throw new Error("Unsupported ALTER COLUMN operation");
-        item.evidence = evidence(
-          path,
-          source,
-          action[0].start,
-          action[action.length - 1].end,
-        );
-      } else
-        diagnostic(
-          result,
-          path,
-          source,
-          action[0].start,
-          "SQL_UNSUPPORTED",
-          "Unsupported ALTER operation was not applied.",
-        );
-    }
+    alterTable(tokens, path, source, result);
     return;
   }
   if (is(tokens[0], "DROP") && is(tokens[1], "TABLE")) {
-    const name = qualified(tokens, is(tokens[2], "IF") ? 4 : 2);
-    const id = tableId("sql", name.namespace, name.name);
-    result.tables = result.tables.filter((item) => item.id !== id);
-    result.relations = result.relations.filter(
-      (item) => item.sourceTableId !== id,
-    );
+    dropTable(tokens, path, source, result);
     return;
   }
   diagnostic(
@@ -439,4 +283,207 @@ export function extractSql(
     }
   }
   return result;
+}
+
+function createEnum(
+  tokens: Token[],
+  path: string,
+  source: string,
+  result: Extraction,
+) {
+  const name = qualified(tokens, 2);
+  const open = tokens.findIndex((token) => token.value === "(");
+  if (open < 0) throw new Error("Missing enum values");
+  result.enums.push({
+    id: identity("sql", name.namespace, name.name),
+    adapter: "sql",
+    name: `${name.namespace}.${name.name}`,
+    values: names(tokens.slice(open + 1, matching(tokens, open))),
+    evidence: evidence(
+      path,
+      source,
+      tokens[0].start,
+      tokens[tokens.length - 1].end,
+    ),
+  });
+  return;
+}
+function createTable(
+  tokens: Token[],
+  path: string,
+  source: string,
+  result: Extraction,
+) {
+  const nameAt = is(tokens[2], "IF") ? 5 : 2;
+  const name = qualified(tokens, nameAt);
+  const open = name.next;
+  if (tokens[open]?.value !== "(")
+    throw new Error("CREATE TABLE requires a column list");
+  if (
+    result.tables.some(
+      (item) => item.id === tableId("sql", name.namespace, name.name),
+    )
+  ) {
+    diagnostic(
+      result,
+      path,
+      source,
+      tokens[0].start,
+      "DUPLICATE_TABLE",
+      "Table is already declared; subsequent CREATE was not applied.",
+    );
+    return;
+  }
+  const target = table(
+    "sql",
+    name.name,
+    path,
+    source,
+    tokens[0].start,
+    tokens[tokens.length - 1].end,
+    name.namespace,
+  );
+  for (const part of split(tokens.slice(open + 1, matching(tokens, open))))
+    column(target, part, path, source, result);
+  result.tables.push(target);
+  return;
+}
+function createIndex(
+  tokens: Token[],
+  path: string,
+  source: string,
+  result: Extraction,
+) {
+  const upper = tokens.map((token) => token.value.toUpperCase());
+  const indexAt = upper.indexOf("INDEX");
+  const on = upper.indexOf("ON");
+  const name = qualified(tokens, on + 1);
+  const target = result.tables.find(
+    (item) => item.id === tableId("sql", name.namespace, name.name),
+  );
+  if (!target) throw new Error("Index target is unavailable");
+  const open = tokens.findIndex(
+    (token, index) => index > on && token.value === "(",
+  );
+  if (open < 0) throw new Error("Missing index columns");
+  const label =
+    tokens[is(tokens[indexAt + 1], "IF") ? indexAt + 4 : indexAt + 1]?.value ??
+    "index";
+  target.constraints.push({
+    id: identity(target.id, label),
+    name: label,
+    kind: upper.includes("UNIQUE") ? "unique" : "index",
+    columns: names(tokens.slice(open + 1, matching(tokens, open))),
+    expression: slice(source, tokens.slice(open)),
+    evidence: evidence(
+      path,
+      source,
+      tokens[0].start,
+      tokens[tokens.length - 1].end,
+    ),
+  });
+  return;
+}
+function alterTable(
+  tokens: Token[],
+  path: string,
+  source: string,
+  result: Extraction,
+) {
+  const name = qualified(tokens, 2);
+  const target = result.tables.find(
+    (item) => item.id === tableId("sql", name.namespace, name.name),
+  );
+  if (!target) throw new Error("ALTER target is unavailable");
+  for (const action of split(tokens.slice(name.next))) {
+    alterAction(target, action, path, source, result);
+  }
+  return;
+}
+function dropTable(
+  tokens: Token[],
+  path: string,
+  source: string,
+  result: Extraction,
+) {
+  const name = qualified(tokens, is(tokens[2], "IF") ? 4 : 2);
+  const id = tableId("sql", name.namespace, name.name);
+  result.tables = result.tables.filter((item) => item.id !== id);
+  result.relations = result.relations.filter(
+    (item) => item.sourceTableId !== id,
+  );
+  return;
+}
+
+function modifierBoundary(tokens: Token[], start: number) {
+  let depth = 0;
+  for (let index = start; index < tokens.length; index++) {
+    const token = tokens[index];
+    if (
+      index > start &&
+      depth === 0 &&
+      !token.quoted &&
+      modifiers.has(token.value.toUpperCase())
+    )
+      return index;
+    if (token.value === "(") depth++;
+    else if (token.value === ")") depth--;
+  }
+  return tokens.length;
+}
+
+function alterAction(
+  target: SchemaTable,
+  action: Token[],
+  path: string,
+  source: string,
+  result: Extraction,
+) {
+  if (is(action[0], "ADD")) {
+    const content = is(action[1], "COLUMN") ? action.slice(2) : action.slice(1);
+    column(target, content, path, source, result);
+  } else if (is(action[0], "DROP") && is(action[1], "COLUMN")) {
+    const name = action[2]?.value;
+    target.columns = target.columns.filter((item) => item.name !== name);
+    target.constraints = target.constraints.filter(
+      (item) => !item.columns.includes(name),
+    );
+    result.relations = result.relations.filter(
+      (item) =>
+        item.sourceTableId !== target.id || !item.columns.includes(name),
+    );
+  } else if (is(action[0], "ALTER") && is(action[1], "COLUMN")) {
+    alterColumn(target, action, path, source);
+  } else
+    diagnostic(
+      result,
+      path,
+      source,
+      action[0].start,
+      "SQL_UNSUPPORTED",
+      "Unsupported ALTER operation was not applied.",
+    );
+}
+function alterColumn(
+  target: SchemaTable,
+  action: Token[],
+  path: string,
+  source: string,
+) {
+  const item = target.columns.find((item) => item.name === action[2]?.value);
+  if (!item) throw new Error("Unknown ALTER column");
+  if (is(action[3], "TYPE")) item.type = slice(source, action.slice(4));
+  else if (is(action[3], "SET") && is(action[4], "NOT")) item.nullable = false;
+  else if (is(action[3], "DROP") && is(action[4], "NOT")) item.nullable = true;
+  else if (is(action[3], "SET") && is(action[4], "DEFAULT"))
+    item.defaultValue = slice(source, action.slice(5));
+  else if (is(action[3], "DROP") && is(action[4], "DEFAULT"))
+    item.defaultValue = null;
+  else throw new Error("Unsupported ALTER COLUMN operation");
+  item.evidence = evidence(
+    path,
+    source,
+    action[0].start,
+    action[action.length - 1].end,
+  );
 }

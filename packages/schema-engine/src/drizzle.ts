@@ -25,12 +25,12 @@ function chain(node: ts.Expression) {
   }
   return { calls, root: calls[calls.length - 1] };
 }
-const callName = (call: ts.CallExpression) =>
-  ts.isPropertyAccessExpression(call.expression)
-    ? call.expression.name.text
-    : ts.isIdentifier(call.expression)
-      ? call.expression.text
-      : "";
+function callName(call: ts.CallExpression) {
+  if (ts.isPropertyAccessExpression(call.expression))
+    return call.expression.name.text;
+  if (ts.isIdentifier(call.expression)) return call.expression.text;
+  return "";
+}
 function properties(node: ts.Node | undefined) {
   return node && ts.isObjectLiteralExpression(node)
     ? node.properties.filter(ts.isPropertyAssignment)
@@ -70,7 +70,11 @@ export function extractDrizzle(
         const original = item.propertyName?.text ?? item.name.text;
         if (statement.moduleSpecifier.text.startsWith("drizzle-orm"))
           factories.set(item.name.text, original);
-        else imports.set(item.name.text, statement.moduleSpecifier.text);
+        else
+          imports.set(
+            item.name.text,
+            `${statement.moduleSpecifier.text}:${original}`,
+          );
       }
   }
   const baseName = (call: ts.CallExpression) =>
@@ -78,7 +82,7 @@ export function extractDrizzle(
   const refTarget = (node: ts.PropertyAccessExpression) => {
     const variable = node.expression.getText(file);
     const module = imports.get(variable);
-    return module ? `${module}:${variable}` : variable;
+    return module ?? variable;
   };
   function addRelation(
     target: SchemaTable,
@@ -147,6 +151,10 @@ export function extractDrizzle(
       blob: "blob",
     };
     const primary = modifiers.includes("primaryKey");
+    let defaultValue: string | null = null;
+    if (initial)
+      defaultValue = initial.arguments[0]?.getText(file).slice(0, 4096) ?? null;
+    else if (defaultNow) defaultValue = "now()";
     const column = {
       id: identity(target.id, name),
       name,
@@ -154,11 +162,7 @@ export function extractDrizzle(
       nullable: !primary && !modifiers.includes("notNull"),
       primaryKey: primary,
       unique: modifiers.includes("unique"),
-      defaultValue: initial
-        ? (initial.arguments[0]?.getText(file).slice(0, 4096) ?? null)
-        : defaultNow
-          ? "now()"
-          : null,
+      defaultValue,
       evidence: evidence(path, source, property.getStart(file), property.end),
     };
     target.columns.push(column);
@@ -178,32 +182,7 @@ export function extractDrizzle(
         });
     const references = calls.find((item) => callName(item) === "references");
     if (references) {
-      const arrow = references.arguments[0];
-      if (
-        arrow &&
-        ts.isArrowFunction(arrow) &&
-        ts.isPropertyAccessExpression(arrow.body)
-      ) {
-        const options = properties(references.arguments[1]);
-        addRelation(
-          target,
-          [name],
-          [arrow.body],
-          references,
-          literal(
-            options.find((item) => item.name.getText(file) === "onDelete")
-              ?.initializer,
-          ) ?? null,
-        );
-      } else
-        diagnostic(
-          result,
-          path,
-          source,
-          references.pos,
-          "DRIZZLE_DYNAMIC",
-          "Dynamic reference was not resolved.",
-        );
+      columnReference(target, name, references);
     }
     if (!types[type] && !factories.has(type))
       diagnostic(
@@ -278,6 +257,117 @@ export function extractDrizzle(
     }
     ts.forEachChild(node, (child) => constraints(target, child));
   }
+  function handleVariable(
+    node: ts.VariableDeclaration,
+    name: ts.Identifier,
+    initializer: ts.CallExpression,
+  ) {
+    const call = initializer;
+    const factory = baseName(call);
+    const first = literal(call.arguments[0]);
+    if (factory === "pgSchema" && first) namespaces.set(name.text, first);
+    if (factory === "pgEnum" && first) {
+      result.enums.push({
+        id: identity("drizzle", path, first),
+        name: first,
+        adapter: "drizzle",
+        values: values(call.arguments[1])
+          .map((item) => literal(item))
+          .filter((item): item is string => item !== undefined),
+        evidence: evidence(path, source, node.getStart(file), node.end),
+      });
+    }
+    const schemaName = ts.isPropertyAccessExpression(call.expression)
+      ? namespaces.get(call.expression.expression.getText(file))
+      : undefined;
+    if (
+      ["pgTable", "mysqlTable", "sqliteTable"].includes(factory) ||
+      (factory === "table" && schemaName)
+    ) {
+      readTable(node, name, call, first, schemaName);
+    }
+  }
+
+  function columnReference(
+    target: SchemaTable,
+    name: string,
+    references: ts.CallExpression,
+  ) {
+    const arrow = references.arguments[0];
+    if (
+      arrow &&
+      ts.isArrowFunction(arrow) &&
+      ts.isPropertyAccessExpression(arrow.body)
+    ) {
+      const options = properties(references.arguments[1]);
+      addRelation(
+        target,
+        [name],
+        [arrow.body],
+        references,
+        literal(
+          options.find((item) => item.name.getText(file) === "onDelete")
+            ?.initializer,
+        ) ?? null,
+      );
+    } else
+      diagnostic(
+        result,
+        path,
+        source,
+        references.pos,
+        "DRIZZLE_DYNAMIC",
+        "Dynamic reference was not resolved.",
+      );
+  }
+  function readTable(
+    node: ts.VariableDeclaration,
+    name: ts.Identifier,
+    call: ts.CallExpression,
+    first: string | undefined,
+    schemaName: string | undefined,
+  ) {
+    if (
+      !first ||
+      !call.arguments[1] ||
+      !ts.isObjectLiteralExpression(call.arguments[1])
+    ) {
+      diagnostic(
+        result,
+        path,
+        source,
+        node.pos,
+        "DRIZZLE_DYNAMIC",
+        "Dynamic table declarations are not evaluated.",
+      );
+      return;
+    }
+    const target = table(
+      "drizzle",
+      first,
+      path,
+      source,
+      node.getStart(file),
+      node.end,
+      schemaName,
+    );
+    target.modelName = name.text;
+    result.bindings.set(name.text, target.id);
+    for (const property of call.arguments[1].properties) {
+      if (ts.isPropertyAssignment(property)) addColumn(target, property);
+      else
+        diagnostic(
+          result,
+          path,
+          source,
+          property.pos,
+          "DRIZZLE_DYNAMIC",
+          "Spread and computed column declarations are unsupported.",
+        );
+    }
+    if (call.arguments[2]) constraints(target, call.arguments[2]);
+    result.tables.push(target);
+  }
   function visit(node: ts.Node) {
     if (
       ts.isVariableDeclaration(node) &&
@@ -285,70 +375,7 @@ export function extractDrizzle(
       node.initializer &&
       ts.isCallExpression(node.initializer)
     ) {
-      const call = node.initializer;
-      const factory = baseName(call);
-      const first = literal(call.arguments[0]);
-      if (factory === "pgSchema" && first)
-        namespaces.set(node.name.text, first);
-      if (factory === "pgEnum" && first) {
-        result.enums.push({
-          id: identity("drizzle", path, first),
-          name: first,
-          adapter: "drizzle",
-          values: values(call.arguments[1])
-            .map((item) => literal(item))
-            .filter((item): item is string => item !== undefined),
-          evidence: evidence(path, source, node.getStart(file), node.end),
-        });
-      }
-      const schemaName = ts.isPropertyAccessExpression(call.expression)
-        ? namespaces.get(call.expression.expression.getText(file))
-        : undefined;
-      if (
-        ["pgTable", "mysqlTable", "sqliteTable"].includes(factory) ||
-        (factory === "table" && schemaName)
-      ) {
-        if (
-          !first ||
-          !call.arguments[1] ||
-          !ts.isObjectLiteralExpression(call.arguments[1])
-        ) {
-          diagnostic(
-            result,
-            path,
-            source,
-            node.pos,
-            "DRIZZLE_DYNAMIC",
-            "Dynamic table declarations are not evaluated.",
-          );
-          return;
-        }
-        const target = table(
-          "drizzle",
-          first,
-          path,
-          source,
-          node.getStart(file),
-          node.end,
-          schemaName,
-        );
-        target.modelName = node.name.text;
-        result.bindings.set(node.name.text, target.id);
-        for (const property of call.arguments[1].properties) {
-          if (ts.isPropertyAssignment(property)) addColumn(target, property);
-          else
-            diagnostic(
-              result,
-              path,
-              source,
-              property.pos,
-              "DRIZZLE_DYNAMIC",
-              "Spread and computed column declarations are unsupported.",
-            );
-        }
-        if (call.arguments[2]) constraints(target, call.arguments[2]);
-        result.tables.push(target);
-      }
+      handleVariable(node, node.name, node.initializer);
     }
     ts.forEachChild(node, visit);
   }
