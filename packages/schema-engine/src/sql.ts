@@ -66,14 +66,7 @@ function relation(
     targetColumns,
     cardinality: "one-to-many",
     resolution: "DIRECT",
-    onDelete:
-      deletion < 0
-        ? null
-        : tokens
-            .slice(deletion + 2, deletion + 4)
-            .map((token) => token.value)
-            .join(" ")
-            .trim(),
+    onDelete: referentialAction(tokens, deletion),
     evidence: evidence(
       path,
       source,
@@ -137,6 +130,17 @@ function column(
   result: Extraction,
 ) {
   if (!tokens[1]) return;
+  if (["EXCLUDE", "LIKE"].some((value) => is(tokens[0], value))) {
+    diagnostic(
+      result,
+      path,
+      source,
+      tokens[0].start,
+      "SQL_UNSUPPORTED",
+      "Advanced table clauses are preserved in source but not modeled.",
+    );
+    return;
+  }
   if (
     ["CONSTRAINT", "PRIMARY", "FOREIGN", "UNIQUE", "CHECK"].some((value) =>
       is(tokens[0], value),
@@ -486,4 +490,15 @@ function alterColumn(
     action[0].start,
     action[action.length - 1].end,
   );
+}
+
+function referentialAction(tokens: Token[], index: number) {
+  if (index < 0) return null;
+  const first = tokens[index + 2]?.value ?? "";
+  if (["SET", "NO"].includes(first.toUpperCase()))
+    return tokens
+      .slice(index + 2, index + 4)
+      .map((token) => token.value)
+      .join(" ");
+  return first;
 }

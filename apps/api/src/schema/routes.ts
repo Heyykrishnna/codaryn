@@ -76,7 +76,14 @@ export function registerSchema(
         );
       if (action === "overview")
         return await service.overview(actor, workspace, snapshotId);
-      if (action === "tables" || action === "relations" || action === "lineage")
+      if (
+        action === "tables" ||
+        action === "relations" ||
+        action === "lineage" ||
+        action === "columns" ||
+        action === "constraints" ||
+        action === "enums"
+      )
         return await service.objects(
           actor,
           workspace,

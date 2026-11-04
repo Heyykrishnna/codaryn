@@ -115,6 +115,22 @@ test("Schema API isolates workspaces, validates requests and exports the same im
       "UPDATE analysis_schema_snapshots SET status='completed',snapshot=$2,hash=$3,table_count=1 WHERE id=$1",
       [id, result.snapshot, result.hash],
     );
+    for (const [action, count] of [
+      ["columns", 2],
+      ["constraints", 2],
+      ["enums", 0],
+    ] as const) {
+      const response = await get(action, { snapshotId: id });
+      assert.equal(response.statusCode, 200);
+      assert.equal(response.json().total, count);
+      assert.equal(
+        (await get(action, { snapshotId: id }, outsider)).statusCode,
+        404,
+      );
+    }
+    const diagram = await get("diagram", { snapshotId: id });
+    assert.equal(diagram.statusCode, 200);
+    assert.equal(diagram.json().tables.length, 1);
     const listed = await get("tables", { snapshotId: id });
     assert.equal(listed.statusCode, 200);
     assert.equal(listed.json().items.length, 1);

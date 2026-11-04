@@ -159,7 +159,8 @@ export class SchemaService {
             0,
           ) ?? 0,
         relations: snapshot?.relations.length ?? 0,
-        enums: snapshot?.enums ?? [],
+        enums: snapshot?.enums.slice(0, 20) ?? [],
+        enumCount: snapshot?.enums.length ?? 0,
         diagnostics: snapshot?.diagnostics.slice(0, 50) ?? [],
         diagnosticCount: snapshot?.diagnostics.length ?? 0,
       };
@@ -169,7 +170,8 @@ export class SchemaService {
     actor: string,
     workspace: string,
     id: string,
-    kind: "tables" | "relations" | "lineage",
+    kind:
+      "tables" | "relations" | "lineage" | "columns" | "constraints" | "enums",
     page: number,
     search: string,
     adapter: string,
@@ -203,6 +205,29 @@ export class SchemaService {
             columnCount: item.columns.length,
             evidence: item.evidence,
           }));
+      else if (kind === "enums")
+        items = snapshot.enums.filter(
+          (item) =>
+            (!adapter || item.adapter === adapter) &&
+            (!search || item.name.toLowerCase().includes(search.toLowerCase())),
+        );
+      else if (kind === "columns" || kind === "constraints")
+        items = snapshot.tables
+          .filter(
+            (item) =>
+              eligible.has(item.id) && (!tableId || item.id === tableId),
+          )
+          .flatMap((item) => {
+            const members =
+              kind === "columns" ? item.columns : item.constraints;
+            return members
+              .filter(
+                (member) =>
+                  !search ||
+                  member.name.toLowerCase().includes(search.toLowerCase()),
+              )
+              .map((member) => ({ ...member, tableId: item.id }));
+          });
       else if (kind === "relations")
         items = snapshot.relations.filter(
           (item) =>

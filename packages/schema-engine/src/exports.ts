@@ -61,13 +61,17 @@ function svgRelation(relation: SchemaRelation, positions: Position[]) {
     y1 = from.y + 35,
     x2 = to.x,
     y2 = to.y + 35;
+  const self = from.id === to.id;
+  const path = self
+    ? `M${x1},${y1} C${x1 + 35},${y1} ${x1 + 35},${y1 + 65} ${x1},${y1 + 65}`
+    : `M${x1},${y1} C${x1 + 30},${y1 + 30} ${x2 - 30},${y2 + 30} ${x2},${y2}`;
   const stroke = relation.resolution === "INFERRED" ? "#b45309" : "#4f46e5";
   const dash =
     relation.resolution === "INFERRED" ? 'stroke-dasharray="6 4"' : "";
   const label = escapeXml(
     `${relation.name} · ${relation.cardinality} · ${relation.resolution}`,
   );
-  return `<g><path d="M${x1},${y1} C${x1 + 30},${y1 + 30} ${x2 - 30},${y2 + 30} ${x2},${y2}" fill="none" stroke="${stroke}" ${dash}/><text x="${(x1 + x2) / 2}" y="${(y1 + y2) / 2 + 15}" font-size="10">${label}</text></g>`;
+  return `<g><path d="${path}" fill="none" stroke="${stroke}" ${dash}/><text x="${(x1 + x2) / 2}" y="${(y1 + y2) / 2 + 15}" font-size="10">${label}</text></g>`;
 }
 export function renderSchemaSvg(
   snapshot: SchemaSnapshot,

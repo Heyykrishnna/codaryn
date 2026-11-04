@@ -27,3 +27,19 @@ test("SQL in dollar-quoted procedures and nested comments is never treated as sc
     ["visible"],
   );
 });
+
+test("referential actions preserve single and multi-word actions and unsupported table clauses are diagnostic", () => {
+  const result = extractSql([
+    {
+      path: "schema.sql",
+      content:
+        "CREATE TABLE users(id int PRIMARY KEY, parent_id int REFERENCES users(id) ON DELETE CASCADE, owner_id int REFERENCES users(id) ON DELETE SET NULL, EXCLUDE USING gist (id WITH =));",
+    },
+  ]);
+  assert.deepEqual(
+    result.relations.map((item) => item.onDelete),
+    ["CASCADE", "SET NULL"],
+  );
+  assert.equal(result.tables[0].columns.length, 3);
+  assert.equal(result.diagnostics[0].code, "SQL_UNSUPPORTED");
+});
