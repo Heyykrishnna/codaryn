@@ -226,6 +226,12 @@ function AnalysisDashboard() {
             >
               Graph
             </Link>
+            <Link
+              href="/frontend"
+              className="hover:text-zinc-900 dark:hover:text-zinc-100"
+            >
+              Frontend Explorer
+            </Link>
           </nav>
         </div>
         <Link
@@ -357,6 +363,12 @@ function AnalysisDashboard() {
                 className="font-medium text-indigo-600 underline dark:text-indigo-400"
               >
                 Dependency Graph →
+              </Link>
+              <Link
+                href={`/frontend?workspaceId=${workspaceId}&jobId=${job.id}`}
+                className="font-medium text-indigo-600 underline dark:text-indigo-400"
+              >
+                Frontend Explorer →
               </Link>
               {job.completedAt && (
                 <span>

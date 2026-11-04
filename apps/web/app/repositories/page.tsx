@@ -178,6 +178,12 @@ function Repositories() {
         >
           Dependency Graph
         </Link>
+        <Link
+          href="/frontend"
+          className="text-indigo-600 underline dark:text-indigo-400"
+        >
+          Frontend Explorer
+        </Link>
       </div>
       <output aria-live="polite">{busy ? "Working…" : message}</output>
       {workspaces.length === 0 ? (

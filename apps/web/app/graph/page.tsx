@@ -238,6 +238,12 @@ function GraphDashboard() {
             >
               Dependency Graph
             </Link>
+            <Link
+              href="/frontend"
+              className="hover:text-zinc-900 dark:hover:text-zinc-100"
+            >
+              Frontend Explorer
+            </Link>
           </nav>
         </div>
         <Link
