@@ -203,3 +203,23 @@ test("cross-file Drizzle aliases resolve deterministically and input map order d
   );
   assert.equal(first.snapshot.relations[0].resolution, "DIRECT");
 });
+
+test("comparison orders accented identifiers consistently and documentation escapes table delimiters", () => {
+  const before = extractSchema({});
+  const after = extractSchema({
+    "schema.sql":
+      'CREATE TABLE "ä"(id int PRIMARY KEY); CREATE TABLE "Z"(id int PRIMARY KEY);',
+  });
+  assert.deepEqual(
+    compareSchemas(before.snapshot, after.snapshot)
+      .changes.filter((item) => item.object === "table")
+      .map((item) => item.name),
+    ["sql:public.ä", "sql:public.Z"],
+  );
+  const document = renderSchemaMarkdown(
+    after.snapshot,
+    "snapshot|1",
+    after.hash,
+  );
+  assert.ok(document.includes(String.raw`snapshot\|1`));
+});

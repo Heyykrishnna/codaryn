@@ -31,9 +31,7 @@ const modifiers = new Set([
 ]);
 function slice(source: string, tokens: Token[]) {
   return tokens.length
-    ? source
-        .slice(tokens[0].start, tokens[tokens.length - 1].end)
-        .slice(0, 4096)
+    ? source.slice(tokens[0].start, tokens.at(-1)!.end).slice(0, 4096)
     : "";
 }
 function relation(
@@ -67,12 +65,7 @@ function relation(
     cardinality: "one-to-many",
     resolution: "DIRECT",
     onDelete: referentialAction(tokens, deletion),
-    evidence: evidence(
-      path,
-      source,
-      tokens[0].start,
-      tokens[tokens.length - 1].end,
-    ),
+    evidence: evidence(path, source, tokens[0].start, tokens.at(-1)!.end),
   });
 }
 function constraint(
@@ -112,12 +105,7 @@ function constraint(
     kind,
     columns,
     expression: kind === "check" ? slice(source, tokens.slice(at + 1)) : null,
-    evidence: evidence(
-      path,
-      source,
-      tokens[0].start,
-      tokens[tokens.length - 1].end,
-    ),
+    evidence: evidence(path, source, tokens[0].start, tokens.at(-1)!.end),
   });
   if (kind === "foreign-key")
     relation(target, columns, tokens, path, source, result, label);
@@ -172,12 +160,7 @@ function column(
         : slice(source, tokens.slice(defaultAt + 1, defaultEnd)),
     primaryKey: primary,
     unique,
-    evidence: evidence(
-      path,
-      source,
-      tokens[0].start,
-      tokens[tokens.length - 1].end,
-    ),
+    evidence: evidence(path, source, tokens[0].start, tokens.at(-1)!.end),
   });
   for (const kind of [
     primary ? "primary-key" : null,
@@ -303,14 +286,8 @@ function createEnum(
     adapter: "sql",
     name: `${name.namespace}.${name.name}`,
     values: names(tokens.slice(open + 1, matching(tokens, open))),
-    evidence: evidence(
-      path,
-      source,
-      tokens[0].start,
-      tokens[tokens.length - 1].end,
-    ),
+    evidence: evidence(path, source, tokens[0].start, tokens.at(-1)!.end),
   });
-  return;
 }
 function createTable(
   tokens: Token[],
@@ -344,13 +321,12 @@ function createTable(
     path,
     source,
     tokens[0].start,
-    tokens[tokens.length - 1].end,
+    tokens.at(-1)!.end,
     name.namespace,
   );
   for (const part of split(tokens.slice(open + 1, matching(tokens, open))))
     column(target, part, path, source, result);
   result.tables.push(target);
-  return;
 }
 function createIndex(
   tokens: Token[],
@@ -379,14 +355,8 @@ function createIndex(
     kind: upper.includes("UNIQUE") ? "unique" : "index",
     columns: names(tokens.slice(open + 1, matching(tokens, open))),
     expression: slice(source, tokens.slice(open)),
-    evidence: evidence(
-      path,
-      source,
-      tokens[0].start,
-      tokens[tokens.length - 1].end,
-    ),
+    evidence: evidence(path, source, tokens[0].start, tokens.at(-1)!.end),
   });
-  return;
 }
 function alterTable(
   tokens: Token[],
@@ -402,7 +372,6 @@ function alterTable(
   for (const action of split(tokens.slice(name.next))) {
     alterAction(target, action, path, source, result);
   }
-  return;
 }
 function dropTable(
   tokens: Token[],
@@ -416,7 +385,6 @@ function dropTable(
   result.relations = result.relations.filter(
     (item) => item.sourceTableId !== id,
   );
-  return;
 }
 
 function modifierBoundary(tokens: Token[], start: number) {
@@ -484,12 +452,7 @@ function alterColumn(
   else if (is(action[3], "DROP") && is(action[4], "DEFAULT"))
     item.defaultValue = null;
   else throw new Error("Unsupported ALTER COLUMN operation");
-  item.evidence = evidence(
-    path,
-    source,
-    action[0].start,
-    action[action.length - 1].end,
-  );
+  item.evidence = evidence(path, source, action[0].start, action.at(-1)!.end);
 }
 
 function referentialAction(tokens: Token[], index: number) {

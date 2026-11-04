@@ -84,16 +84,13 @@ export function registerSchema(
         action === "constraints" ||
         action === "enums"
       )
-        return await service.objects(
-          actor,
-          workspace,
-          snapshotId,
-          action,
-          input.page,
-          input.search,
-          input.adapter,
-          input.tableId,
-        );
+        return await service.objects(actor, workspace, snapshotId, {
+          kind: action,
+          page: input.page,
+          search: input.search,
+          adapter: input.adapter,
+          tableId: input.tableId,
+        });
       if (action === "table" || action === "column")
         return await service.table(
           actor,

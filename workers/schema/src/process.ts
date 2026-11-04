@@ -5,6 +5,15 @@ import type { Pool } from "pg";
 import type { GitHubGateway } from "@codaryn/github";
 import { withRepositoryArchive } from "@codaryn/repository-ingestion";
 import { extractSchema } from "@codaryn/schema-engine";
+function* sourceBatches(directory: string, paths: string[]) {
+  for (let offset = 0; offset < paths.length; offset += 8)
+    yield Promise.allSettled(
+      paths.slice(offset, offset + 8).map(async (path) => ({
+        path,
+        source: await readFile(join(directory, path), "utf8"),
+      })),
+    );
+}
 interface RequestRow {
   id: string;
   commit_sha: string;
@@ -41,13 +50,10 @@ export async function runOneSchemaRequest(
       const candidates = inventory.files.filter((item) =>
         /\.(sql|prisma|[cm]?[jt]sx?)$/.test(item.path),
       );
-      for (let offset = 0; offset < candidates.length; offset += 8) {
-        const batch = await Promise.allSettled(
-          candidates.slice(offset, offset + 8).map(async (item) => ({
-            path: item.path,
-            source: await readFile(join(directory, item.path), "utf8"),
-          })),
-        );
+      for await (const batch of sourceBatches(
+        directory,
+        candidates.map((item) => item.path),
+      )) {
         for (const item of batch) {
           if (item.status === "rejected") throw new Error("SCHEMA_READ_FAILED");
           files[item.value.path] = item.value.source;

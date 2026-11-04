@@ -35,7 +35,7 @@ function records(tokens: Token[], source: string) {
     if (
       current.length &&
       depth === 0 &&
-      source.slice(current[current.length - 1].end, token.start).includes("\n")
+      source.slice(current.at(-1)!.end, token.start).includes("\n")
     ) {
       output.push(current);
       current = [];
@@ -61,12 +61,15 @@ function arrayArg(tokens: Token[], key: string) {
 }
 function readBlocks(tokens: Token[]): Block[] {
   const blocks: Block[] = [];
-  for (let i = 0; i < tokens.length; i++) {
+  let i = 0;
+  while (i < tokens.length) {
     if (
       !["model", "enum", "view"].includes(tokens[i].value) ||
       tokens[i + 2]?.value !== "{"
-    )
+    ) {
+      i++;
       continue;
+    }
     const end = matching(tokens, i + 2, "{", "}");
     blocks.push({
       kind: tokens[i].value,
@@ -75,7 +78,7 @@ function readBlocks(tokens: Token[]): Block[] {
       start: tokens[i].start,
       end: tokens[end].end,
     });
-    i = end;
+    i = end + 1;
   }
   return blocks;
 }
@@ -110,7 +113,7 @@ class PrismaParser {
       this.path,
       this.source,
       tokens[0].start,
-      tokens[tokens.length - 1].end,
+      tokens.at(-1)!.end,
     );
   }
   private declaration(block: Block) {

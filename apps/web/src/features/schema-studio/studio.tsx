@@ -205,7 +205,7 @@ export function SchemaStudio({
             checked={infer}
             onChange={(event) => setInfer(event.target.checked)}
           />
-          Infer naming-based relations
+          <span>Infer naming-based relations</span>
         </label>
         <button type="submit" className={button} disabled={busy || !jobId}>
           Extract schema

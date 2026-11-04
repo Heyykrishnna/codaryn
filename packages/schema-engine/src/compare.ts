@@ -72,7 +72,9 @@ export function compareSchemas(
   const before = objects(from),
     after = objects(to);
   const changes: SchemaComparison["changes"] = [];
-  for (const key of [...new Set([...before.keys(), ...after.keys()])].sort()) {
+  for (const key of [...new Set([...before.keys(), ...after.keys()])].sort(
+    (a, b) => a.localeCompare(b),
+  )) {
     const old = before.get(key),
       next = after.get(key);
     if (old?.value === next?.value) continue;

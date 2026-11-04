@@ -55,7 +55,7 @@ class Lexer {
   private readToken() {
     const start = this.position;
     const quote = this.source[start];
-    const dollar = /^\$[a-zA-Z_0-9]*\$/.exec(this.source.slice(start));
+    const dollar = /^\$\w*\$/.exec(this.source.slice(start));
     if (dollar) {
       this.readDollar(start, dollar[0]);
       return;

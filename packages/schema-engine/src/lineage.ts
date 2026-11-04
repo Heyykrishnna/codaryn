@@ -1,9 +1,5 @@
 import ts from "typescript";
-import type {
-  SchemaSnapshot,
-  SchemaLineage,
-  SchemaTable,
-} from "@codaryn/contracts";
+import type { SchemaLineage, SchemaTable } from "@codaryn/contracts";
 import { evidence, identity } from "./model.js";
 export function sourceLineage(
   files: Record<string, string>,

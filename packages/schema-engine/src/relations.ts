@@ -6,13 +6,13 @@ import type {
 } from "@codaryn/contracts";
 import { identity } from "./model.js";
 function isUnique(table: SchemaTable, columns: string[]) {
-  const key = [...columns].sort().join("\0");
+  const key = [...columns].sort((a, b) => a.localeCompare(b)).join("\0");
   return (
     columns.length > 0 &&
     table.constraints.some(
       (item) =>
         ["primary-key", "unique"].includes(item.kind) &&
-        [...item.columns].sort().join("\0") === key,
+        [...item.columns].sort((a, b) => a.localeCompare(b)).join("\0") === key,
     )
   );
 }

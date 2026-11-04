@@ -23,7 +23,7 @@ function chain(node: ts.Expression) {
       ? current.expression.expression
       : current.expression;
   }
-  return { calls, root: calls[calls.length - 1] };
+  return { calls, root: calls.at(-1)! };
 }
 function callName(call: ts.CallExpression) {
   if (ts.isPropertyAccessExpression(call.expression))
@@ -112,7 +112,7 @@ export function extractDrizzle(
       kind: "foreign-key",
       columns,
       expression: null,
-      evidence: result.relations[result.relations.length - 1].evidence,
+      evidence: result.relations.at(-1)!.evidence,
     });
   }
   function addColumn(target: SchemaTable, property: ts.PropertyAssignment) {
@@ -127,9 +127,9 @@ export function extractDrizzle(
     const name =
       literal(root.arguments[0]) ??
       property.name.getText(file).replace(/^['"]|['"]$/g, "");
-    const modifiers = calls.map(callName);
+    const modifiers = new Set(calls.map(callName));
     const initial = calls.find((item) => callName(item) === "default");
-    const defaultNow = modifiers.includes("defaultNow");
+    const defaultNow = modifiers.has("defaultNow");
     const types: Record<string, string> = {
       serial: "serial",
       bigserial: "bigserial",
@@ -150,7 +150,7 @@ export function extractDrizzle(
       jsonb: "jsonb",
       blob: "blob",
     };
-    const primary = modifiers.includes("primaryKey");
+    const primary = modifiers.has("primaryKey");
     let defaultValue: string | null = null;
     if (initial)
       defaultValue = initial.arguments[0]?.getText(file).slice(0, 4096) ?? null;
@@ -158,10 +158,10 @@ export function extractDrizzle(
     const column = {
       id: identity(target.id, name),
       name,
-      type: (types[type] ?? type) + (modifiers.includes("array") ? "[]" : ""),
-      nullable: !primary && !modifiers.includes("notNull"),
+      type: (types[type] ?? type) + (modifiers.has("array") ? "[]" : ""),
+      nullable: !primary && !modifiers.has("notNull"),
       primaryKey: primary,
-      unique: modifiers.includes("unique"),
+      unique: modifiers.has("unique"),
       defaultValue,
       evidence: evidence(path, source, property.getStart(file), property.end),
     };

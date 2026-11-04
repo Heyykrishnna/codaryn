@@ -170,13 +170,21 @@ export class SchemaService {
     actor: string,
     workspace: string,
     id: string,
-    kind:
-      "tables" | "relations" | "lineage" | "columns" | "constraints" | "enums",
-    page: number,
-    search: string,
-    adapter: string,
-    tableId?: string,
+    query: {
+      kind:
+        | "tables"
+        | "relations"
+        | "lineage"
+        | "columns"
+        | "constraints"
+        | "enums";
+      page: number;
+      search: string;
+      adapter: string;
+      tableId?: string;
+    },
   ) {
+    const { kind, page, search, adapter, tableId } = query;
     return this.workspace(actor, workspace, async (client) => {
       const snapshot = this.ready(await this.load(client, workspace, id));
       const eligible = new Set(

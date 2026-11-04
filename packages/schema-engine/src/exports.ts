@@ -12,12 +12,12 @@ const escapeXml = (value: string) =>
     .replaceAll("'", "&apos;");
 const markdown = (value: string) =>
   value
-    .replaceAll("\\", "\\\\")
-    .replaceAll("|", "\\|")
+    .replaceAll("\\", String.raw`\\`)
+    .replaceAll("|", String.raw`\|`)
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll("\n", " ")
-    .replaceAll("`", "\\`");
+    .replaceAll("`", String.raw`\``);
 export function schemaPositions(
   snapshot: SchemaSnapshot,
   layout: "compact" | "er" = "er",
