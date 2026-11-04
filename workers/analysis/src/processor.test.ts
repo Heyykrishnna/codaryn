@@ -18,11 +18,26 @@ function createMockPool(initialStatus: string = "queued"): {
     cycles: Record<string, unknown>[];
     metrics: Record<string, unknown>[];
     unresolved: Record<string, unknown>[];
+    frontendComponents: Record<string, unknown>[];
+    frontendJsx: Record<string, unknown>[];
+    frontendHooks: Record<string, unknown>[];
+    frontendContexts: Record<string, unknown>[];
+    frontendRoutes: Record<string, unknown>[];
+    frontendState: Record<string, unknown>[];
+    frontendApiClients: Record<string, unknown>[];
   };
 } {
   const queries: { sql: string; values?: unknown[] }[] = [];
   const tables = {
-    jobs: [{ id: "job-1", status: initialStatus, retries: 0, max_retries: 3 }],
+    jobs: [
+      {
+        id: "job-1",
+        repository_id: "repo-1",
+        status: initialStatus,
+        retries: 0,
+        max_retries: 3,
+      },
+    ],
     stages: [] as Record<string, unknown>[],
     files: [] as Record<string, unknown>[],
     symbols: [] as Record<string, unknown>[],
@@ -33,11 +48,22 @@ function createMockPool(initialStatus: string = "queued"): {
     cycles: [] as Record<string, unknown>[],
     metrics: [] as Record<string, unknown>[],
     unresolved: [] as Record<string, unknown>[],
+    frontendComponents: [] as Record<string, unknown>[],
+    frontendJsx: [] as Record<string, unknown>[],
+    frontendHooks: [] as Record<string, unknown>[],
+    frontendContexts: [] as Record<string, unknown>[],
+    frontendRoutes: [] as Record<string, unknown>[],
+    frontendState: [] as Record<string, unknown>[],
+    frontendApiClients: [] as Record<string, unknown>[],
   };
 
   const client = {
     query: async (sql: string, values?: unknown[]) => {
       queries.push({ sql, values });
+      if (sql.includes("SELECT repository_id FROM analysis_jobs")) {
+        const job = tables.jobs.find((j) => j.id === values?.[0]);
+        return { rows: job ? [{ repository_id: job.repository_id }] : [] };
+      }
       if (sql.includes("SELECT status FROM analysis_jobs")) {
         const job = tables.jobs.find((j) => j.id === values?.[0]);
         return { rows: job ? [{ status: job.status }] : [] };
@@ -122,6 +148,68 @@ function createMockPool(initialStatus: string = "queued"): {
           id: values?.[0],
           sourceFile: values?.[2],
           sourceSymbolName: values?.[3],
+        });
+        return { rowCount: 1 };
+      }
+      if (sql.includes("INSERT INTO analysis_frontend_components")) {
+        tables.frontendComponents.push({
+          id: values?.[0],
+          jobId: values?.[1],
+          name: values?.[2],
+          path: values?.[3],
+        });
+        return { rowCount: 1 };
+      }
+      if (sql.includes("INSERT INTO analysis_frontend_jsx_elements")) {
+        tables.frontendJsx.push({
+          id: values?.[0],
+          sourceComponentId: values?.[2],
+          targetComponentName: values?.[3],
+        });
+        return { rowCount: 1 };
+      }
+      if (sql.includes("INSERT INTO analysis_frontend_hooks")) {
+        tables.frontendHooks.push({
+          id: values?.[0],
+          componentId: values?.[2],
+          name: values?.[3],
+          kind: values?.[4],
+        });
+        return { rowCount: 1 };
+      }
+      if (sql.includes("INSERT INTO analysis_frontend_contexts")) {
+        tables.frontendContexts.push({
+          id: values?.[0],
+          name: values?.[2],
+          path: values?.[3],
+        });
+        return { rowCount: 1 };
+      }
+      if (sql.includes("INSERT INTO analysis_frontend_routes")) {
+        tables.frontendRoutes.push({
+          id: values?.[0],
+          framework: values?.[2],
+          routePath: values?.[3],
+          path: values?.[4],
+        });
+        return { rowCount: 1 };
+      }
+      if (sql.includes("INSERT INTO analysis_frontend_state")) {
+        tables.frontendState.push({
+          id: values?.[0],
+          componentId: values?.[2],
+          kind: values?.[3],
+          identifier: values?.[4],
+        });
+        return { rowCount: 1 };
+      }
+      if (sql.includes("INSERT INTO analysis_frontend_api_clients")) {
+        tables.frontendApiClients.push({
+          id: values?.[0],
+          componentId: values?.[2],
+          path: values?.[3],
+          method: values?.[4],
+          endpoint: values?.[5],
         });
         return { rowCount: 1 };
       }
@@ -223,4 +311,55 @@ test("AnalysisProcessor constructs dependency graph, detects cycles, and saves m
   assert.equal(tables.metrics.length, 3);
   assert.ok(tables.unresolved.length >= 1);
   assert.ok(tables.stages.some((s) => s.stage === "graph"));
+});
+
+test("AnalysisProcessor extracts frontend architecture intelligence", async () => {
+  const { pool, tables } = createMockPool();
+  const processor = new AnalysisProcessor(pool);
+
+  const files = {
+    "src/components/Button.tsx": `
+import React, { useState } from 'react';
+
+export function Button({ label }: { label: string }) {
+  const [count, setCount] = useState(0);
+  return <button onClick={() => setCount(count + 1)}>{label}: {count}</button>;
+}
+`,
+    "src/components/Card.tsx": `
+import React from 'react';
+import { Button } from './Button';
+
+export function Card() {
+  return (
+    <div>
+      <Button label="Click me" />
+    </div>
+  );
+}
+`,
+    "app/dashboard/page.tsx": `
+import React from 'react';
+import { Card } from '../../src/components/Card';
+
+export default function DashboardPage() {
+  return <Card />;
+}
+`,
+  };
+
+  await processor.processJob({ jobId: "job-1", files });
+
+  assert.equal(tables.jobs[0].status, "completed");
+  assert.ok(tables.stages.some((s) => s.stage === "frontend"));
+  assert.ok(tables.frontendComponents.length >= 3);
+  assert.ok(tables.frontendJsx.length >= 2);
+  assert.ok(tables.frontendHooks.length >= 1);
+  assert.ok(tables.frontendRoutes.length >= 1);
+  assert.ok(
+    tables.frontendComponents.some(
+      (c) =>
+        c.name === "Button" || c.name === "Card" || c.name === "DashboardPage",
+    ),
+  );
 });

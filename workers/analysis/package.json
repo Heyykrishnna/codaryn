@@ -17,6 +17,7 @@
     "@codaryn/database": "workspace:*",
     "@codaryn/dependency-graph": "workspace:*",
     "@codaryn/file-classifier": "workspace:*",
+    "@codaryn/frontend-analyzer": "workspace:*",
     "@codaryn/module-resolver": "workspace:*",
     "@codaryn/symbol-resolver": "workspace:*",
     "@codaryn/symbols": "workspace:*",

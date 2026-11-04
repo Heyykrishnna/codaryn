@@ -20,6 +20,12 @@ import {
   type FileSymbolInventory,
 } from "@codaryn/symbol-resolver";
 import { DependencyGraphBuilder } from "@codaryn/dependency-graph";
+import {
+  extractComponentsAndJsx,
+  extractHooksAndContexts,
+  extractRoutes,
+  extractStateAndApiCalls,
+} from "@codaryn/frontend-analyzer";
 
 export type AnalysisJobPayload = {
   jobId: string;
@@ -42,10 +48,24 @@ export class AnalysisProcessor {
         [jobId],
       );
 
+      const jobRes = await client.query<{ repository_id: string }>(
+        "SELECT repository_id FROM analysis_jobs WHERE id=$1",
+        [jobId],
+      );
+      const repositoryId =
+        jobRes.rows[0]?.repository_id ?? "00000000-0000-0000-0000-000000000000";
+
       const fileMap: VirtualFileSystem = new Map(Object.entries(files));
       const fileInputs: FileInput[] = Object.entries(files).map(
         ([path, content]) => ({ path, content }),
       );
+
+      const { program } = createAnalysisProgram(fileMap);
+      const sourceFiles = program
+        .getSourceFiles()
+        .filter((sf) =>
+          fileMap.has(sf.fileName.replace(/\\/g, "/").replace(/^\/+/, "")),
+        );
 
       let classifiedFiles: SourceFileClassification[] = [];
       let discoveredConfigs: TsconfigInfo[] = [];
@@ -102,13 +122,6 @@ export class AnalysisProcessor {
       let diagCount = 0;
 
       await this.runStage(client, jobId, "parsing", async () => {
-        const { program } = createAnalysisProgram(fileMap);
-        const sourceFiles = program
-          .getSourceFiles()
-          .filter((sf) =>
-            fileMap.has(sf.fileName.replace(/\\/g, "/").replace(/^\/+/, "")),
-          );
-
         for (const sourceFile of sourceFiles) {
           if (await this.checkCancellation(client, jobId)) break;
 
@@ -355,6 +368,187 @@ export class AnalysisProcessor {
         return {
           itemsTotal: snapshot.totalNodes + snapshot.totalEdges,
           itemsCompleted: snapshot.totalNodes + snapshot.totalEdges,
+        };
+      });
+
+      if (await this.checkCancellation(client, jobId)) return;
+
+      await this.runStage(client, jobId, "frontend", async () => {
+        let totalComponents = 0;
+        let totalJsx = 0;
+        let totalHooks = 0;
+        let totalContexts = 0;
+        let totalRoutes = 0;
+        let totalState = 0;
+        let totalApi = 0;
+
+        for (const sf of sourceFiles) {
+          const filePath = sf.fileName.replace(/\\/g, "/").replace(/^\/+/, "");
+          if (
+            !filePath.endsWith(".tsx") &&
+            !filePath.endsWith(".jsx") &&
+            !filePath.endsWith(".ts") &&
+            !filePath.endsWith(".js")
+          ) {
+            continue;
+          }
+
+          const compResult = extractComponentsAndJsx(
+            sf,
+            repositoryId,
+            filePath,
+          );
+          const hooksContextsResult = extractHooksAndContexts(
+            sf,
+            filePath,
+            compResult.components,
+          );
+          const routesResult = extractRoutes(
+            sf,
+            filePath,
+            hooksContextsResult.updatedComponents,
+          );
+          const stateApiResult = extractStateAndApiCalls(
+            sf,
+            filePath,
+            hooksContextsResult.updatedComponents,
+          );
+
+          totalComponents += hooksContextsResult.updatedComponents.length;
+          totalJsx += compResult.jsxElements.length;
+          totalHooks += hooksContextsResult.hooks.length;
+          totalContexts += hooksContextsResult.contexts.length;
+          totalRoutes += routesResult.length;
+          totalState += stateApiResult.state.length;
+          totalApi += stateApiResult.apiCalls.length;
+
+          for (const comp of hooksContextsResult.updatedComponents) {
+            await client.query(
+              "INSERT INTO analysis_frontend_components (id,job_id,name,path,kind,export_type,props,hooks_count,rendered_components_count,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT (id) DO NOTHING",
+              [
+                comp.id,
+                jobId,
+                comp.name,
+                comp.filePath,
+                comp.kind,
+                comp.exportType,
+                JSON.stringify(comp.props),
+                comp.hooksCount,
+                comp.renderedComponentsCount,
+                JSON.stringify(comp.sourceEvidence),
+              ],
+            );
+          }
+
+          for (const jsx of compResult.jsxElements) {
+            await client.query(
+              "INSERT INTO analysis_frontend_jsx_elements (id,job_id,source_component_id,target_component_name,target_component_id,props,is_conditional,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (id) DO NOTHING",
+              [
+                jsx.id,
+                jobId,
+                jsx.sourceComponentId,
+                jsx.targetComponentName,
+                jsx.targetComponentId,
+                jsx.props,
+                jsx.isConditional,
+                JSON.stringify(jsx.sourceEvidence),
+              ],
+            );
+          }
+
+          for (const hook of hooksContextsResult.hooks) {
+            await client.query(
+              "INSERT INTO analysis_frontend_hooks (id,job_id,component_id,name,kind,dependencies,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING",
+              [
+                hook.id,
+                jobId,
+                hook.componentId,
+                hook.name,
+                hook.kind,
+                hook.dependencies ?? null,
+                JSON.stringify(hook.sourceEvidence),
+              ],
+            );
+          }
+
+          for (const ctx of hooksContextsResult.contexts) {
+            await client.query(
+              "INSERT INTO analysis_frontend_contexts (id,job_id,name,path,default_value,provider_component_ids,consumer_component_ids,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (id) DO NOTHING",
+              [
+                ctx.id,
+                jobId,
+                ctx.name,
+                ctx.filePath,
+                ctx.defaultValue ?? null,
+                ctx.providerComponentIds,
+                ctx.consumerComponentIds,
+                JSON.stringify(ctx.sourceEvidence),
+              ],
+            );
+          }
+
+          for (const route of routesResult) {
+            await client.query(
+              "INSERT INTO analysis_frontend_routes (id,job_id,framework,route_path,path,component_name,component_id,dynamic_params,is_layout,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT (id) DO NOTHING",
+              [
+                route.id,
+                jobId,
+                route.framework,
+                route.routePath,
+                route.filePath,
+                route.componentName ?? null,
+                route.componentId,
+                route.dynamicParams,
+                route.isLayout,
+                JSON.stringify(route.sourceEvidence),
+              ],
+            );
+          }
+
+          for (const st of stateApiResult.state) {
+            await client.query(
+              "INSERT INTO analysis_frontend_state (id,job_id,component_id,kind,identifier,initial_value,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING",
+              [
+                st.id,
+                jobId,
+                st.componentId,
+                st.kind,
+                st.identifier,
+                st.initialValue ?? null,
+                JSON.stringify(st.sourceEvidence),
+              ],
+            );
+          }
+
+          for (const apiCall of stateApiResult.apiCalls) {
+            await client.query(
+              "INSERT INTO analysis_frontend_api_clients (id,job_id,component_id,path,method,endpoint,is_dynamic,client_type,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT (id) DO NOTHING",
+              [
+                apiCall.id,
+                jobId,
+                apiCall.componentId,
+                apiCall.filePath,
+                apiCall.method,
+                apiCall.endpoint,
+                apiCall.isDynamic,
+                apiCall.clientType,
+                JSON.stringify(apiCall.sourceEvidence),
+              ],
+            );
+          }
+        }
+
+        await this.log(
+          client,
+          jobId,
+          "frontend",
+          "info",
+          `Frontend intelligence extracted: ${totalComponents} components, ${totalRoutes} routes, ${totalHooks} hooks, ${totalContexts} contexts, ${totalApi} api calls`,
+        );
+
+        return {
+          itemsTotal: totalComponents + totalRoutes,
+          itemsCompleted: totalComponents + totalRoutes,
         };
       });
 
