@@ -139,10 +139,7 @@ function FrontendDashboard() {
   }, [workspaceId, jobId]);
 
   useEffect(() => {
-    if (!workspaceId || !jobId || !selectedComponentId) {
-      setComponentDetail(null);
-      return;
-    }
+    if (!workspaceId || !jobId || !selectedComponentId) return;
     let current = true;
 
     fetchFrontendComponentDetail(workspaceId, jobId, selectedComponentId)
