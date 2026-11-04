@@ -221,7 +221,7 @@ class PrismaParser {
       primaryKey: primary,
       unique,
       defaultValue: initial.length
-        ? this.source.slice(initial[0].start, initial[initial.length - 1].end)
+        ? this.source.slice(initial[0].start, initial.at(-1)!.end)
         : null,
       evidence: this.location(row),
     };

@@ -22,6 +22,8 @@ docker build -f infrastructure/docker/schema.Dockerfile -t codaryn-schema-worker
 
 The sequence passed in a clean Linux Node 22 workspace with disposable PostgreSQL and Redis. Reapplying migrations preserved all 41 registered application/migration tables; authentication schema verification also passed. The packaged schema worker passed a non-root, read-only, network-disabled extraction smoke test. Runtime Neon synchronization and verification also passed; no test fixtures were inserted there.
 
+An additional, ad hoc SonarJS/TypeScript rule sweep reported 37 pre-existing findings in earlier-phase modules and no findings in the Phase 8 source. This supplemental sweep is not the repository lint configuration or the hosted quality gate. Required lint passes; the earlier-phase findings remain outside this change.
+
 ## Acceptance evidence
 
 | Scenario         | Automated evidence                                                                                                        | Result                                                                                                                                                                 |

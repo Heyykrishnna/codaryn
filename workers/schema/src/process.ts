@@ -5,7 +5,7 @@ import type { Pool } from "pg";
 import type { GitHubGateway } from "@codaryn/github";
 import { withRepositoryArchive } from "@codaryn/repository-ingestion";
 import { extractSchema } from "@codaryn/schema-engine";
-function* sourceBatches(directory: string, paths: string[]) {
+async function* sourceBatches(directory: string, paths: string[]) {
   for (let offset = 0; offset < paths.length; offset += 8)
     yield Promise.allSettled(
       paths.slice(offset, offset + 8).map(async (path) => ({
