@@ -1,16 +1,16 @@
 # Phase 8: acceptance test plan
 
-**Status:** Planned; these scenarios have not been executed. Scope and original acceptance criteria: [phase overview](README.md).
+**Status:** Implemented with automated evidence and explicit browser review limits in [verification](verification.md). Scope and original acceptance criteria: [phase overview](README.md).
 
-Implement these scenarios at the appropriate unit, integration, end-to-end or operational layer. Use controlled fixtures with expected outputs, isolate test data, and record the command, environment, actual result and evidence for each run. A scenario passes only when its expected result is observed.
+Maintain these scenarios at the appropriate unit, integration, end-to-end or operational layer. Use controlled fixtures with expected outputs, isolate test data, and record the command, environment, actual result and evidence for each run. A scenario passes only when its expected result is observed.
 
-| ID | Scenario and action | Expected result |
-|---|---|---|
-| P08-AT01 | **Schema extraction:** Analyze Prisma, Drizzle and supported SQL DDL and migration fixtures. | Tables, fields, types, nullability, defaults, constraints, indexes and enums match golden expectations. |
-| P08-AT02 | **Relations and ERD:** Inspect one-to-one, one-to-many, many-to-many, join and self-relations. | Correct keys and cardinalities appear; inferred relationships are visually distinct. |
-| P08-AT03 | **Lineage and evidence:** Follow a supported path from an application field to a schema column and inspect an unresolved link. | Each connection has its proper evidence status; missing links are not fabricated. |
-| P08-AT04 | **Snapshot outputs and comparison:** Export an ERD and document and compare two supported schema snapshots. | Outputs reference the selected snapshot and supported additions, removals and changes are correctly identified. |
-| P08-AT05 | **Schema access:** Search and paginate objects and request another workspace’s schema. | Results are bounded and tenant authorization is enforced. |
+| ID       | Scenario and action                                                                                                            | Expected result                                                                                                 |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| P08-AT01 | **Schema extraction:** Analyze Prisma, Drizzle and supported SQL DDL and migration fixtures.                                   | Tables, fields, types, nullability, defaults, constraints, indexes and enums match golden expectations.         |
+| P08-AT02 | **Relations and ERD:** Inspect one-to-one, one-to-many, many-to-many, join and self-relations.                                 | Correct keys and cardinalities appear; inferred relationships are visually distinct.                            |
+| P08-AT03 | **Lineage and evidence:** Follow a supported path from an application field to a schema column and inspect an unresolved link. | Each connection has its proper evidence status; missing links are not fabricated.                               |
+| P08-AT04 | **Snapshot outputs and comparison:** Export an ERD and document and compare two supported schema snapshots.                    | Outputs reference the selected snapshot and supported additions, removals and changes are correctly identified. |
+| P08-AT05 | **Schema access:** Search and paginate objects and request another workspace’s schema.                                         | Results are bounded and tenant authorization is enforced.                                                       |
 
 ## Cross-cutting checks
 

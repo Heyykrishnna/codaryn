@@ -20,3 +20,5 @@ When implementation changes a contract or behavior, update the relevant guide an
 - [Analysis Studio](phases/03-analysis-studio/README.md): configuration wizard, workspace profiles, analyzer registry and reproducible manifests.
 
 - [CI validation and remediation](ci.md): authoritative checks, isolated testing and fixes for workflow and quality-gate failures.
+
+- [Schema Studio](phases/08-schema-studio/README.md): static schema adapters, immutable snapshots, ERDs, evidence, exports and structural comparison.
