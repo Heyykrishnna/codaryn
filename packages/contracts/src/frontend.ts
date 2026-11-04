@@ -200,9 +200,7 @@ export const frontendHooksResponseSchema = z.object({
   hooks: z.array(frontendHookCallSchema),
   totalCount: z.number().int().nonnegative(),
 });
-export type FrontendHooksResponse = z.infer<
-  typeof frontendHooksResponseSchema
->;
+export type FrontendHooksResponse = z.infer<typeof frontendHooksResponseSchema>;
 
 export const frontendContextsResponseSchema = z.object({
   jobId: z.string().min(1),
@@ -218,9 +216,7 @@ export const frontendStateResponseSchema = z.object({
   state: z.array(frontendStateSchema),
   totalCount: z.number().int().nonnegative(),
 });
-export type FrontendStateResponse = z.infer<
-  typeof frontendStateResponseSchema
->;
+export type FrontendStateResponse = z.infer<typeof frontendStateResponseSchema>;
 
 export const frontendApiClientsResponseSchema = z.object({
   jobId: z.string().min(1),

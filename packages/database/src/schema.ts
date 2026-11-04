@@ -337,7 +337,7 @@ export const analysisJobs = pgTable(
     ),
     check(
       "analysis_jobs_current_stage_check",
-      sql`${table.currentStage} IN ('inventory','configuration','parsing','symbols','diagnostics','completed')`,
+      sql`${table.currentStage} IN ('inventory','configuration','parsing','symbols','graph','frontend','diagnostics','completed')`,
     ),
     index("analysis_jobs_workspace_idx").on(
       table.organizationId,
@@ -374,7 +374,7 @@ export const analysisStages = pgTable(
   (table) => [
     check(
       "analysis_stages_stage_check",
-      sql`${table.stage} IN ('inventory','configuration','parsing','symbols','diagnostics','completed')`,
+      sql`${table.stage} IN ('inventory','configuration','parsing','symbols','graph','frontend','diagnostics','completed')`,
     ),
     check(
       "analysis_stages_status_check",
@@ -613,5 +613,194 @@ export const analysisUnresolvedReferences = pgTable(
       table.jobId,
       table.status,
     ),
+  ],
+);
+
+export const analysisFrontendComponents = pgTable(
+  "analysis_frontend_components",
+  {
+    id: text("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    path: text("path").notNull(),
+    kind: text("kind").notNull(),
+    exportType: text("export_type").notNull(),
+    props: jsonb("props")
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    hooksCount: integer("hooks_count").notNull().default(0),
+    renderedComponentsCount: integer("rendered_components_count")
+      .notNull()
+      .default(0),
+    sourceEvidence: jsonb("source_evidence")
+      .notNull()
+      .default(sql`'{}'::jsonb`),
+    createdAt: created(),
+  },
+  (table) => [
+    index("idx_analysis_frontend_components_job").on(table.jobId, table.name),
+    index("idx_analysis_frontend_components_path").on(table.jobId, table.path),
+  ],
+);
+
+export const analysisFrontendJsxElements = pgTable(
+  "analysis_frontend_jsx_elements",
+  {
+    id: text("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    sourceComponentId: text("source_component_id")
+      .notNull()
+      .references(() => analysisFrontendComponents.id, { onDelete: "cascade" }),
+    targetComponentName: text("target_component_name").notNull(),
+    targetComponentId: text("target_component_id").references(
+      () => analysisFrontendComponents.id,
+      { onDelete: "set null" },
+    ),
+    props: jsonb("props")
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    isConditional: boolean("is_conditional").notNull().default(false),
+    sourceEvidence: jsonb("source_evidence")
+      .notNull()
+      .default(sql`'{}'::jsonb`),
+    createdAt: created(),
+  },
+  (table) => [
+    index("idx_analysis_frontend_jsx_source").on(
+      table.jobId,
+      table.sourceComponentId,
+    ),
+  ],
+);
+
+export const analysisFrontendHooks = pgTable(
+  "analysis_frontend_hooks",
+  {
+    id: text("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    componentId: text("component_id")
+      .notNull()
+      .references(() => analysisFrontendComponents.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    kind: text("kind").notNull(),
+    dependencies: jsonb("dependencies"),
+    sourceEvidence: jsonb("source_evidence")
+      .notNull()
+      .default(sql`'{}'::jsonb`),
+    createdAt: created(),
+  },
+  (table) => [
+    index("idx_analysis_frontend_hooks_comp").on(
+      table.jobId,
+      table.componentId,
+    ),
+  ],
+);
+
+export const analysisFrontendContexts = pgTable(
+  "analysis_frontend_contexts",
+  {
+    id: text("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    path: text("path").notNull(),
+    defaultValue: text("default_value"),
+    providerComponentIds: jsonb("provider_component_ids")
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    consumerComponentIds: jsonb("consumer_component_ids")
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    sourceEvidence: jsonb("source_evidence")
+      .notNull()
+      .default(sql`'{}'::jsonb`),
+    createdAt: created(),
+  },
+  (table) => [
+    index("idx_analysis_frontend_contexts_job").on(table.jobId, table.name),
+  ],
+);
+
+export const analysisFrontendRoutes = pgTable(
+  "analysis_frontend_routes",
+  {
+    id: text("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    framework: text("framework").notNull(),
+    routePath: text("route_path").notNull(),
+    path: text("path").notNull(),
+    componentName: text("component_name"),
+    componentId: text("component_id").references(
+      () => analysisFrontendComponents.id,
+      { onDelete: "set null" },
+    ),
+    dynamicParams: jsonb("dynamic_params")
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    isLayout: boolean("is_layout").notNull().default(false),
+    sourceEvidence: jsonb("source_evidence")
+      .notNull()
+      .default(sql`'{}'::jsonb`),
+    createdAt: created(),
+  },
+  (table) => [
+    index("idx_analysis_frontend_routes_path").on(table.jobId, table.routePath),
+  ],
+);
+
+export const analysisFrontendState = pgTable(
+  "analysis_frontend_state",
+  {
+    id: text("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    componentId: text("component_id").notNull(),
+    kind: text("kind").notNull(),
+    identifier: text("identifier").notNull(),
+    initialValue: text("initial_value"),
+    sourceEvidence: jsonb("source_evidence")
+      .notNull()
+      .default(sql`'{}'::jsonb`),
+    createdAt: created(),
+  },
+  (table) => [
+    index("idx_analysis_frontend_state_comp").on(
+      table.jobId,
+      table.componentId,
+    ),
+  ],
+);
+
+export const analysisFrontendApiClients = pgTable(
+  "analysis_frontend_api_clients",
+  {
+    id: text("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    componentId: text("component_id").notNull(),
+    path: text("path").notNull(),
+    method: text("method").notNull(),
+    endpoint: text("endpoint").notNull(),
+    isDynamic: boolean("is_dynamic").notNull().default(false),
+    clientType: text("client_type").notNull(),
+    sourceEvidence: jsonb("source_evidence")
+      .notNull()
+      .default(sql`'{}'::jsonb`),
+    createdAt: created(),
+  },
+  (table) => [
+    index("idx_analysis_frontend_api_comp").on(table.jobId, table.componentId),
   ],
 );
