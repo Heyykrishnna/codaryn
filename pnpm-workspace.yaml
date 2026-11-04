@@ -10,8 +10,10 @@ packages:
   - packages/symbol-resolver
   - packages/dependency-graph
   - packages/frontend-analyzer
+  - packages/schema-engine
   - packages/backend-analyzer
   - packages/github
   - packages/repository-ingestion
   - workers/analysis
   - workers/ingestion
+  - workers/schema
