@@ -53,7 +53,14 @@ function registerWebhook(
               "Invalid webhook signature",
             );
           if (error instanceof z.ZodError || error instanceof SyntaxError)
-            return failure(reply, 400, "INVALID_WEBHOOK", "Invalid webhook");
+            if (error instanceof Error && error.message === "WEBHOOK_CAPACITY")
+              return failure(
+                reply,
+                503,
+                "WEBHOOK_CAPACITY",
+                "Push queue is at capacity; retry delivery later",
+              );
+          return failure(reply, 400, "INVALID_WEBHOOK", "Invalid webhook");
           throw error;
         }
       },

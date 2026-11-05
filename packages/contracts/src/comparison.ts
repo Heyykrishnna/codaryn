@@ -108,3 +108,15 @@ export const comparisonResultSchema = z.object({
 export type VersionSnapshot = z.infer<typeof versionSnapshotSchema>;
 export type VersionFile = z.infer<typeof versionFileSchema>;
 export type ComparisonResult = z.infer<typeof comparisonResultSchema>;
+
+export const branchRefSchema = z
+  .string()
+  .max(200)
+  .regex(/^refs\/heads\/[A-Za-z0-9][A-Za-z0-9._/-]*$/)
+  .refine(
+    (ref) =>
+      !ref.includes("..") &&
+      !ref.includes("//") &&
+      !ref.endsWith("/") &&
+      !ref.endsWith(".lock"),
+  );

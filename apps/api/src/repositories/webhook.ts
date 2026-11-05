@@ -1,3 +1,4 @@
+import { schedulePush } from "./push-analysis.js";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import type { Pool } from "pg";
 import { z } from "zod";
@@ -23,6 +24,7 @@ export async function receiveWebhook(
     throw new Error("INVALID_SIGNATURE");
   z.uuid().parse(delivery);
   z.string().min(1).max(100).parse(event);
+  const input: unknown = JSON.parse(payload.toString("utf8"));
   const body = z
     .object({
       action: z.string().optional(),
@@ -37,7 +39,7 @@ export async function receiveWebhook(
         .object({ id: z.number().int().positive().safe() })
         .optional(),
     })
-    .parse(JSON.parse(payload.toString("utf8")));
+    .parse(input);
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
@@ -49,6 +51,8 @@ export async function receiveWebhook(
       await client.query("COMMIT");
       return { duplicate: true };
     }
+    const scheduled =
+      event === "push" ? await schedulePush(client, input) : false;
     const id = body.installation?.id;
     if (
       id &&
@@ -88,7 +92,7 @@ export async function receiveWebhook(
         );
     }
     await client.query("COMMIT");
-    return { duplicate: false };
+    return { duplicate: false, scheduled };
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;
