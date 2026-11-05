@@ -30,6 +30,12 @@ export default function Home() {
         <span className="text-xl font-semibold tracking-tight">codaryn</span>
         <nav aria-label="Main navigation" className="flex flex-wrap gap-4">
           <a
+            href="/comparisons"
+            className="text-sm text-indigo-600 underline dark:text-indigo-400"
+          >
+            Compare architecture
+          </a>
+          <a
             href="/quality"
             className="text-sm text-indigo-600 underline dark:text-indigo-400"
           >

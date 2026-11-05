@@ -7,6 +7,7 @@ type ApiScope =
   | "frontend"
   | "backend"
   | "schema"
+  | "comparison"
   | "execution"
   | "quality"
   | "diagrams"
