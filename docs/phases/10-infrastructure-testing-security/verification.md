@@ -16,23 +16,23 @@ The [acceptance matrix](acceptance-tests.md) maps every original requirement to 
 
 Validation date: November 5, 2026. Host Node 24.11.1 and pnpm 10.19.0; CI targets Node 22. A disposable PostgreSQL 17/Redis 7 Compose project uses ports 55450/56400. Both database URLs explicitly target that disposable database during integration runs. Fixture records are never inserted into Neon.
 
-| Command                                    | Observed result                                                                                                    |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| `pnpm install --frozen-lockfile`           | Passed.                                                                                                            |
-| `pnpm format:check`                        | Passed. Phase documents also formatted explicitly because the repository formatter excludes the phase tree.        |
-| `pnpm lint`                                | Passed, 18 tasks.                                                                                                  |
-| `pnpm typecheck`                           | Passed, 41 tasks.                                                                                                  |
-| `pnpm build`                               | Passed, 24 tasks including the `/quality` production route.                                                        |
-| `pnpm test`                                | Passed, 37 tasks; quality analyzer 13 tests and scanner worker six tests.                                          |
-| `pnpm audit --prod --audit-level=moderate` | Passed; no known vulnerabilities reported.                                                                         |
-| `pnpm db:sync`, `pnpm test:integration`    | Passed again after Docker restart; 26 integration tests across the complete chain.                                 |
-| `pnpm db:migrate`, `pnpm db:verify`        | Passed idempotent reapplication; 45 application tables and authentication schema verified after Docker restart.    |
-| Schema/execution worker image builds       | Passed before interruption.                                                                                        |
-| Quality worker image build                 | Initial image passed; final security-guard rebuild and isolated Node 22 fixture remain pending after interruption. |
+| Command                                    | Observed result                                                                                                           |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm install --frozen-lockfile`           | Passed.                                                                                                                   |
+| `pnpm format:check`                        | Passed. Phase documents also formatted explicitly because the repository formatter excludes the phase tree.               |
+| `pnpm lint`                                | Passed, 18 tasks.                                                                                                         |
+| `pnpm typecheck`                           | Passed, 41 tasks.                                                                                                         |
+| `pnpm build`                               | Passed, 24 tasks including the `/quality` production route.                                                               |
+| `pnpm test`                                | Passed, 37 tasks; quality analyzer 13 tests and scanner worker six tests.                                                 |
+| `pnpm audit --prod --audit-level=moderate` | Passed; no known vulnerabilities reported.                                                                                |
+| `pnpm db:sync`, `pnpm test:integration`    | Passed again after Docker restart; 26 integration tests across the complete chain.                                        |
+| `pnpm db:migrate`, `pnpm db:verify`        | Passed idempotent reapplication; 45 application tables and authentication schema verified after Docker restart.           |
+| Schema/execution worker image builds       | Passed again after Docker restart against the final production source.                                                    |
+| Quality worker image build                 | Passed with the final privacy guard; all 19 analyzer/scanner fixtures also passed in the isolated non-root Node 22 image. |
 
-The tested additive migration was applied to the configured Neon environment; application schema verification reported 45 tables. No production fixture data or credential changes were introduced.
+The tested additive migration was applied to the configured Neon environment; a subsequent read-only verification confirmed 45 application tables and a synchronized authentication schema. No production fixture data or credential changes were introduced.
 
-The initial validation filled the local disk. A commit attempt failed rather than bypassing Git checks. After space became available, installation and project checks passed again. Docker restart and remaining image/integration checks are tracked explicitly; this record must be updated with their actual outcome before push.
+The initial validation filled the local disk. A commit attempt failed rather than bypassing Git checks. After space became available, installation and project checks passed again. Docker restarted successfully; integration, idempotency and all three image checks then passed. The first isolated-image fixture run exposed a temporary-script execution assumption. The fixture now invokes the installed Node executable through a temporary symlink; all 19 tests pass without relaxing container controls.
 
 ## Browser verification
 

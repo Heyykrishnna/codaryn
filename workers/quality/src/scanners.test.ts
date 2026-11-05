@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import { strict as assert } from "node:assert";
-import { mkdtemp, writeFile, rm, readdir, readFile } from "node:fs/promises";
+import { mkdtemp, symlink, rm, readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { extractQuality } from "@codaryn/engineering-analyzer";
@@ -112,12 +112,16 @@ test("trusted scanner subprocess receives no backend secrets and stderr is never
   const root = await mkdtemp(join(tmpdir(), "codaryn-scanner-command-")),
     binary = join(root, "semgrep");
   try {
-    await writeFile(
-      binary,
-      `#!${process.execPath}\nprocess.stderr.write('private stderr fixture');process.stdout.write(JSON.stringify({keys:Object.keys(process.env)}));`,
-      { mode: 0o700 },
-    );
-    const raw = await runScannerCommand(binary, [], root, root),
+    await symlink(process.execPath, binary);
+    const raw = await runScannerCommand(
+        binary,
+        [
+          "--eval",
+          "process.stderr.write('private stderr fixture');process.stdout.write(JSON.stringify({keys:Object.keys(process.env)}));",
+        ],
+        root,
+        root,
+      ),
       result: unknown = JSON.parse(raw);
     assert.ok(
       typeof result === "object" &&

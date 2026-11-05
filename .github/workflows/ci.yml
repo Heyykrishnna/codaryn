@@ -36,6 +36,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm audit --prod --audit-level=moderate
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
@@ -49,3 +50,15 @@ jobs:
         run: docker build -f infrastructure/docker/schema.Dockerfile -t codaryn-schema-worker:ci .
       - name: Build execution worker image
         run: docker build -f infrastructure/docker/execution.Dockerfile -t codaryn-execution-worker:ci .
+      - name: Build quality worker image
+        run: docker build -f infrastructure/docker/quality.Dockerfile -t codaryn-quality-worker:ci .
+      - name: Verify quality fixtures in isolated Node 22 image
+        run: >-
+          docker run --rm --network none --read-only
+          --tmpfs /tmp:size=201326592,mode=1777
+          --cap-drop ALL --security-opt no-new-privileges:true
+          --mount "type=bind,source=$PWD/packages/engineering-analyzer/dist/engineering.test.js,target=/app/node_modules/.pnpm/@codaryn+engineering-analyzer@file+packages+engineering-analyzer/node_modules/@codaryn/engineering-analyzer/dist/engineering.test.js,readonly"
+          --mount "type=bind,source=$PWD/workers/quality/dist/scanners.test.js,target=/app/dist/scanners.test.js,readonly"
+          --entrypoint node codaryn-quality-worker:ci --test
+          /app/node_modules/.pnpm/@codaryn+engineering-analyzer@file+packages+engineering-analyzer/node_modules/@codaryn/engineering-analyzer/dist/engineering.test.js
+          /app/dist/scanners.test.js
