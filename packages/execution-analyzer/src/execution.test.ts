@@ -127,3 +127,59 @@ test("mutable, parameterized and union-valued functions do not acquire an unsupp
       ),
     );
 });
+
+test("malformed source is quarantined and expression-level control limitations are visible", () => {
+  const { snapshot } = extractExecution({
+    "broken.ts": "export function broken( {",
+    "safe.ts": "export function choose(a:boolean){return a?1:2;}",
+  });
+  assert.ok(
+    snapshot.diagnostics.some((d) => d.code === "SOURCE_PARSE_PARTIAL"),
+  );
+  assert.ok(!snapshot.functions.some((fn) => fn.evidence.path === "broken.ts"));
+  assert.ok(
+    snapshot.diagnostics.some((d) => d.code === "CONTROL_EXPRESSION_PARTIAL"),
+  );
+});
+test("switch fallthrough and loop jumps remain explicit potential control transitions", () => {
+  const { snapshot } = extractExecution({
+    "a.ts":
+      "function f(x:number){switch(x){case 1:x++;case 2:break;default:return 0;} for(let i=0;i<x;i++){if(i===1)continue;break;} do{x--;}while(x>0);return x;}",
+  });
+  assert.ok(snapshot.controlEdges.some((edge) => edge.label === "case 1"));
+  assert.ok(snapshot.controlEdges.some((edge) => edge.label === "continue"));
+  assert.ok(snapshot.controlEdges.some((edge) => edge.label === "break"));
+  assert.equal(
+    snapshot.controlNodes.filter((node) => node.kind === "loop").length,
+    2,
+  );
+});
+test("local assignments flow to later reads without merging a shadowed binding", () => {
+  const { snapshot } = extractExecution({
+    "a.ts":
+      "function f(a:number){\nlet value=a;\n{let value=2; consume(value); }\nvalue=a+1;\nreturn value;\n}",
+  });
+  const read = snapshot.values.find(
+    (value) =>
+      value.kind === "read" &&
+      value.name === "value" &&
+      value.evidence.startLine === 5,
+  )!;
+  assert.ok(read);
+  const sources = snapshot.flows
+    .filter((flow) => flow.targetId === read.id && flow.kind === "may-reach")
+    .map(
+      (flow) =>
+        snapshot.values.find((value) => value.id === flow.sourceId)!.evidence
+          .startLine,
+    );
+  assert.deepEqual(
+    sources.sort((a, b) => a - b),
+    [2, 4],
+  );
+  assert.ok(
+    snapshot.values.some(
+      (value) => value.kind === "assignment" && value.evidence.startLine === 4,
+    ),
+  );
+});

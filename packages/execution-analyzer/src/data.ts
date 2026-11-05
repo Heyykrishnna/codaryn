@@ -8,6 +8,13 @@ import {
   bounded,
   diagnostic,
 } from "./model.js";
+function assignment(node: ts.Node): node is ts.BinaryExpression {
+  return (
+    ts.isBinaryExpression(node) &&
+    node.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
+    node.operatorToken.kind <= ts.SyntaxKind.LastAssignment
+  );
+}
 function binding(checker: ts.TypeChecker, node: ts.Node) {
   return ts.isIdentifier(node) ? checker.getSymbolAtLocation(node) : undefined;
 }
@@ -91,11 +98,40 @@ export function collectData(
       }
       const target = value(node, kind, label(name));
       const prior = definitions.get(symbol) ?? [];
-      prior.push({ value: target, position: node.getStart() });
+      prior.push({ value: target, position: node.end });
       definitions.set(symbol, prior);
       if (expression)
         for (const read of scanExpression(expression))
           edge(read, target, "expression");
+      return target;
+    }
+    function recordAssignment(node: ts.BinaryExpression) {
+      const target = define(node.left, node, "assignment", node.right);
+      if (target && node.operatorToken.kind !== ts.SyntaxKind.EqualsToken)
+        for (const read of scanExpression(node.left))
+          edge(read, target, "expression");
+    }
+    function expressionEffect(expression: ts.Expression) {
+      if (assignment(expression)) {
+        recordAssignment(expression);
+        return;
+      }
+      if (
+        (ts.isPostfixUnaryExpression(expression) ||
+          ts.isPrefixUnaryExpression(expression)) &&
+        [ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken].includes(
+          expression.operator,
+        )
+      ) {
+        define(
+          expression.operand,
+          expression,
+          "assignment",
+          expression.operand,
+        );
+        return;
+      }
+      scanExpression(expression);
     }
     function scanExpression(expression: ts.Node): ExecutionValue[] {
       const found: ExecutionValue[] = [];
@@ -105,7 +141,7 @@ export function collectData(
           const symbol = binding(checker, node);
           if (symbol) {
             const item = value(node, "read", node.text);
-            reads.push({ symbol, value: item, position: node.getStart() });
+            reads.push({ symbol, value: item, position: node.end });
             found.push(item);
           }
         }
@@ -120,12 +156,8 @@ export function collectData(
         define(node.name, node, "definition", node.initializer);
         return;
       }
-      if (
-        ts.isBinaryExpression(node) &&
-        node.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
-        node.operatorToken.kind <= ts.SyntaxKind.LastAssignment
-      ) {
-        define(node.left, node, "assignment", node.right);
+      if (assignment(node)) {
+        recordAssignment(node);
         return;
       }
       if (ts.isReturnStatement(node) && node.expression) {
@@ -135,7 +167,11 @@ export function collectData(
         return;
       }
       if (ts.isExpressionStatement(node)) {
-        scanExpression(node.expression);
+        expressionEffect(node.expression);
+        return;
+      }
+      if (ts.isIdentifier(node) && isRead(node)) {
+        scanExpression(node);
         return;
       }
       ts.forEachChild(node, visit);

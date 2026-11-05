@@ -48,6 +48,7 @@ class ControlBuilder {
     return [{ id, label: text }];
   }
   build() {
+    this.expressionBoundaries(this.root);
     const entry = this.node(this.root, "entry", "Potential entry");
     const body = callable(this.root) ? this.root.body : this.root;
     let tail = this.cursor(entry);
@@ -61,6 +62,28 @@ class ControlBuilder {
       tail = this.cursor(returned, "return");
     }
     this.connect(tail, this.exit);
+  }
+  private expressionBoundaries(root: ts.Node) {
+    const visit = (node: ts.Node) => {
+      if (node !== root && callable(node)) return;
+      if (
+        ts.isConditionalExpression(node) ||
+        (ts.isBinaryExpression(node) &&
+          [
+            ts.SyntaxKind.AmpersandAmpersandToken,
+            ts.SyntaxKind.BarBarToken,
+            ts.SyntaxKind.QuestionQuestionToken,
+          ].includes(node.operatorToken.kind))
+      )
+        diagnostic(
+          this.result,
+          node,
+          "CONTROL_EXPRESSION_PARTIAL",
+          "Expression-level conditional and short-circuit evaluation are summarized within statement nodes, not expanded into control transitions.",
+        );
+      ts.forEachChild(node, visit);
+    };
+    visit(root);
   }
   private statements(
     statements: readonly ts.Statement[],

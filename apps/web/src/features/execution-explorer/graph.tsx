@@ -19,13 +19,11 @@ export function ExecutionGraph({
   title: string;
 }>) {
   const marker = useId();
-  const positions = nodes
-    .slice(0, 100)
-    .map((node, index) => ({
-      ...node,
-      x: 30 + (index % 3) * 280,
-      y: 35 + Math.floor(index / 3) * 100,
-    }));
+  const positions = nodes.slice(0, 100).map((node, index) => ({
+    ...node,
+    x: 30 + (index % 3) * 280,
+    y: 35 + Math.floor(index / 3) * 100,
+  }));
   const height = Math.max(160, Math.ceil(positions.length / 3) * 100 + 40);
   return (
     <section className="flex min-w-0 flex-col gap-3" aria-label={title}>

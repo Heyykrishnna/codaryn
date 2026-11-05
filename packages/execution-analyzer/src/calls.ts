@@ -25,6 +25,24 @@ function symbolTarget(
   });
   return matches.length === 1 ? matches[0] : undefined;
 }
+function unsupportedBinding(checker: ts.TypeChecker, node: ts.Node) {
+  if (ts.isParameter(node)) return true;
+  if (!ts.isVariableDeclaration(node)) return false;
+  if (
+    !ts.isVariableDeclarationList(node.parent) ||
+    !(node.parent.flags & ts.NodeFlags.Const)
+  )
+    return true;
+  const initial = node.initializer;
+  if (!initial) return true;
+  if (ts.isArrowFunction(initial) || ts.isFunctionExpression(initial))
+    return false;
+  if (ts.isIdentifier(initial))
+    return !resolveSymbol(checker, initial)?.declarations?.some(
+      ts.isFunctionDeclaration,
+    );
+  return true;
+}
 function callTarget(
   checker: ts.TypeChecker,
   node: ts.CallExpression | ts.NewExpression,
@@ -42,15 +60,12 @@ function callTarget(
     return undefined;
   const symbol = resolveSymbol(checker, node.expression);
   if (
-    symbol?.declarations?.some(
-      (declaration) =>
-        ts.isParameter(declaration) ||
-        (ts.isVariableDeclaration(declaration) &&
-          ts.isVariableDeclarationList(declaration.parent) &&
-          !(declaration.parent.flags & ts.NodeFlags.Const)),
+    symbol?.declarations?.some((declaration) =>
+      unsupportedBinding(checker, declaration),
     )
   )
     return undefined;
+
   if (
     ts.isElementAccessExpression(node.expression) &&
     !ts.isStringLiteral(node.expression.argumentExpression)

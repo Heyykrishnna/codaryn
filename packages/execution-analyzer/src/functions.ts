@@ -7,6 +7,7 @@ import {
   label,
   bounded,
   type Callable,
+  diagnostic,
 } from "./model.js";
 export type FunctionIndex = {
   byNode: Map<ts.Node, ExecutionFunction>;
@@ -72,6 +73,15 @@ export function collectFunctions(
     ts.forEachChild(node, visit);
   }
   for (const sf of program.getSourceFiles()) {
+    if (program.getSyntacticDiagnostics(sf).length) {
+      diagnostic(
+        result,
+        sf,
+        "SOURCE_PARSE_PARTIAL",
+        "Source has syntax errors and is excluded from resolved execution objects.",
+      );
+      continue;
+    }
     add(sf, {
       id: identifier(sf, "module"),
       name: sf.fileName,

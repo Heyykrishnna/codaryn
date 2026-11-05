@@ -2,6 +2,20 @@ import ts from "typescript";
 import type { ExecutionSnapshot } from "@codaryn/contracts";
 import { evidence, identifier, label, bounded } from "./model.js";
 import type { FunctionIndex } from "./functions.js";
+function isExported(node: ts.Node) {
+  const modifiers = ts.canHaveModifiers(node)
+    ? ts.getModifiers(node)
+    : undefined;
+  return (
+    modifiers?.some((item) => item.kind === ts.SyntaxKind.ExportKeyword) ||
+    (ts.isVariableDeclaration(node.parent) &&
+      ts.isVariableDeclarationList(node.parent.parent) &&
+      ts.isVariableStatement(node.parent.parent.parent) &&
+      node.parent.parent.parent.modifiers?.some(
+        (item) => item.kind === ts.SyntaxKind.ExportKeyword,
+      ))
+  );
+}
 export function collectEntries(
   index: FunctionIndex,
   result: ExecutionSnapshot,
@@ -9,17 +23,7 @@ export function collectEntries(
   for (const [functionId, node] of index.nodes) {
     if (ts.isSourceFile(node) || ts.isClassDeclaration(node)) continue;
     const path = node.getSourceFile().fileName;
-    const modifiers = ts.canHaveModifiers(node)
-      ? ts.getModifiers(node)
-      : undefined;
-    const exported =
-      modifiers?.some((item) => item.kind === ts.SyntaxKind.ExportKeyword) ||
-      (ts.isVariableDeclaration(node.parent) &&
-        ts.isVariableDeclarationList(node.parent.parent) &&
-        ts.isVariableStatement(node.parent.parent.parent) &&
-        node.parent.parent.parent.modifiers?.some(
-          (item) => item.kind === ts.SyntaxKind.ExportKeyword,
-        ));
+    const exported = isExported(node);
     if (exported)
       result.entries.push({
         id: identifier(node, "export-entry"),
