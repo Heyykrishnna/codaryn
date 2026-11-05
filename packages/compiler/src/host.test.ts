@@ -1,3 +1,6 @@
+import { mkdtemp, writeFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 import { strict as assert } from "node:assert";
 import ts from "typescript";
@@ -71,4 +74,36 @@ test("createAnalysisProgram constructs a valid ts.Program across multiple files"
   const src = program.getSourceFile("src/index.ts");
   assert.ok(src !== undefined);
   assert.equal(src.statements.length, 2);
+});
+
+test("untrusted imports cannot read host files or load repository compiler plugins", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "codaryn-host-denial-")),
+    file = join(dir, "private.ts");
+  try {
+    await writeFile(file, "export const privateSentinel='host-secret';");
+    const host = createVirtualCompilerHost(new Map());
+    assert.equal(host.fileExists(file), false);
+    assert.equal(host.readFile(file), undefined);
+    assert.equal(host.getSourceFile(file, ts.ScriptTarget.Latest), undefined);
+    assert.equal(host.directoryExists?.(dir), false);
+    const lib = ts.getDefaultLibFilePath({});
+    assert.ok(host.readFile(lib)?.includes("reference"));
+    const { program } = createAnalysisProgram(
+      new Map([
+        ["src/index.ts", `import '${file}'; export const safe=1;`],
+        [
+          "tsconfig.json",
+          '{"compilerOptions":{"plugins":[{"name":"./plugin.js"}]}}',
+        ],
+        ["plugin.js", "throw new Error('plugin executed')"],
+      ]),
+    );
+    assert.ok(
+      !program
+        .getSourceFiles()
+        .some((source) => source.text.includes("host-secret")),
+    );
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });

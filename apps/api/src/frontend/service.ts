@@ -1,3 +1,4 @@
+import { authorizeAnalysisRead } from "../http/analysis-read.js";
 import type { Pool } from "pg";
 import type {
   FrontendOverviewResponse,
@@ -19,6 +20,9 @@ import type {
 
 export class FrontendService {
   constructor(private readonly pool: Pool) {}
+  authorize(actor: string, workspace: string, job: string) {
+    return authorizeAnalysisRead(this.pool, actor, workspace, job);
+  }
 
   private async verifyJobAccess(
     workspaceId: string,

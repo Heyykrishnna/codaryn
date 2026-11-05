@@ -28,6 +28,12 @@ export function createVirtualCompilerHost(
   }
 
   const defaultHost = ts.createCompilerHost(compilerOptions, true);
+  const libraryDirectory = path.dirname(
+    ts.getDefaultLibFilePath(compilerOptions),
+  );
+  const trustedLibrary = (fileName: string) =>
+    path.dirname(path.resolve(fileName)) === libraryDirectory &&
+    /^lib(?:\.[\w.-]+)?\.d\.ts$/.test(path.basename(fileName));
 
   return {
     getSourceFile(
@@ -45,11 +51,9 @@ export function createVirtualCompilerHost(
           true,
         );
       }
-      return defaultHost.getSourceFile(
-        fileName,
-        languageVersionOrOptions,
-        onError,
-      );
+      return trustedLibrary(fileName)
+        ? defaultHost.getSourceFile(fileName, languageVersionOrOptions, onError)
+        : undefined;
     },
     getDefaultLibFileName(options: ts.CompilerOptions): string {
       return defaultHost.getDefaultLibFileName(options);
@@ -92,12 +96,16 @@ export function createVirtualCompilerHost(
     fileExists(fileName: string): boolean {
       const normalized = normalizeVirtualPath(fileName);
       return (
-        normalizedFiles.has(normalized) || defaultHost.fileExists(fileName)
+        normalizedFiles.has(normalized) ||
+        (trustedLibrary(fileName) && defaultHost.fileExists(fileName))
       );
     },
     readFile(fileName: string): string | undefined {
       const normalized = normalizeVirtualPath(fileName);
-      return normalizedFiles.get(normalized) ?? defaultHost.readFile(fileName);
+      return (
+        normalizedFiles.get(normalized) ??
+        (trustedLibrary(fileName) ? defaultHost.readFile(fileName) : undefined)
+      );
     },
     directoryExists(dirPath: string): boolean {
       const normalizedDir = normalizeVirtualPath(dirPath);
@@ -106,9 +114,7 @@ export function createVirtualCompilerHost(
       for (const filePath of normalizedFiles.keys()) {
         if (filePath.startsWith(prefix)) return true;
       }
-      return defaultHost.directoryExists
-        ? defaultHost.directoryExists(dirPath)
-        : false;
+      return path.resolve(dirPath) === libraryDirectory;
     },
   };
 }
