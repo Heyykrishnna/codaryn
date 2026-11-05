@@ -1,3 +1,6 @@
+import { randomUUID } from "node:crypto";
+import type { Pool } from "pg";
+import { registerOperations } from "./operations/monitor.js";
 import { z } from "zod";
 import Fastify, { LogController } from "fastify";
 import {
@@ -5,11 +8,26 @@ import {
   configurationResponseSchema,
   healthResponseSchema,
 } from "@codaryn/contracts";
-export function buildApp() {
+export function buildApp(
+  options: {
+    pool?: Pool;
+    secret?: string;
+    token?: string;
+    origin?: string;
+    trustedProxy?: string;
+  } = {},
+) {
   const app = Fastify({
     logger: true,
+    bodyLimit: 1048576,
+    requestTimeout: 30000,
+    connectionTimeout: 10000,
+    requestIdHeader: false,
+    genReqId: () => randomUUID(),
+    trustProxy: options.trustedProxy ?? false,
     logController: new LogController({ disableRequestLogging: true }),
   });
+  registerOperations(app, options);
   app.get("/api/v1/health", (_request, reply) =>
     reply.send(healthResponseSchema.parse({ status: "ok" })),
   );

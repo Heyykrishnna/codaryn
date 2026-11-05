@@ -49,10 +49,24 @@ const environment = z
     GITHUB_APP_SLUG: z.string().optional(),
     GITHUB_WEBHOOK_SECRET: z.string().optional(),
     HOST: z.string().default("127.0.0.1"),
+    OPERATIONS_TOKEN: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.string().min(32).optional(),
+    ),
+    TRUSTED_PROXY: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.string().min(1).optional(),
+    ),
   })
   .parse(process.env);
-const app = buildApp();
 const pool = createDatabasePool();
+const app = buildApp({
+  pool,
+  secret: environment.AUTH_SECRET,
+  token: environment.OPERATIONS_TOKEN,
+  origin: environment.WEB_ORIGIN,
+  trustedProxy: environment.TRUSTED_PROXY,
+});
 const auth = createAuth(pool, {
   baseURL: environment.AUTH_BASE_URL,
   origin: environment.WEB_ORIGIN,
