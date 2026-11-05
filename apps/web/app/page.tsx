@@ -30,6 +30,12 @@ export default function Home() {
         <span className="text-xl font-semibold tracking-tight">codaryn</span>
         <nav aria-label="Main navigation" className="flex gap-4">
           <a
+            href="/execution"
+            className="text-sm text-indigo-600 underline dark:text-indigo-400"
+          >
+            Execution Explorer
+          </a>
+          <a
             href="/schema"
             className="text-sm text-indigo-600 underline dark:text-indigo-400"
           >
