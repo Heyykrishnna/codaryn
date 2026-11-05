@@ -3,7 +3,17 @@ import ts from "typescript";
 import type { VersionFile } from "@codaryn/contracts";
 export const digest = (value: unknown) =>
   createHash("sha256")
-    .update(typeof value === "string" ? value : JSON.stringify(value))
+    .update(
+      typeof value === "string"
+        ? value
+        : JSON.stringify(value, (_key, item: unknown) =>
+            typeof item === "object" && item !== null && !Array.isArray(item)
+              ? Object.fromEntries(
+                  Object.entries(item).sort(([a], [b]) => a.localeCompare(b)),
+                )
+              : item,
+          ),
+    )
     .digest("hex");
 export function label(value: string) {
   return value

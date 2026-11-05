@@ -13,6 +13,7 @@ packages:
   - packages/engineering-analyzer
   - packages/artifact-worker
   - packages/execution-analyzer
+  - packages/version-engine
   - packages/schema-engine
   - packages/backend-analyzer
   - packages/github
@@ -25,4 +26,5 @@ packages:
   - workers/schema
   - workers/execution
   - workers/quality
+  - workers/comparison
   - workers/export

@@ -481,6 +481,28 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  packages/version-engine:
+    dependencies:
+      '@codaryn/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@codaryn/module-resolver':
+        specifier: workspace:*
+        version: link:../module-resolver
+      '@codaryn/schema-engine':
+        specifier: workspace:*
+        version: link:../schema-engine
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      zod:
+        specifier: ^4.1.12
+        version: 4.6.7
+    devDependencies:
+      '@types/node':
+        specifier: ^24.10.0
+        version: 24.19.2
+
   workers/analysis:
     dependencies:
       '@codaryn/ast':
