@@ -51,7 +51,7 @@ test("Quality API isolates tenants and audits administrator triage with conflict
       outsider,
     ]);
     await pool.query(
-      "INSERT INTO organizations(id,name) VALUES ($1,'Execution API')",
+      "INSERT INTO organizations(id,name) VALUES ($1,'Quality API')",
       [workspace],
     );
     await pool.query(
@@ -168,6 +168,20 @@ test("Quality API isolates tenants and audits administrator triage with conflict
     assert.equal(audit.statusCode, 200);
     assert.equal(audit.json().items.length, 1);
     assert.equal(audit.json().items[0].after.state, "confirmed");
+    await pool.query(
+      "INSERT INTO quality_finding_events(id,snapshot_id,finding_id,actor_id,after_value) SELECT gen_random_uuid(),$1,'rate-test',$2,$3 FROM generate_series(1,59)",
+      [id, owner, saved.json()],
+    );
+    assert.equal((await mutate({ revision: 1 })).statusCode, 429);
+    await pool.query(
+      "DELETE FROM quality_finding_events WHERE snapshot_id=$1 AND finding_id='rate-test'",
+      [id],
+    );
+    assert.equal(
+      (await get("findings", { snapshotId: id, severity: "invalid" }))
+        .statusCode,
+      400,
+    );
     const stored = await pool.query<{ hash: string }>(
       "SELECT hash FROM analysis_quality_snapshots WHERE id=$1",
       [id],

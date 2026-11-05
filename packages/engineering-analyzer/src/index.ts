@@ -41,9 +41,10 @@ export function canonicalQuality(snapshot: QualitySnapshot) {
 }
 export function extractQuality(files: Record<string, string>) {
   const entries = inputs(files),
-    result = emptySnapshot();
+    result = emptySnapshot(),
+    redactions = new Set<string>();
   for (const [path, source] of entries) {
-    extractSecurity(path, source, result);
+    extractSecurity(path, source, result, redactions);
     extractEnvironment(path, source, result);
     try {
       if (/(^|\/)Dockerfile(?:\.|$)/.test(path))
@@ -80,5 +81,19 @@ export function extractQuality(files: Record<string, string>) {
       message:
         "Supported rules ran with analysis boundaries or malformed inputs; no comprehensive clean result is asserted.",
     };
-  return canonicalQuality(result);
+  const values = [...redactions]
+    .filter((value) => value.length >= 8)
+    .map((value) => value.slice(0, 512))
+    .sort((a, b) => b.length - a.length);
+  if (values.length > 256) throw new Error("Sensitive-value limit exceeded");
+  const sanitized: unknown = JSON.parse(
+    JSON.stringify(result, (_key, value: unknown) => {
+      if (typeof value !== "string") return value;
+      let output = value;
+      for (const secret of values)
+        output = output.replaceAll(secret, "[REDACTED]");
+      return output;
+    }),
+  );
+  return canonicalQuality(qualitySnapshotSchema.parse(sanitized));
 }

@@ -24,6 +24,7 @@ test("quality worker reads pinned archives, persists evidence, avoids duplicate 
   const fixture = await mkdtemp(join(tmpdir(), "codaryn-quality-test-"));
   let downloads = 0;
   let revokeDuringDownload = false;
+  let downgradeDuringDownload = false;
   let resolvedSha = commit;
   try {
     await mkdir(join(fixture, "source"));
@@ -46,6 +47,11 @@ test("quality worker reads pinned archives, persists evidence, avoids duplicate 
           await pool.query(
             "UPDATE github_installations SET connected=false,generation=2 WHERE id=$1",
             [installation],
+          );
+        if (downgradeDuringDownload)
+          await pool.query(
+            "UPDATE organization_members SET role='member' WHERE organization_id=$1 AND user_id=$2",
+            [workspace, actor],
           );
         return archive;
       },
@@ -142,6 +148,33 @@ test("quality worker reads pinned archives, persists evidence, avoids duplicate 
     await pool.query(
       "UPDATE github_installations SET connected=true,generation=1 WHERE id=$1",
       [installation],
+    );
+    const external = randomUUID();
+    await enqueue(external);
+    await pool.query(
+      "UPDATE analysis_quality_snapshots SET external_scans=true WHERE id=$1",
+      [external],
+    );
+    downgradeDuringDownload = true;
+    let networkCalls = 0;
+    await runOneQualityRequest(pool, github, {
+      allowOsv: true,
+      request: async () => {
+        networkCalls++;
+        throw new Error("Unexpected external request");
+      },
+    });
+    assert.equal(networkCalls, 0);
+    const restricted = await pool.query(
+      "SELECT failure_code,snapshot FROM analysis_quality_snapshots WHERE id=$1",
+      [external],
+    );
+    assert.equal(restricted.rows[0].failure_code, "ACCESS_REVOKED");
+    assert.equal(restricted.rows[0].snapshot, null);
+    downgradeDuringDownload = false;
+    await pool.query(
+      "UPDATE organization_members SET role='owner' WHERE organization_id=$1 AND user_id=$2",
+      [workspace, actor],
     );
     const mismatch = randomUUID();
     await enqueue(mismatch);

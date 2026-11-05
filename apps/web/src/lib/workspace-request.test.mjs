@@ -86,3 +86,48 @@ test("safe API errors are surfaced and malformed error bodies use the supplied f
     /Network unavailable/,
   );
 });
+
+test("quality review preserves revision and external lookup remains explicit", async (context) => {
+  const previous = globalThis.fetch;
+  context.after(() => {
+    globalThis.fetch = previous;
+  });
+  const bodies = [];
+  globalThis.fetch = async (input, options) => {
+    assert.match(String(input), /^\/api\/v1\/quality\//);
+    assert.equal(options.headers["x-codaryn-request"], "workspace");
+    bodies.push(JSON.parse(options.body));
+    return Response.json({ success: true });
+  };
+  await workspaceRequest(
+    "quality",
+    "request",
+    "workspace",
+    { jobId: "job", externalScans: false },
+    true,
+  );
+  await workspaceRequest(
+    "quality",
+    "review",
+    "workspace",
+    {
+      snapshotId: "snapshot",
+      findingId: "finding",
+      state: "confirmed",
+      severity: null,
+      reason: "verified",
+      revision: 3,
+    },
+    true,
+  );
+  assert.equal(bodies[0].externalScans, false);
+  assert.deepEqual(bodies[1], {
+    workspaceId: "workspace",
+    snapshotId: "snapshot",
+    findingId: "finding",
+    state: "confirmed",
+    severity: null,
+    reason: "verified",
+    revision: 3,
+  });
+});

@@ -296,3 +296,46 @@ test("OSV lookup transmits only resolved package versions and failures never ass
     "failed",
   );
 });
+
+test("detected credential values are also removed when reused as labels elsewhere", () => {
+  const value = "privateFixtureValue999";
+  const { snapshot } = extractQuality({
+    "config.ts": "const password='" + value + "';",
+    "a.test.ts": "test('" + value + "',()=>{});",
+  });
+  assert.ok(snapshot.findings.some((finding) => finding.category === "secret"));
+  assert.ok(!JSON.stringify(snapshot).includes(value));
+  assert.equal(snapshot.tests[0].name, "[REDACTED]");
+});
+test("LCOV merges repeated records and unquoted credential-like values are redacted", () => {
+  const value = "unquotedFixtureCredential999";
+  const { snapshot } = extractQuality({
+    ".env": "PASSWORD=" + value,
+    "a.ts": "const x=1;\nconst y=2;",
+    "lcov.info":
+      "SF:a.ts\nDA:1,1\nend_of_record\nSF:a.ts\nDA:2,0\nend_of_record",
+  });
+  assert.ok(
+    snapshot.findings.some((finding) => finding.ruleId === "credential-env"),
+  );
+  assert.ok(!JSON.stringify(snapshot).includes(value));
+  assert.equal(snapshot.coverage[0].total, 2);
+  assert.equal(snapshot.coverage[0].covered, 1);
+});
+
+test("redacted dependency identifiers are never transmitted to OSV", async () => {
+  const result = extractQuality(dependencyFixture());
+  for (const dependency of result.snapshot.dependencies)
+    dependency.name = "[REDACTED]";
+  let requests = 0;
+  await lookupOsv(result.snapshot, async () => {
+    requests++;
+    throw new Error("Unexpected request");
+  });
+  assert.equal(requests, 0);
+  assert.match(
+    result.snapshot.scanners.find((scanner) => scanner.tool === "osv")
+      ?.message ?? "",
+    /not scanned/,
+  );
+});

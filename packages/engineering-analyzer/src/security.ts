@@ -36,6 +36,7 @@ export function extractSecurity(
   path: string,
   source: string,
   result: QualitySnapshot,
+  redactions: Set<string>,
 ) {
   const patterns = [
     {
@@ -60,7 +61,18 @@ export function extractSecurity(
     },
   ];
   for (const pattern of patterns)
-    for (const match of source.matchAll(pattern.regex))
+    for (const match of source.matchAll(pattern.regex)) {
+      redactions.add(match[0]);
+      if (pattern.id === "credential-private-key") {
+        const end = source.indexOf("-----END ", match.index + match[0].length);
+        if (end >= 0)
+          for (const line of source
+            .slice(match.index + match[0].length, end)
+            .split(/\\n|\r?\n/)) {
+            const value = line.trim();
+            if (/^[A-Za-z0-9+/=]{16,}$/.test(value)) redactions.add(value);
+          }
+      }
       report(
         result,
         path,
@@ -71,10 +83,14 @@ export function extractSecurity(
         pattern.title,
         "secret",
       );
+    }
   for (const match of source.matchAll(
     /(?:password|passwd|secret|api[_-]?key|access[_-]?token)\s*["']?\s*[:=]\s*["']([^"'\r\n]{8,})["']/gi,
   ))
-    if (!placeholder(match[1]))
+    if (!placeholder(match[1])) {
+      if (match[1].includes("\\"))
+        throw new Error("Credential encoding cannot be safely normalized");
+      redactions.add(match[1]);
       report(
         result,
         path,
@@ -85,11 +101,16 @@ export function extractSecurity(
         "Literal credential-like value requires review",
         "secret",
       );
-  if (/(^|\/)\.env(?:\.|$)/.test(path))
+    }
+  if (/(^|\/)\.env(?:\.|$)/.test(path) || /\.ya?ml$/.test(path))
     for (const match of source.matchAll(
-      /^\s*([A-Z][A-Z0-9_]*(?:PASSWORD|SECRET|TOKEN|KEY))\s*=\s*([^\r\n]*)/gm,
+      /^\s*([A-Za-z_][A-Za-z0-9_]{0,127})\s*[:=]\s*([^\r\n#]*)/gm,
     ))
-      if (!placeholder(match[2].replace(/^["']|["']$/g, "")))
+      if (
+        /password|passwd|secret|token|api_?key|private_?key/i.test(match[1]) &&
+        !placeholder(match[2].trim().replace(/^["']|["']$/g, ""))
+      ) {
+        redactions.add(match[2].trim().replace(/^["']|["']$/g, ""));
         report(
           result,
           path,
@@ -100,6 +121,8 @@ export function extractSecurity(
           "Environment file contains a literal credential-like value",
           "secret",
         );
+      }
+  if (redactions.size > 256) throw new Error("Sensitive-value limit exceeded");
   if (!/\.[cm]?[jt]sx?$/.test(path)) return;
   const sf = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true),
     commands = new Set<string>(),

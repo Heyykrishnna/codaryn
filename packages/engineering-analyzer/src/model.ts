@@ -20,7 +20,10 @@ export function identity(...parts: (string | number)[]) {
   return createHash("sha256").update(parts.join("\0")).digest("hex");
 }
 export function safeLabel(value: string) {
-  return value
+  const key = value.search(/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/);
+  const visible =
+    key >= 0 ? value.slice(0, key) + "[REDACTED PRIVATE KEY]" : value;
+  return visible
     .replaceAll(/\b(?:ghp_|github_pat_|npg_)[A-Za-z0-9_]{12,}\b/g, "[REDACTED]")
     .replaceAll(/\b(?:AKIA|ASIA)[A-Z0-9]{16}\b/g, "[REDACTED]")
     .replaceAll(
@@ -77,6 +80,7 @@ export function configuration(source: string): Record<string, unknown> {
     version: "1.2",
     schema: "core",
     prettyErrors: false,
+    merge: true,
   });
   if (doc.errors.length || doc.warnings.length)
     throw new Error("Configuration parse incomplete");

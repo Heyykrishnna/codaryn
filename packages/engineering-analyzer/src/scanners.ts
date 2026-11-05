@@ -201,7 +201,12 @@ export async function lookupOsv(
   request: typeof fetch = fetch,
 ) {
   const resolved = snapshot.dependencies.filter(
-    (dep) => dep.provenance === "resolved",
+    (dep) =>
+      dep.provenance === "resolved" &&
+      /^(?:@[a-z0-9_.-]+\/)?[a-z0-9_.-]+$/i.test(dep.name) &&
+      /^\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?(?:\+[A-Za-z0-9.-]+)?$/.test(
+        dep.version,
+      ),
   );
   const targets = [
     ...new Map(
@@ -214,7 +219,7 @@ export async function lookupOsv(
       "osv",
       "completed",
       "api-v1",
-      "No supported resolved dependencies were available to query; declared ranges were not scanned.",
+      "No supported resolved dependencies were available to query; declared ranges and redacted identifiers were not scanned.",
     );
     return;
   }
@@ -249,7 +254,9 @@ export async function lookupOsv(
     if (payload.results.length !== targets.length)
       throw new Error("OSV result mismatch");
     let partial =
-      new Set(resolved.map((dep) => `${dep.name}@${dep.version}`)).size > 100;
+      new Set(resolved.map((dep) => `${dep.name}@${dep.version}`)).size > 100 ||
+      snapshot.dependencies.filter((dep) => dep.provenance === "resolved")
+        .length > resolved.length;
     payload.results.forEach((row, index) => {
       if (row.next_page_token) partial = true;
       for (const dep of resolved.filter(
