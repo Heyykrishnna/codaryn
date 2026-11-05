@@ -2,7 +2,7 @@ import type { Pool, PoolClient } from "pg";
 import { WorkspaceAccessError } from "@codaryn/database";
 export async function artifactWorkspace<T>(
   pool: Pool,
-  kind: "schema" | "execution" | "quality",
+  kind: "schema" | "execution" | "quality" | "version",
   actor: string,
   workspace: string,
   operation: (client: PoolClient) => Promise<T>,

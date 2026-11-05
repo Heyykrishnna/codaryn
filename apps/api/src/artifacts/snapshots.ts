@@ -6,6 +6,7 @@ import { artifactWorkspace } from "./access.js";
 export interface ArtifactRow {
   id: string;
   job_id: string;
+  repository_id: string;
   commit_sha: string;
   status: string;
   hash: string | null;
@@ -18,16 +19,18 @@ const tables = {
   schema: "analysis_schema_snapshots",
   execution: "analysis_execution_snapshots",
   quality: "analysis_quality_snapshots",
+  version: "analysis_version_snapshots",
 } as const;
 const counts = {
   schema: "table_count",
   execution: "function_count",
   quality: "finding_count",
+  version: "file_count",
 } as const;
 export class ArtifactSnapshots {
   constructor(
     private readonly pool: Pool,
-    private readonly kind: "schema" | "execution" | "quality",
+    private readonly kind: "schema" | "execution" | "quality" | "version",
   ) {}
   workspace<T>(
     actor: string,
@@ -67,7 +70,13 @@ export class ArtifactSnapshots {
     if (!row) throw new WorkspaceAccessError();
     return row;
   }
-  request(actor: string, workspace: string, jobId: string, infer = false) {
+  request(
+    actor: string,
+    workspace: string,
+    jobId: string,
+    infer = false,
+    baseId: string | null = null,
+  ) {
     return this.workspace(
       actor,
       workspace,
@@ -96,6 +105,7 @@ export class ArtifactSnapshots {
               schema: "SCHEMA_LIMIT",
               execution: "EXECUTION_LIMIT",
               quality: "QUALITY_LIMIT",
+              version: "VERSION_LIMIT",
             }[this.kind],
             "Wait before requesting more snapshots",
           );
@@ -115,8 +125,15 @@ export class ArtifactSnapshots {
               ? ",infer_relations"
               : this.kind === "quality"
                 ? ",external_scans"
-                : "",
-          value = this.kind !== "execution" ? ",$8" : "";
+                : this.kind === "version"
+                  ? ",verify_full,base_snapshot_id"
+                  : "",
+          value =
+            this.kind === "version"
+              ? ",$8,$9"
+              : this.kind !== "execution"
+                ? ",$8"
+                : "";
         const parameters: unknown[] = [
           id,
           jobId,
@@ -127,6 +144,16 @@ export class ArtifactSnapshots {
           job.generation,
         ];
         if (this.kind !== "execution") parameters.push(infer);
+        if (this.kind === "version") {
+          if (baseId) {
+            const base = await client.query(
+              "SELECT id FROM analysis_version_snapshots WHERE id=$1 AND organization_id=$2 AND repository_id=$3 AND status='completed'",
+              [baseId, workspace, job.repository_id],
+            );
+            if (!base.rowCount) throw new WorkspaceAccessError();
+          }
+          parameters.push(baseId);
+        }
         const result = await client.query<ArtifactRow>(
           `INSERT INTO ${table} (id,job_id,organization_id,repository_id,actor_id,commit_sha,installation_generation${extra}) VALUES ($1,$2,$3,$4,$5,$6,$7${value}) RETURNING *,${counts[this.kind]} AS object_count`,
           parameters,
@@ -149,7 +176,7 @@ export class ArtifactSnapshots {
   list(actor: string, workspace: string, page: number, jobId?: string) {
     return this.workspace(actor, workspace, async (client) => {
       const result = await client.query<ArtifactRow>(
-        `SELECT id,job_id,commit_sha,status,hash,${counts[this.kind]} AS object_count,failure_code,created_at FROM ${tables[this.kind]} WHERE organization_id=$1 AND ($2::uuid IS NULL OR job_id=$2) ORDER BY created_at DESC,id LIMIT 20 OFFSET $3`,
+        `SELECT id,job_id,repository_id,commit_sha,status,hash,${counts[this.kind]} AS object_count,failure_code,created_at FROM ${tables[this.kind]} WHERE organization_id=$1 AND ($2::uuid IS NULL OR job_id=$2) ORDER BY created_at DESC,id LIMIT 20 OFFSET $3`,
         [workspace, jobId ?? null, (page - 1) * 20],
       );
       return result.rows;

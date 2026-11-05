@@ -1,3 +1,5 @@
+import { registerComparison } from "./comparison/routes.js";
+import { ComparisonService } from "./comparison/service.js";
 import { registerExports } from "./exports/routes.js";
 import { ExportService } from "./exports/service.js";
 import { registerDiagrams } from "./diagrams/routes.js";
@@ -124,6 +126,12 @@ for (const signal of ["SIGINT", "SIGTERM"] as const)
     void app.close();
   });
 try {
+  registerComparison(
+    app,
+    auth,
+    new ComparisonService(pool),
+    environment.WEB_ORIGIN,
+  );
   await app.listen({ port: environment.PORT, host: environment.HOST });
 } catch (error) {
   app.log.error(error);

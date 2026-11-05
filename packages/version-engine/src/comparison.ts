@@ -10,6 +10,7 @@ export function compareVersions(
 ): ComparisonResult {
   const changes: ComparisonResult["changes"] = [];
   type ObjectItem = {
+    summary: string;
     id: string;
     name: string;
     hash: string;
@@ -18,6 +19,7 @@ export function compareVersions(
   };
   const objects = (snapshot: VersionSnapshot): ObjectItem[] => [
     ...snapshot.files.map((file) => ({
+      summary: `${file.path} · ${file.hash.slice(0, 12)}`,
       id: digest(["file", file.path]),
       name: file.path,
       hash: file.hash,
@@ -25,16 +27,24 @@ export function compareVersions(
       evidence: { path: file.path, startLine: 1, endLine: 1 },
     })),
     ...snapshot.files.flatMap((file) =>
-      file.symbols.map((symbol) => ({ ...symbol, kind: "symbol" as const })),
+      file.symbols.map((symbol) => ({
+        ...symbol,
+        summary: `${symbol.kind} ${symbol.name} · ${symbol.hash.slice(0, 12)}`,
+        kind: "symbol" as const,
+      })),
     ),
     ...snapshot.edges.map((edge) => ({
+      summary: `${edge.source} → ${edge.target ?? edge.specifier} (${edge.resolution})`,
       id: edge.id,
       name: `${edge.source} → ${edge.specifier}`,
       hash: digest([edge.target, edge.resolution]),
       kind: "relationship" as const,
       evidence: edge.evidence,
     })),
-    ...snapshot.schema,
+    ...snapshot.schema.map((item) => ({
+      ...item,
+      summary: `${item.kind} ${item.name} · ${item.hash.slice(0, 12)}`,
+    })),
   ];
   const from = new Map(objects(before).map((item) => [item.id, item])),
     to = new Map(objects(after).map((item) => [item.id, item]));
@@ -49,6 +59,8 @@ export function compareVersions(
       kind: !old ? "added" : !next ? "removed" : "changed",
       object: item.kind,
       name: item.name,
+      beforeSummary: old?.summary ?? null,
+      afterSummary: next?.summary ?? null,
       before: old?.hash ?? null,
       after: next?.hash ?? null,
       evidence: item.evidence,

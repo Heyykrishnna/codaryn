@@ -80,6 +80,8 @@ export const architectureChangeSchema = z.object({
     "enum",
   ]),
   name: z.string().max(1024),
+  beforeSummary: z.string().max(1024).nullable(),
+  afterSummary: z.string().max(1024).nullable(),
   before: hash.nullable(),
   after: hash.nullable(),
   evidence: sourceEvidenceSchema,
