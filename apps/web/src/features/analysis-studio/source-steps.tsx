@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 import type { Dispatch, SetStateAction } from "react";
 import {
@@ -8,11 +9,15 @@ import {
   type studioProfileSchema,
 } from "@codaryn/contracts";
 import type { z } from "zod";
-import { control, type Repository } from "@/src/features/repositories/api";
+import { type Repository } from "@/src/features/repositories/api";
+import { CandyButton } from "@/src/components/ui/candy-button";
+import { DropdownSelect } from "@/src/components/ui/custom-dropdown";
+
 type Setter<T> = Dispatch<SetStateAction<T>>;
 type Branch = { name: string; sha: string };
 type Commit = { sha: string; message: string };
 type Profile = z.infer<typeof studioProfileSchema>;
+
 type SelectionState = {
   repositories: Repository[];
   repositoryId: string;
@@ -41,6 +46,7 @@ type SelectionState = {
   setProfilePage: Setter<number>;
   choosePreset: (configuration: StudioConfiguration) => void;
 };
+
 export function RepositoryStep({
   repositories,
   repositoryId,
@@ -71,18 +77,27 @@ export function RepositoryStep({
     | "setRepoPage"
   >
 >) {
+  const repoOptions = repositories.map((item) => ({
+    value: item.id,
+    label: item.fullName,
+    description: `Default branch: ${item.defaultBranch}`,
+    badge: item.private ? "private" : "public",
+  }));
+
   return (
-    <>
-      <label className="flex flex-col gap-2">
-        <span>Connected repository</span>
-        <select
-          className={control}
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+          Connected repository
+        </label>
+        <DropdownSelect
           value={repositoryId}
-          onChange={(event) => {
-            const selected = repositories.find(
-              (item) => item.id === event.target.value,
-            );
-            setRepositoryId(event.target.value);
+          options={repoOptions}
+          searchable
+          placeholder="Select a repository…"
+          onChange={(val) => {
+            const selected = repositories.find((item) => item.id === val);
+            setRepositoryId(val);
             setBranch(selected?.defaultBranch ?? "");
             setCommit("");
             setBranches([]);
@@ -91,49 +106,47 @@ export function RepositoryStep({
             setCommitPage(1);
             setManifest(null);
           }}
-        >
-          <option value="">Select a repository</option>
-          {repositories.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.fullName}
-            </option>
-          ))}
-        </select>
-      </label>
+        />
+      </div>
+
       {repositories.length === 0 && (
-        <p>
-          No repositories on this page.{" "}
+        <div className="rounded-xl border border-[#2b2f3d] bg-[#14161f] p-4 text-xs text-zinc-400">
+          No repositories found on page {repoPage}.{" "}
           <Link
-            className="text-indigo-600 underline dark:text-indigo-400"
+            className="text-blue-400 hover:underline"
             href="/repositories"
           >
-            Connect and sync a GitHub installation
+            Connect and sync your GitHub installation
           </Link>
           .
-        </p>
+        </div>
       )}
-      <div className="flex gap-3">
-        <button
+
+      <div className="flex items-center justify-between gap-3 pt-2">
+        <CandyButton
           type="button"
-          className={control}
+          variant="secondary"
+          size="xs"
           disabled={repoPage === 1}
           onClick={() => setRepoPage(repoPage - 1)}
         >
-          Previous repositories
-        </button>
-        <span>Page {repoPage}</span>
-        <button
+          Previous page
+        </CandyButton>
+        <span className="text-xs font-mono text-zinc-400">Page {repoPage}</span>
+        <CandyButton
           type="button"
-          className={control}
+          variant="secondary"
+          size="xs"
           disabled={repositories.length < 50}
           onClick={() => setRepoPage(repoPage + 1)}
         >
-          Next repositories
-        </button>
+          Next page
+        </CandyButton>
       </div>
-    </>
+    </div>
   );
 }
+
 export function RevisionStep({
   repositoryId,
   branch,
@@ -164,100 +177,121 @@ export function RevisionStep({
     | "setBranchPage"
   >
 >) {
+  const branchOptions = branches.map((item) => ({
+    value: item.name,
+    label: item.name,
+    badge: item.sha.slice(0, 7),
+  }));
+
+  const commitOptions = commits.map((item) => ({
+    value: item.sha,
+    label: `${item.sha.slice(0, 8)} · ${item.message.split("\n")[0]}`,
+    badge: item.sha.slice(0, 7),
+  }));
+
   return (
-    <>
-      {!repositoryId && <p>Select a repository first.</p>}
-      <label className="flex flex-col gap-2">
-        <span>Branch</span>
-        <select
-          className={control}
-          disabled={!repositoryId}
+    <div className="flex flex-col gap-5">
+      {!repositoryId && (
+        <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-300">
+          Select a repository in step 1 before selecting branches.
+        </div>
+      )}
+
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+          Git branch
+        </label>
+        <DropdownSelect
           value={branch}
-          onChange={(event) => {
-            setBranch(event.target.value);
+          options={branchOptions}
+          disabled={!repositoryId}
+          searchable
+          placeholder="Select branch…"
+          onChange={(val) => {
+            setBranch(val);
             setCommit("");
             setCommits([]);
             setCommitPage(1);
           }}
-        >
-          <option value="">Select branch</option>
-          {branch && !branches.some((item) => item.name === branch) && (
-            <option value={branch}>{branch}</option>
-          )}
-          {branches.map((item) => (
-            <option key={item.name} value={item.name}>
-              {item.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <div className="flex gap-3">
-        <button
-          type="button"
-          className={control}
-          disabled={branchPage === 1}
-          onClick={() => setBranchPage(branchPage - 1)}
-        >
-          Previous branches
-        </button>
-        <button
-          type="button"
-          className={control}
-          disabled={branches.length < 50}
-          onClick={() => setBranchPage(branchPage + 1)}
-        >
-          Next branches
-        </button>
+        />
+        <div className="flex items-center justify-between pt-1">
+          <CandyButton
+            type="button"
+            variant="ghost"
+            size="xs"
+            disabled={branchPage === 1}
+            onClick={() => setBranchPage(branchPage - 1)}
+          >
+            ← Previous branches
+          </CandyButton>
+          <span className="text-[11px] font-mono text-zinc-500">
+            Branch page {branchPage}
+          </span>
+          <CandyButton
+            type="button"
+            variant="ghost"
+            size="xs"
+            disabled={branches.length < 50}
+            onClick={() => setBranchPage(branchPage + 1)}
+          >
+            Next branches →
+          </CandyButton>
+        </div>
       </div>
-      <label className="flex flex-col gap-2">
-        <span>Commit</span>
-        <select
-          className={control}
+
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+          Commit SHA
+        </label>
+        <DropdownSelect
           value={commit}
+          options={commitOptions}
           disabled={!branch}
-          onChange={(event) => setCommit(event.target.value)}
-        >
-          <option value="">Select an immutable commit</option>
-          {commit && !commits.some((item) => item.sha === commit) && (
-            <option value={commit}>{commit}</option>
-          )}
-          {commits.map((item) => (
-            <option key={item.sha} value={item.sha}>
-              {item.sha.slice(0, 12)} · {item.message.split("\n")[0]}
-            </option>
-          ))}
-        </select>
-      </label>
-      <div className="flex gap-3">
-        <button
-          type="button"
-          className={control}
-          disabled={commitPage === 1}
-          onClick={() => setCommitPage(commitPage - 1)}
-        >
-          Previous commits
-        </button>
-        <button
-          type="button"
-          className={control}
-          disabled={commits.length < 50}
-          onClick={() => setCommitPage(commitPage + 1)}
-        >
-          Next commits
-        </button>
+          searchable
+          placeholder="Select an immutable commit…"
+          onChange={setCommit}
+        />
+        <div className="flex items-center justify-between pt-1">
+          <CandyButton
+            type="button"
+            variant="ghost"
+            size="xs"
+            disabled={commitPage === 1}
+            onClick={() => setCommitPage(commitPage - 1)}
+          >
+            ← Previous commits
+          </CandyButton>
+          <span className="text-[11px] font-mono text-zinc-500">
+            Commit page {commitPage}
+          </span>
+          <CandyButton
+            type="button"
+            variant="ghost"
+            size="xs"
+            disabled={commits.length < 50}
+            onClick={() => setCommitPage(commitPage + 1)}
+          >
+            Next commits →
+          </CandyButton>
+        </div>
       </div>
-      <label className="flex flex-col gap-2">
-        <span>Or enter a full commit SHA</span>
+
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+          Or manual commit SHA (40 hex characters)
+        </label>
         <input
-          className={control}
+          className="h-9 w-full rounded-lg border border-[#2b2f3d] bg-[#14161f] px-3 text-xs text-white placeholder-zinc-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono"
+          placeholder="e.g. 7ab99ec..."
           value={commit}
           maxLength={40}
           onChange={(event) => setCommit(event.target.value)}
         />
-      </label>
-    </>
+      </div>
+    </div>
   );
 }
+
 export function ProfileStep({
   profiles,
   profile,
@@ -280,66 +314,88 @@ export function ProfileStep({
     | "choosePreset"
   >
 >) {
+  const profileOptions = profiles.map((item) => ({
+    value: item.id,
+    label: item.name,
+    badge: `rev ${item.revision}`,
+  }));
+
   return (
-    <>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {studioPresets.map((preset) => (
-          <button
-            type="button"
-            key={preset.name}
-            className={control}
-            onClick={() => choosePreset(preset.configuration)}
-          >
-            {preset.name}
-          </button>
-        ))}
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+          Preset templates
+        </label>
+        <div className="grid gap-2.5 sm:grid-cols-2">
+          {studioPresets.map((preset) => (
+            <button
+              type="button"
+              key={preset.name}
+              className="flex items-center justify-between rounded-xl border border-[#272b39] bg-[#161822] p-3 text-left transition-all duration-150 hover:border-[#383e52] hover:bg-[#1b1e2b] cursor-pointer"
+              onClick={() => choosePreset(preset.configuration)}
+            >
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-white">
+                  {preset.name}
+                </span>
+                <span className="text-[11px] text-zinc-400">
+                  {preset.configuration.analyzers.length} analyzers · depth{" "}
+                  {preset.configuration.depth}
+                </span>
+              </div>
+              <span className="rounded bg-[#202330] px-2 py-0.5 text-[10px] font-mono text-blue-400">
+                Load
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
-      <label className="flex flex-col gap-2">
-        <span>Saved workspace profiles</span>
-        <select
-          className={control}
+
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+          Saved workspace profiles
+        </label>
+        <DropdownSelect
           value={profile?.id ?? ""}
-          onChange={(event) => {
-            const chosen = profiles.find(
-              (item) => item.id === event.target.value,
-            );
+          options={profileOptions}
+          placeholder="Choose a saved profile…"
+          onChange={(val) => {
+            const chosen = profiles.find((item) => item.id === val);
             if (chosen) {
               setProfile(chosen);
               setName(chosen.name);
               setConfiguration(chosen.configuration);
             }
           }}
-        >
-          <option value="">Choose a profile</option>
-          {profiles.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name} · revision {item.revision}
-            </option>
-          ))}
-        </select>
-      </label>
-      <div className="flex gap-3">
-        <button
-          type="button"
-          className={control}
-          disabled={profilePage === 1}
-          onClick={() => setProfilePage(profilePage - 1)}
-        >
-          Previous profiles
-        </button>
-        <button
-          type="button"
-          className={control}
-          disabled={profiles.length < 50}
-          onClick={() => setProfilePage(profilePage + 1)}
-        >
-          Next profiles
-        </button>
+        />
+        <div className="flex items-center justify-between pt-1">
+          <CandyButton
+            type="button"
+            variant="ghost"
+            size="xs"
+            disabled={profilePage === 1}
+            onClick={() => setProfilePage(profilePage - 1)}
+          >
+            ← Previous profiles
+          </CandyButton>
+          <span className="text-[11px] font-mono text-zinc-500">
+            Profile page {profilePage}
+          </span>
+          <CandyButton
+            type="button"
+            variant="ghost"
+            size="xs"
+            disabled={profiles.length < 50}
+            onClick={() => setProfilePage(profilePage + 1)}
+          >
+            Next profiles →
+          </CandyButton>
+        </div>
       </div>
-      <p className="text-sm">
-        Select any preset, customize modules, and save below. Required
-        dependencies appear in the preview.
+
+      <p className="text-xs text-zinc-400 leading-relaxed">
+        Select any preset, customize modules across analyzer steps, and save as a versioned profile below.
       </p>
-    </>
+    </div>
   );
 }
