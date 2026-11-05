@@ -1,8 +1,10 @@
 "use client";
+import { UnresolvedReferencesPanel } from "./unresolved";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import {
   graphSnapshotResponseSchema,
+  unresolvedReferencesResponseSchema,
   dependencyNodeSchema,
   dependencyEdgeSchema,
   type DependencyEdge,
@@ -22,9 +24,11 @@ const neighborhoodSchema = z.object({
 });
 export function GraphExplorer({
   workspaceId,
-}: Readonly<{ workspaceId: string }>) {
-  const [jobId, setJobId] = useState(""),
+  initialJobId,
+}: Readonly<{ workspaceId: string; initialJobId?: string }>) {
+  const [jobId, setJobId] = useState(initialJobId ?? ""),
     [page, setPage] = useState(1),
+    [showUnresolved, setShowUnresolved] = useState(false),
     [search, setSearch] = useState(""),
     [query, setQuery] = useState(""),
     [selected, setSelected] = useState<string | null>(null),
@@ -49,6 +53,12 @@ export function GraphExplorer({
       ? `/api/v1/graph/snapshot?${new URLSearchParams({ workspaceId, jobId, page: String(page), search: query, _retry: String(refresh) })}`
       : null,
     snapshot = useArtifactResource(url, graphSnapshotResponseSchema),
+    unresolved = useArtifactResource(
+      jobId && showUnresolved
+        ? `/api/v1/graph/unresolved?${new URLSearchParams({ workspaceId, jobId, _retry: String(refresh) })}`
+        : null,
+      unresolvedReferencesResponseSchema,
+    ),
     neighborhood = useArtifactResource(
       jobId && selected
         ? `/api/v1/graph/neighborhood?${new URLSearchParams({ workspaceId, jobId, nodeId: selected, depth: String(depth), direction })}`
@@ -76,6 +86,11 @@ export function GraphExplorer({
             }}
           >
             <option value="">Select an analysis</option>
+            {jobId && !jobs.data?.jobs.some((job) => job.id === jobId) && (
+              <option value={jobId}>
+                Linked analysis {jobId.slice(0, 12)}
+              </option>
+            )}
             {jobs.data?.jobs.map((job) => (
               <option key={job.id} value={job.id}>
                 {job.commit_sha.slice(0, 12)} · {job.full_name}
@@ -171,6 +186,23 @@ export function GraphExplorer({
             onSelectNode={setSelected}
           />
           <ModuleMetricsPanel metrics={snapshot.data.metrics} />
+          <details
+            onToggle={(event) => setShowUnresolved(event.currentTarget.open)}
+            className="rounded-lg border border-zinc-300 p-4 dark:border-zinc-700"
+          >
+            <summary className="cursor-pointer font-semibold focus-visible:outline-2 focus-visible:outline-indigo-500">
+              Unresolved references
+            </summary>
+            {unresolved.loading && (
+              <output>Loading unresolved evidence…</output>
+            )}
+            {unresolved.error && <p role="alert">{unresolved.error}</p>}
+            {unresolved.data && (
+              <UnresolvedReferencesPanel
+                references={unresolved.data.references}
+              />
+            )}
+          </details>
         </>
       )}
     </div>

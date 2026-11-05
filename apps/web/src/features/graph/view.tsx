@@ -153,7 +153,7 @@ export function DependencyGraphView({
                   edge.resolution === "UNRESOLVED" ? "4 4" : undefined
                 }
                 markerEnd={isConnected ? "url(#arrow-selected)" : "url(#arrow)"}
-                className="cursor-pointer transition-all hover:stroke-indigo-600"
+                className="cursor-pointer transition-all hover:stroke-indigo-600 focus-visible:stroke-amber-500 focus-visible:stroke-3 focus-visible:outline-none"
                 role="button"
                 tabIndex={0}
                 aria-label={`Inspect relationship ${edge.sourceId} to ${edge.targetId}`}
@@ -179,7 +179,7 @@ export function DependencyGraphView({
               <g
                 key={node.id}
                 transform={`translate(${pos.x},${pos.y})`}
-                className="cursor-pointer focus:stroke-amber-500 focus:outline-none"
+                className="cursor-pointer focus:stroke-amber-500 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-500"
                 role="button"
                 tabIndex={0}
                 aria-label={`Select ${node.path}`}

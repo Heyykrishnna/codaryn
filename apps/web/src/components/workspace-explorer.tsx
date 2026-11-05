@@ -7,7 +7,12 @@ import { control } from "@/src/features/repositories/api";
 export function WorkspaceExplorer({
   title,
   children,
-}: Readonly<{ title: string; children: (workspaceId: string) => ReactNode }>) {
+  initialWorkspaceId,
+}: Readonly<{
+  title: string;
+  initialWorkspaceId?: string;
+  children: (workspaceId: string) => ReactNode;
+}>) {
   const { data: session, isPending, error } = authClient.useSession();
   if (isPending) return <output className="block p-8">Loading {title}…</output>;
   if (error)
@@ -28,7 +33,11 @@ export function WorkspaceExplorer({
       </main>
     );
   return (
-    <WorkspaceExplorerContent key={session.user.id} title={title}>
+    <WorkspaceExplorerContent
+      key={`${session.user.id}:${initialWorkspaceId ?? ""}`}
+      title={title}
+      initialWorkspaceId={initialWorkspaceId}
+    >
       {children}
     </WorkspaceExplorerContent>
   );
@@ -36,7 +45,12 @@ export function WorkspaceExplorer({
 function WorkspaceExplorerContent({
   title,
   children,
-}: Readonly<{ title: string; children: (workspaceId: string) => ReactNode }>) {
+  initialWorkspaceId,
+}: Readonly<{
+  title: string;
+  initialWorkspaceId?: string;
+  children: (workspaceId: string) => ReactNode;
+}>) {
   const [data, setData] = useState<{
       items: WorkspaceSummary[];
       active: string;
@@ -54,7 +68,11 @@ function WorkspaceExplorerContent({
         const result = workspaceListSchema.parse(await response.json());
         setData({
           items: result.workspaces,
-          active: result.active ?? result.workspaces[0]?.id ?? "",
+          active: result.workspaces.some(
+            (item) => item.id === initialWorkspaceId,
+          )
+            ? (initialWorkspaceId ?? "")
+            : (result.active ?? result.workspaces[0]?.id ?? ""),
         });
       })
       .catch(() => {
@@ -62,7 +80,7 @@ function WorkspaceExplorerContent({
           setMessage("Unable to load workspaces. Reload to retry.");
       });
     return () => controller.abort();
-  }, []);
+  }, [initialWorkspaceId]);
   const workspace = selected || data?.active || "";
   return (
     <main className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-8">

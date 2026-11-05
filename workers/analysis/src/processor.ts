@@ -65,6 +65,32 @@ export class AnalysisProcessor {
       const isCancelled = await this.checkCancellation(client, jobId);
       if (isCancelled) return;
 
+      for (const table of [
+        "analysis_backend_request_flows",
+        "analysis_backend_routes",
+        "analysis_backend_controllers",
+        "analysis_backend_services",
+        "analysis_backend_repositories",
+        "analysis_backend_middleware",
+        "analysis_frontend_api_clients",
+        "analysis_frontend_state",
+        "analysis_frontend_hooks",
+        "analysis_frontend_jsx_elements",
+        "analysis_frontend_contexts",
+        "analysis_frontend_routes",
+        "analysis_frontend_components",
+        "analysis_graph_edges",
+        "analysis_graph_cycles",
+        "analysis_graph_metrics",
+        "analysis_unresolved_references",
+        "analysis_graph_nodes",
+        "analysis_diagnostics",
+        "analysis_symbols",
+        "analysis_files",
+      ]) {
+        await client.query(`DELETE FROM ${table} WHERE job_id=$1`, [jobId]);
+      }
+
       await client.query(
         "UPDATE analysis_jobs SET status='running', updated_at=now() WHERE id=$1 AND status='queued'",
         [jobId],

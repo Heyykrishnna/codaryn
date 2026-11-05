@@ -119,6 +119,32 @@ test(
       );
       assert.ok(nodes.rowCount && nodes.rowCount > 1);
       assert.ok(nodes.rows.every((node) => node.id.startsWith(job + ":")));
+      await pool.query(
+        "UPDATE analysis_graph_nodes SET name='poisonedFixture' WHERE job_id=$1",
+        [job],
+      );
+      await pool.query("UPDATE analysis_jobs SET status='queued' WHERE id=$1", [
+        job,
+      ]);
+      await runOneAnalysisJob(pool, gateway);
+      assert.equal(
+        (
+          await pool.query(
+            "SELECT id FROM analysis_graph_nodes WHERE job_id=$1 AND name='poisonedFixture'",
+            [job],
+          )
+        ).rowCount,
+        0,
+      );
+      assert.equal(
+        (
+          await pool.query(
+            "SELECT id FROM analysis_graph_nodes WHERE job_id=$1",
+            [job],
+          )
+        ).rowCount,
+        nodes.rowCount,
+      );
       await queue(second);
       const child = fork(new URL("./runner.fixture.js", import.meta.url), {
         env: { ...process.env },
