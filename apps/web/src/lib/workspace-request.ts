@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 type ApiScope =
+  | "workspace"
+  | "team"
   | "studio"
   | "analysis"
   | "graph"
