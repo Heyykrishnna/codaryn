@@ -174,3 +174,5 @@ export * from "./schema-studio.js";
 export * from "./execution.js";
 
 export * from "./quality.js";
+export * from "./diagrams.js";
+export * from "./documentation.js";
