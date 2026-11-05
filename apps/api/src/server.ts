@@ -1,3 +1,5 @@
+import { registerQuality } from "./quality/routes.js";
+import { QualityService } from "./quality/service.js";
 import { registerExecution } from "./execution/routes.js";
 import { ExecutionService } from "./execution/service.js";
 import { registerSchema } from "./schema/routes.js";
@@ -95,6 +97,12 @@ registerAnalysis(app, auth, new AnalysisService(pool), environment.WEB_ORIGIN);
 registerGraph(app, auth, new GraphService(pool), environment.WEB_ORIGIN);
 registerFrontend(app, auth, new FrontendService(pool), environment.WEB_ORIGIN);
 registerBackend(app, auth, new BackendService(pool), environment.WEB_ORIGIN);
+registerQuality(
+  app,
+  auth,
+  new QualityService(pool, process.env.ALLOW_OSV_NETWORK === "true"),
+  environment.WEB_ORIGIN,
+);
 registerExecution(
   app,
   auth,
