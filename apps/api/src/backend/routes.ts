@@ -1,3 +1,5 @@
+import { protectAnalysisReads } from "../http/analysis-read.js";
+import type { SessionReader } from "../http/access.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { BackendService } from "./service.js";
@@ -44,10 +46,17 @@ const requestFlowsQuerySchema = backendBaseQuerySchema.extend({
 
 export function registerBackend(
   app: FastifyInstance,
-  auth: unknown,
+  auth: SessionReader,
   service: BackendService,
   origin: string,
 ): void {
+  protectAnalysisReads(
+    app,
+    auth,
+    (actor, workspace, job) => service.authorize(actor, workspace, job),
+    origin,
+    "backend",
+  );
   const allowOrigin = (reply: {
     header: (name: string, value: string) => void;
   }) => {
@@ -75,12 +84,11 @@ export function registerBackend(
         parsed.data.jobId,
       );
       return reply.send(overview);
-    } catch (err) {
+    } catch {
       return reply.status(404).send({
         error: {
           code: "NOT_FOUND",
-          message:
-            err instanceof Error ? err.message : "Backend overview not found.",
+          message: "Resource not found or access denied.",
         },
       });
     }
@@ -109,11 +117,11 @@ export function registerBackend(
         },
       );
       return reply.send(routes);
-    } catch (err) {
+    } catch {
       return reply.status(404).send({
         error: {
           code: "NOT_FOUND",
-          message: err instanceof Error ? err.message : "Routes not found.",
+          message: "Resource not found or access denied.",
         },
       });
     }
@@ -139,12 +147,11 @@ export function registerBackend(
         paramsParsed.data.routeId,
       );
       return reply.send(detail);
-    } catch (err) {
+    } catch {
       return reply.status(404).send({
         error: {
           code: "NOT_FOUND",
-          message:
-            err instanceof Error ? err.message : "Route detail not found.",
+          message: "Resource not found or access denied.",
         },
       });
     }
@@ -172,12 +179,11 @@ export function registerBackend(
         },
       );
       return reply.send(controllers);
-    } catch (err) {
+    } catch {
       return reply.status(404).send({
         error: {
           code: "NOT_FOUND",
-          message:
-            err instanceof Error ? err.message : "Controllers not found.",
+          message: "Resource not found or access denied.",
         },
       });
     }
@@ -204,11 +210,11 @@ export function registerBackend(
         },
       );
       return reply.send(services);
-    } catch (err) {
+    } catch {
       return reply.status(404).send({
         error: {
           code: "NOT_FOUND",
-          message: err instanceof Error ? err.message : "Services not found.",
+          message: "Resource not found or access denied.",
         },
       });
     }
@@ -236,12 +242,11 @@ export function registerBackend(
         },
       );
       return reply.send(repos);
-    } catch (err) {
+    } catch {
       return reply.status(404).send({
         error: {
           code: "NOT_FOUND",
-          message:
-            err instanceof Error ? err.message : "Repositories not found.",
+          message: "Resource not found or access denied.",
         },
       });
     }
@@ -270,11 +275,11 @@ export function registerBackend(
         },
       );
       return reply.send(middleware);
-    } catch (err) {
+    } catch {
       return reply.status(404).send({
         error: {
           code: "NOT_FOUND",
-          message: err instanceof Error ? err.message : "Middleware not found.",
+          message: "Resource not found or access denied.",
         },
       });
     }
@@ -302,12 +307,11 @@ export function registerBackend(
         },
       );
       return reply.send(flows);
-    } catch (err) {
+    } catch {
       return reply.status(404).send({
         error: {
           code: "NOT_FOUND",
-          message:
-            err instanceof Error ? err.message : "Request flows not found.",
+          message: "Resource not found or access denied.",
         },
       });
     }

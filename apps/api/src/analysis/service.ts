@@ -25,13 +25,28 @@ export class AnalysisServiceError extends Error {
 export class AnalysisService {
   constructor(private readonly pool: Pool) {}
 
+  private async requireQueueCapacity(client: PoolClient, workspace: string) {
+    await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
+      `analysis-queue:${workspace}`,
+    ]);
+    const count = await client.query<{ count: string }>(
+      "SELECT count(*) FROM analysis_jobs WHERE organization_id=$1 AND status IN ('queued','running')",
+      [workspace],
+    );
+    if (Number(count.rows[0].count) >= 20)
+      throw new AnalysisServiceError(
+        429,
+        "QUEUE_FULL",
+        "Wait for existing analyses to finish",
+      );
+  }
   private async authorize(
     client: PoolClient,
     actor: string,
     workspace: string,
   ): Promise<string> {
     const res = await client.query<{ role: string }>(
-      "SELECT role FROM organization_members WHERE organization_id=$1 AND user_id=$2",
+      "SELECT m.role FROM organization_members m JOIN organizations o ON o.id=m.organization_id WHERE m.organization_id=$1 AND m.user_id=$2 AND o.deleted_at IS NULL",
       [workspace, actor],
     );
     const role = res.rows[0]?.role;
@@ -73,12 +88,20 @@ export class AnalysisService {
       }
 
       const jobId = randomUUID();
-      const commitSha =
-        manifestRow.manifest.commitSha ||
-        "0000000000000000000000000000000000000000";
+      const parsedCommit = z
+        .string()
+        .regex(/^[a-f0-9]{40}$/)
+        .safeParse(manifestRow.manifest.commitSha);
+      if (!parsedCommit.success)
+        throw new AnalysisServiceError(
+          422,
+          "INVALID_MANIFEST",
+          "Analysis requires a pinned commit",
+        );
+      const commitSha = parsedCommit.data;
 
       await client.query("BEGIN");
-
+      await this.requireQueueCapacity(client, workspace);
       await client.query(
         "INSERT INTO analysis_jobs (id,organization_id,repository_id,manifest_id,actor_id,ref,commit_sha,status,current_stage) VALUES ($1,$2,$3,$4,$5,$6,$7,'queued','inventory')",
         [jobId, workspace, repositoryId, manifestId, actor, ref, commitSha],
@@ -247,9 +270,9 @@ export class AnalysisService {
       await this.authorize(client, actor, workspace);
 
       await client.query("BEGIN");
-
+      await this.requireQueueCapacity(client, workspace);
       const updateRes = await client.query(
-        "UPDATE analysis_jobs SET status='queued', current_stage='inventory', failure_reason=null, retries=retries+1, updated_at=now() WHERE id=$1 AND organization_id=$2 AND status='failed' AND retries < max_retries",
+        "UPDATE analysis_jobs SET status='queued', current_stage='inventory', failure_reason=null, lease_id=NULL, lease_at=NULL, updated_at=now() WHERE id=$1 AND organization_id=$2 AND status='failed' AND retries < max_retries",
         [jobId, workspace],
       );
 

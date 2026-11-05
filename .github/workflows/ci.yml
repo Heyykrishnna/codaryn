@@ -83,3 +83,46 @@ jobs:
           --security-opt no-new-privileges:true
           --mount "type=bind,source=$PWD/workers/export/dist/process.test.js,target=/app/dist/process.test.js,readonly"
           --entrypoint node codaryn-export-worker:ci --test /app/dist/process.test.js
+      - name: Build real analysis worker image
+        run: docker build -f infrastructure/docker/analysis.Dockerfile -t codaryn-analysis-worker:ci .
+      - name: Qualify static analysis and memory in isolated Node 22 image
+        run: >-
+          docker run --rm --network none --read-only --memory 768m --cpus 1
+          --tmpfs /tmp:size=201326592,mode=1777 --cap-drop ALL
+          --security-opt no-new-privileges:true
+          --entrypoint node codaryn-analysis-worker:ci
+          --max-old-space-size=384 /app/dist/release.bench.js
+      - name: Build ingestion worker image
+        run: docker build -f infrastructure/docker/ingestion.Dockerfile -t codaryn-ingestion-worker:ci .
+      - name: Build production API image
+        run: docker build -f infrastructure/docker/api.Dockerfile -t codaryn-api:ci .
+      - name: Build standalone web image
+        run: docker build -f infrastructure/docker/web.Dockerfile -t codaryn-web:ci .
+      - name: Verify application images without network or live credentials
+        run: node infrastructure/docker/smoke.mjs
+  recovery:
+    runs-on: ubuntu-latest
+    env:
+      POSTGRES_PASSWORD: phase14-test-password
+      POSTGRES_PORT: 55495
+      REDIS_PORT: 56445
+      DATABASE_URL: postgres://codaryn:phase14-test-password@127.0.0.1:55495/codaryn
+      DIRECT_DATABASE_URL: postgres://codaryn:phase14-test-password@127.0.0.1:55495/codaryn
+      REDIS_URL: redis://127.0.0.1:56445
+      RECOVERY_CONTAINER: codaryn-phase14-postgres-1
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @codaryn/analysis-worker... build
+      - run: docker compose -p codaryn-phase14 --profile local up -d --wait postgres redis
+      - run: pnpm db:sync
+      - name: Restore into an isolated clean database and verify integrity
+        run: pnpm --filter @codaryn/database test:recovery
+      - name: Remove disposable recovery services
+        if: always()
+        run: docker compose -p codaryn-phase14 --profile local down -v

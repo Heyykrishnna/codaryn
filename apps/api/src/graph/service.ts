@@ -1,3 +1,4 @@
+import { authorizeAnalysisRead } from "../http/analysis-read.js";
 import type { Pool } from "pg";
 import type {
   DependencyCycle,
@@ -11,6 +12,9 @@ import type {
 
 export class GraphService {
   constructor(private readonly pool: Pool) {}
+  authorize(actor: string, workspace: string, job: string) {
+    return authorizeAnalysisRead(this.pool, actor, workspace, job);
+  }
 
   private async verifyJobAccess(
     workspaceId: string,
@@ -33,6 +37,7 @@ export class GraphService {
       search?: string;
       kind?: string;
       resolution?: string;
+      page?: number;
     },
   ): Promise<GraphSnapshotResponse> {
     await this.verifyJobAccess(workspaceId, jobId);
@@ -51,7 +56,13 @@ export class GraphService {
       nodeSql += ` AND (LOWER(path) LIKE $${nodeParams.length} OR LOWER(name) LIKE $${nodeParams.length})`;
     }
 
-    nodeSql += " ORDER BY path ASC";
+    const page = Math.min(1000, Math.max(1, query?.page ?? 1));
+    const countRes = await this.pool.query<{ count: string }>(
+      `SELECT count(*) AS count FROM (${nodeSql}) visible`,
+      nodeParams,
+    );
+    nodeParams.push((page - 1) * 200);
+    nodeSql += ` ORDER BY path ASC,id ASC LIMIT 200 OFFSET $${nodeParams.length}`;
     const nodeRes = await this.pool.query<{
       id: string;
       job_id: string;
@@ -81,7 +92,8 @@ export class GraphService {
       edgeSql += ` AND resolution=$${edgeParams.length}`;
     }
 
-    edgeSql += " ORDER BY id ASC";
+    edgeParams.push(nodes.map((node) => node.id));
+    edgeSql += ` AND source_id=ANY($${edgeParams.length}::text[]) AND target_id=ANY($${edgeParams.length}::text[]) ORDER BY id ASC LIMIT 400`;
     const edgeRes = await this.pool.query<{
       id: string;
       job_id: string;
@@ -111,7 +123,7 @@ export class GraphService {
       node_ids: string[];
       path: string[];
     }>(
-      "SELECT id, job_id, length, node_ids, path FROM analysis_graph_cycles WHERE job_id=$1 ORDER BY id ASC",
+      "SELECT id, job_id, length, node_ids, path FROM analysis_graph_cycles WHERE job_id=$1 ORDER BY id ASC LIMIT 200",
       [jobId],
     );
 
@@ -131,7 +143,7 @@ export class GraphService {
       instability: string;
       depth: number;
     }>(
-      "SELECT job_id, path, afferent_coupling, efferent_coupling, instability, depth FROM analysis_graph_metrics WHERE job_id=$1 ORDER BY path ASC",
+      "SELECT job_id, path, afferent_coupling, efferent_coupling, instability, depth FROM analysis_graph_metrics WHERE job_id=$1 ORDER BY path ASC LIMIT 200",
       [jobId],
     );
 
@@ -150,7 +162,12 @@ export class GraphService {
       edges,
       cycles,
       metrics,
-      totalNodes: nodes.length,
+      totalNodes: Number(countRes.rows[0]?.count ?? nodes.length),
+      page,
+      pageSize: 200,
+      hasMore: Number(countRes.rows[0]?.count ?? nodes.length) > page * 200,
+      truncated:
+        edges.length === 400 || cycles.length === 200 || metrics.length === 200,
       totalEdges: edges.length,
       totalCycles: cycles.length,
     };
@@ -162,16 +179,18 @@ export class GraphService {
     nodeId: string,
     depth: number = 1,
     direction: "incoming" | "outgoing" | "both" = "both",
-  ): Promise<{ nodes: DependencyNode[]; edges: DependencyEdge[] }> {
+  ): Promise<{
+    nodes: DependencyNode[];
+    edges: DependencyEdge[];
+    truncated: boolean;
+  }> {
     await this.verifyJobAccess(workspaceId, jobId);
 
     const matchedNodeIds = new Set<string>([nodeId]);
     const matchedEdgeIds = new Set<string>();
-    const queue: Array<{ id: string; currentDepth: number }> = [
-      { id: nodeId, currentDepth: 0 },
-    ];
-
-    const allEdgesRes = await this.pool.query<{
+    let frontier = [nodeId],
+      truncated = false;
+    const allEdges: Array<{
       id: string;
       job_id: string;
       source_id: string;
@@ -180,39 +199,38 @@ export class GraphService {
       resolution: DependencyEdge["resolution"];
       evidence: DependencyEdge["evidence"];
       weight: number;
-    }>(
-      "SELECT id, job_id, source_id, target_id, kind, resolution, evidence, weight FROM analysis_graph_edges WHERE job_id=$1",
-      [jobId],
-    );
-
-    const allEdges = allEdgesRes.rows;
-
-    while (queue.length > 0) {
-      const { id, currentDepth } = queue.shift()!;
-      if (currentDepth >= depth) continue;
-
-      for (const e of allEdges) {
+    }> = [];
+    for (
+      let level = 0;
+      level < Math.min(depth, 5) && frontier.length;
+      level++
+    ) {
+      const result = await this.pool.query<(typeof allEdges)[number]>(
+        "SELECT id,job_id,source_id,target_id,kind,resolution,evidence,weight FROM analysis_graph_edges WHERE job_id=$1 AND (($3 IN ('outgoing','both') AND source_id=ANY($2::text[])) OR ($3 IN ('incoming','both') AND target_id=ANY($2::text[]))) ORDER BY id LIMIT 401",
+        [jobId, frontier, direction],
+      );
+      const next: string[] = [];
+      if (result.rows.length > 400) truncated = true;
+      for (const edge of result.rows) {
+        if (matchedEdgeIds.has(edge.id)) continue;
+        const unknown = [edge.source_id, edge.target_id].filter(
+          (id) => !matchedNodeIds.has(id),
+        );
         if (
-          (direction === "outgoing" || direction === "both") &&
-          e.source_id === id
+          matchedNodeIds.size + unknown.length > 200 ||
+          allEdges.length >= 400
         ) {
-          matchedEdgeIds.add(e.id);
-          if (!matchedNodeIds.has(e.target_id)) {
-            matchedNodeIds.add(e.target_id);
-            queue.push({ id: e.target_id, currentDepth: currentDepth + 1 });
-          }
+          truncated = true;
+          continue;
         }
-        if (
-          (direction === "incoming" || direction === "both") &&
-          e.target_id === id
-        ) {
-          matchedEdgeIds.add(e.id);
-          if (!matchedNodeIds.has(e.source_id)) {
-            matchedNodeIds.add(e.source_id);
-            queue.push({ id: e.source_id, currentDepth: currentDepth + 1 });
-          }
+        for (const id of unknown) {
+          matchedNodeIds.add(id);
+          next.push(id);
         }
+        matchedEdgeIds.add(edge.id);
+        allEdges.push(edge);
       }
+      frontier = next;
     }
 
     const nodeRes = await this.pool.query<{
@@ -252,7 +270,7 @@ export class GraphService {
       }))
       .sort((a, b) => a.id.localeCompare(b.id));
 
-    return { nodes, edges };
+    return { nodes, edges, truncated };
   }
 
   async getCycles(
@@ -272,7 +290,7 @@ export class GraphService {
       node_ids: string[];
       path: string[];
     }>(
-      "SELECT id, job_id, length, node_ids, path FROM analysis_graph_cycles WHERE job_id=$1 ORDER BY id ASC",
+      "SELECT id, job_id, length, node_ids, path FROM analysis_graph_cycles WHERE job_id=$1 ORDER BY id ASC LIMIT 200",
       [jobId],
     );
 
@@ -306,7 +324,7 @@ export class GraphService {
       status: ResolvedSymbolReference["status"];
       evidence: ResolvedSymbolReference["evidence"];
     }>(
-      "SELECT id, source_file, source_symbol_name, local_alias, module_specifier, status, evidence FROM analysis_unresolved_references WHERE job_id=$1 ORDER BY source_file ASC",
+      "SELECT id, source_file, source_symbol_name, local_alias, module_specifier, status, evidence FROM analysis_unresolved_references WHERE job_id=$1 ORDER BY source_file ASC LIMIT 200",
       [jobId],
     );
 
@@ -347,7 +365,7 @@ export class GraphService {
       instability: string;
       depth: number;
     }>(
-      "SELECT job_id, path, afferent_coupling, efferent_coupling, instability, depth FROM analysis_graph_metrics WHERE job_id=$1 ORDER BY path ASC",
+      "SELECT job_id, path, afferent_coupling, efferent_coupling, instability, depth FROM analysis_graph_metrics WHERE job_id=$1 ORDER BY path ASC LIMIT 200",
       [jobId],
     );
 

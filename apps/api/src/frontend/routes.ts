@@ -1,3 +1,5 @@
+import { protectAnalysisReads } from "../http/analysis-read.js";
+import type { SessionReader } from "../http/access.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { FrontendService } from "./service.js";
@@ -37,10 +39,17 @@ const apiClientsQuerySchema = frontendBaseQuerySchema.extend({
 
 export function registerFrontend(
   app: FastifyInstance,
-  auth: unknown,
+  auth: SessionReader,
   service: FrontendService,
   origin: string,
 ): void {
+  protectAnalysisReads(
+    app,
+    auth,
+    (actor, workspace, job) => service.authorize(actor, workspace, job),
+    origin,
+    "frontend",
+  );
   const allowOrigin = (reply: {
     header: (name: string, value: string) => void;
   }) => {
@@ -68,12 +77,11 @@ export function registerFrontend(
         parsed.data.jobId,
       );
       return reply.send(overview);
-    } catch (err) {
+    } catch {
       return reply.status(404).send({
         error: {
           code: "NOT_FOUND",
-          message:
-            err instanceof Error ? err.message : "Frontend overview not found.",
+          message: "Resource not found or access denied.",
         },
       });
     }
@@ -101,11 +109,11 @@ export function registerFrontend(
         },
       );
       return reply.send(components);
-    } catch (err) {
+    } catch {
       return reply.status(404).send({
         error: {
           code: "NOT_FOUND",
-          message: err instanceof Error ? err.message : "Components not found.",
+          message: "Resource not found or access denied.",
         },
       });
     }
@@ -130,12 +138,11 @@ export function registerFrontend(
         parsed.data.componentId,
       );
       return reply.send(detail);
-    } catch (err) {
+    } catch {
       return reply.status(404).send({
         error: {
           code: "NOT_FOUND",
-          message:
-            err instanceof Error ? err.message : "Component detail not found.",
+          message: "Resource not found or access denied.",
         },
       });
     }
@@ -162,11 +169,11 @@ export function registerFrontend(
         },
       );
       return reply.send(routes);
-    } catch (err) {
+    } catch {
       return reply.status(404).send({
         error: {
           code: "NOT_FOUND",
-          message: err instanceof Error ? err.message : "Routes not found.",
+          message: "Resource not found or access denied.",
         },
       });
     }
@@ -194,11 +201,11 @@ export function registerFrontend(
         },
       );
       return reply.send(hooks);
-    } catch (err) {
+    } catch {
       return reply.status(404).send({
         error: {
           code: "NOT_FOUND",
-          message: err instanceof Error ? err.message : "Hooks not found.",
+          message: "Resource not found or access denied.",
         },
       });
     }
@@ -222,11 +229,11 @@ export function registerFrontend(
         parsed.data.jobId,
       );
       return reply.send(contexts);
-    } catch (err) {
+    } catch {
       return reply.status(404).send({
         error: {
           code: "NOT_FOUND",
-          message: err instanceof Error ? err.message : "Contexts not found.",
+          message: "Resource not found or access denied.",
         },
       });
     }
@@ -254,11 +261,11 @@ export function registerFrontend(
         },
       );
       return reply.send(state);
-    } catch (err) {
+    } catch {
       return reply.status(404).send({
         error: {
           code: "NOT_FOUND",
-          message: err instanceof Error ? err.message : "State not found.",
+          message: "Resource not found or access denied.",
         },
       });
     }
@@ -286,12 +293,11 @@ export function registerFrontend(
         },
       );
       return reply.send(apiCalls);
-    } catch (err) {
+    } catch {
       return reply.status(404).send({
         error: {
           code: "NOT_FOUND",
-          message:
-            err instanceof Error ? err.message : "API clients not found.",
+          message: "Resource not found or access denied.",
         },
       });
     }

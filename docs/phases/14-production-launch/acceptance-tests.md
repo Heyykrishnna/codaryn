@@ -1,26 +1,13 @@
-# Phase 14: acceptance test plan
+# Phase 14 acceptance tests
 
-**Status:** Planned; these scenarios have not been executed. Scope and original acceptance criteria: [phase overview](README.md).
+| ID       | Scenario                                                                        | Executable evidence                                                                                                                                                               |
+| -------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P14-AT01 | Workspace isolation, malicious scripts/plugins and host reads                   | `apps/api/src/operations/release.integration.test.ts`, `packages/compiler/src/host.test.ts`, `workers/analysis/src/runner.integration.test.ts`; existing archive isolation suites |
+| P14-AT02 | Kill a claiming worker, reclaim lease and restore backup                        | Actual child process SIGKILL/reclaim fixture; `packages/database/src/recovery-drill.ts` fresh-target dump/restore and checksum/row integrity                                      |
+| P14-AT03 | Large graph, search, responsiveness and keyboard controls                       | 10,000-node real HTTP fixture and `apps/web/src/features/graph/view.release.test.tsx`; actual browser checks recorded separately                                                  |
+| P14-AT04 | Golden accuracy, resource budgets, load, throttling, outage and security review | `workers/analysis/src/release.bench.ts`, release API integration, `apps/api/src/operations.test.ts` and internal security review                                                  |
+| P14-AT05 | Incremental corruption and full rebuild                                         | Existing version-engine poisoned-global-cache regression and large fixture semantic equality without rewriting baseline                                                           |
 
-Implement these scenarios at the appropriate unit, integration, end-to-end or operational layer. Use controlled fixtures with expected outputs, isolate test data, and record the command, environment, actual result and evidence for each run. A scenario passes only when its expected result is observed.
+Thresholds were declared before the tests in [architecture](architecture.md). Run against explicit disposable database and Redis URLs. Never use the configured Neon environment for test fixtures. Preserve failure reports, investigate causes and rerun the affected gate; do not weaken tests to manufacture a release.
 
-| ID | Scenario and action | Expected result |
-|---|---|---|
-| P14-AT01 | **Isolation and execution:** Run malicious repository fixtures attempting script execution, host access and network escape. | No repository code executes and isolation controls block prohibited access. |
-| P14-AT02 | **Recovery:** Terminate a worker during a job and restore a backup into a clean environment. | Jobs recover according to policy and restored data passes integrity checks. |
-| P14-AT03 | **Scale and accessibility:** Exercise agreed representative large graphs, search, responsive layouts and keyboard/screen-reader flows. | Measured results meet release thresholds established before the test and critical workflows are accessible. |
-| P14-AT04 | **Accuracy and operations:** Run golden fixtures, analyzer regressions, profiling, load tests and security review. | Results meet documented release thresholds, findings have owners and launch blockers are resolved. |
-| P14-AT05 | **Incremental fallback:** Introduce an incremental inconsistency. | A full analysis can rebuild a correct snapshot without mutating history. |
-
-## Cross-cutting checks
-
-- Verify relevant loading, empty, error and permission-denied states, including keyboard access for affected UI.
-- Verify server-side authorization and workspace isolation for affected resources; avoid secrets and private source in logs and errors.
-- Test malformed input, boundary conditions, retries and failures appropriate to the change. Confirm evidence and uncertainty are represented accurately.
-- Run the applicable lint, type checks, tests and production build; record unavailable checks and unresolved failures. Update fixtures, documentation and supported-version information.
-
-## Completion evidence
-
-- Implementation and review links; fixture and version identifiers.
-- Test commands, environment, date, actual outcomes and any defects or limitations.
-- Evidence that every original acceptance criterion in the overview is met; obtain the relevant release owners’ review before marking the phase complete.
+[Verification](verification.md) records actual commands, versions, measurements and limitations. All existing unit/integration, lint, type, build, dependency and migration checks remain required. CI additionally runs isolated Node 22 qualification and a separate fresh-database recovery job. Release-owner approval is required before public launch; this test plan does not grant deployment permission.

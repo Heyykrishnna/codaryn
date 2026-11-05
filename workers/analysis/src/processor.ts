@@ -50,13 +50,46 @@ export type AnalysisJobPayload = {
 export class AnalysisProcessor {
   constructor(private readonly pool: Pool) {}
 
-  async processJob(payload: AnalysisJobPayload): Promise<void> {
+  async processJob(
+    payload: AnalysisJobPayload,
+    authorize?: (client: PoolClient) => Promise<void>,
+  ): Promise<void> {
     const { jobId, files } = payload;
+    const scoped = (id: string) => `${jobId}:${id}`;
     const client = await this.pool.connect();
 
+    let committed = false;
     try {
+      await client.query("BEGIN");
+      await authorize?.(client);
       const isCancelled = await this.checkCancellation(client, jobId);
       if (isCancelled) return;
+
+      for (const table of [
+        "analysis_backend_request_flows",
+        "analysis_backend_routes",
+        "analysis_backend_controllers",
+        "analysis_backend_services",
+        "analysis_backend_repositories",
+        "analysis_backend_middleware",
+        "analysis_frontend_api_clients",
+        "analysis_frontend_state",
+        "analysis_frontend_hooks",
+        "analysis_frontend_jsx_elements",
+        "analysis_frontend_contexts",
+        "analysis_frontend_routes",
+        "analysis_frontend_components",
+        "analysis_graph_edges",
+        "analysis_graph_cycles",
+        "analysis_graph_metrics",
+        "analysis_unresolved_references",
+        "analysis_graph_nodes",
+        "analysis_diagnostics",
+        "analysis_symbols",
+        "analysis_files",
+      ]) {
+        await client.query(`DELETE FROM ${table} WHERE job_id=$1`, [jobId]);
+      }
 
       await client.query(
         "UPDATE analysis_jobs SET status='running', updated_at=now() WHERE id=$1 AND status='queued'",
@@ -158,7 +191,7 @@ export class AnalysisProcessor {
             await client.query(
               "INSERT INTO analysis_symbols (id,job_id,path,name,kind,data,location) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING",
               [
-                fn.id,
+                scoped(fn.id),
                 jobId,
                 fn.location.path,
                 fn.name,
@@ -174,7 +207,7 @@ export class AnalysisProcessor {
             await client.query(
               "INSERT INTO analysis_symbols (id,job_id,path,name,kind,data,location) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING",
               [
-                cls.id,
+                scoped(cls.id),
                 jobId,
                 cls.location.path,
                 cls.name,
@@ -190,7 +223,7 @@ export class AnalysisProcessor {
             await client.query(
               "INSERT INTO analysis_symbols (id,job_id,path,name,kind,data,location) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING",
               [
-                iface.id,
+                scoped(iface.id),
                 jobId,
                 iface.location.path,
                 iface.name,
@@ -206,7 +239,7 @@ export class AnalysisProcessor {
             await client.query(
               "INSERT INTO analysis_symbols (id,job_id,path,name,kind,data,location) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING",
               [
-                type.id,
+                scoped(type.id),
                 jobId,
                 type.location.path,
                 type.name,
@@ -222,7 +255,7 @@ export class AnalysisProcessor {
             await client.query(
               "INSERT INTO analysis_symbols (id,job_id,path,name,kind,data,location) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING",
               [
-                ie.id,
+                scoped(ie.id),
                 jobId,
                 ie.location.path,
                 ie.moduleSpecifier || ie.kind,
@@ -238,7 +271,7 @@ export class AnalysisProcessor {
             await client.query(
               "INSERT INTO analysis_diagnostics (id,job_id,path,code,severity,message,location) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING",
               [
-                diag.id,
+                scoped(diag.id),
                 jobId,
                 diag.path,
                 diag.code,
@@ -300,7 +333,7 @@ export class AnalysisProcessor {
           await client.query(
             "INSERT INTO analysis_graph_nodes (id,job_id,kind,path,name,language,lines_of_code) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING",
             [
-              node.id,
+              scoped(node.id),
               jobId,
               node.kind,
               node.path,
@@ -315,10 +348,10 @@ export class AnalysisProcessor {
           await client.query(
             "INSERT INTO analysis_graph_edges (id,job_id,source_id,target_id,kind,resolution,evidence,weight) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (id) DO NOTHING",
             [
-              edge.id,
+              scoped(edge.id),
               jobId,
-              edge.sourceId,
-              edge.targetId,
+              scoped(edge.sourceId),
+              scoped(edge.targetId),
               edge.kind,
               edge.resolution,
               JSON.stringify(edge.evidence),
@@ -331,7 +364,7 @@ export class AnalysisProcessor {
           await client.query(
             "INSERT INTO analysis_graph_cycles (id,job_id,length,node_ids,path) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (id) DO NOTHING",
             [
-              cycle.id,
+              scoped(cycle.id),
               jobId,
               cycle.length,
               JSON.stringify(cycle.nodeIds),
@@ -359,7 +392,7 @@ export class AnalysisProcessor {
             await client.query(
               "INSERT INTO analysis_unresolved_references (id,job_id,source_file,source_symbol_name,local_alias,module_specifier,status,evidence) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (id) DO NOTHING",
               [
-                ref.id,
+                scoped(ref.id),
                 jobId,
                 ref.sourceFile,
                 ref.sourceSymbolName,
@@ -441,7 +474,7 @@ export class AnalysisProcessor {
             await client.query(
               "INSERT INTO analysis_frontend_components (id,job_id,name,path,kind,export_type,props,hooks_count,rendered_components_count,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT (id) DO NOTHING",
               [
-                comp.id,
+                scoped(comp.id),
                 jobId,
                 comp.name,
                 comp.filePath,
@@ -459,11 +492,11 @@ export class AnalysisProcessor {
             await client.query(
               "INSERT INTO analysis_frontend_jsx_elements (id,job_id,source_component_id,target_component_name,target_component_id,props,is_conditional,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (id) DO NOTHING",
               [
-                jsx.id,
+                scoped(jsx.id),
                 jobId,
-                jsx.sourceComponentId,
+                scoped(jsx.sourceComponentId),
                 jsx.targetComponentName,
-                jsx.targetComponentId,
+                jsx.targetComponentId ? scoped(jsx.targetComponentId) : null,
                 jsx.props,
                 jsx.isConditional,
                 JSON.stringify(jsx.sourceEvidence),
@@ -475,9 +508,9 @@ export class AnalysisProcessor {
             await client.query(
               "INSERT INTO analysis_frontend_hooks (id,job_id,component_id,name,kind,dependencies,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING",
               [
-                hook.id,
+                scoped(hook.id),
                 jobId,
-                hook.componentId,
+                scoped(hook.componentId),
                 hook.name,
                 hook.kind,
                 hook.dependencies ?? null,
@@ -490,13 +523,13 @@ export class AnalysisProcessor {
             await client.query(
               "INSERT INTO analysis_frontend_contexts (id,job_id,name,path,default_value,provider_component_ids,consumer_component_ids,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (id) DO NOTHING",
               [
-                ctx.id,
+                scoped(ctx.id),
                 jobId,
                 ctx.name,
                 ctx.filePath,
                 ctx.defaultValue ?? null,
-                ctx.providerComponentIds,
-                ctx.consumerComponentIds,
+                ctx.providerComponentIds.map(scoped),
+                ctx.consumerComponentIds.map(scoped),
                 JSON.stringify(ctx.sourceEvidence),
               ],
             );
@@ -506,13 +539,13 @@ export class AnalysisProcessor {
             await client.query(
               "INSERT INTO analysis_frontend_routes (id,job_id,framework,route_path,path,component_name,component_id,dynamic_params,is_layout,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT (id) DO NOTHING",
               [
-                route.id,
+                scoped(route.id),
                 jobId,
                 route.framework,
                 route.routePath,
                 route.filePath,
                 route.componentName ?? null,
-                route.componentId,
+                route.componentId ? scoped(route.componentId) : null,
                 route.dynamicParams,
                 route.isLayout,
                 JSON.stringify(route.sourceEvidence),
@@ -524,9 +557,9 @@ export class AnalysisProcessor {
             await client.query(
               "INSERT INTO analysis_frontend_state (id,job_id,component_id,kind,identifier,initial_value,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING",
               [
-                st.id,
+                scoped(st.id),
                 jobId,
-                st.componentId,
+                scoped(st.componentId),
                 st.kind,
                 st.identifier,
                 st.initialValue ?? null,
@@ -539,9 +572,9 @@ export class AnalysisProcessor {
             await client.query(
               "INSERT INTO analysis_frontend_api_clients (id,job_id,component_id,path,method,endpoint,is_dynamic,client_type,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT (id) DO NOTHING",
               [
-                apiCall.id,
+                scoped(apiCall.id),
                 jobId,
-                apiCall.componentId,
+                scoped(apiCall.componentId),
                 apiCall.filePath,
                 apiCall.method,
                 apiCall.endpoint,
@@ -614,14 +647,14 @@ export class AnalysisProcessor {
           await client.query(
             "INSERT INTO analysis_backend_routes (id,job_id,framework,method,path,file_path,handler_name,handler_symbol_id,controller_name,middleware,is_dynamic,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) ON CONFLICT (id) DO NOTHING",
             [
-              route.id,
+              scoped(route.id),
               jobId,
               route.framework,
               route.method,
               route.path,
               route.filePath,
               route.handlerName,
-              route.handlerSymbolId ?? null,
+              route.handlerSymbolId ? scoped(route.handlerSymbolId) : null,
               route.controllerName ?? null,
               route.middleware,
               route.isDynamic,
@@ -634,7 +667,7 @@ export class AnalysisProcessor {
           await client.query(
             "INSERT INTO analysis_backend_controllers (id,job_id,name,path,framework,routes_count,base_path,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (id) DO NOTHING",
             [
-              ctrl.id,
+              scoped(ctrl.id),
               jobId,
               ctrl.name,
               ctrl.filePath,
@@ -650,7 +683,7 @@ export class AnalysisProcessor {
           await client.query(
             "INSERT INTO analysis_backend_services (id,job_id,name,path,methods,injected_dependencies,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING",
             [
-              svc.id,
+              scoped(svc.id),
               jobId,
               svc.name,
               svc.filePath,
@@ -665,7 +698,7 @@ export class AnalysisProcessor {
           await client.query(
             "INSERT INTO analysis_backend_repositories (id,job_id,name,path,orm_type,methods,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING",
             [
-              repo.id,
+              scoped(repo.id),
               jobId,
               repo.name,
               repo.filePath,
@@ -680,7 +713,7 @@ export class AnalysisProcessor {
           await client.query(
             "INSERT INTO analysis_backend_middleware (id,job_id,name,path,kind,scope,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING",
             [
-              mw.id,
+              scoped(mw.id),
               jobId,
               mw.name,
               mw.filePath,
@@ -695,9 +728,9 @@ export class AnalysisProcessor {
           await client.query(
             "INSERT INTO analysis_backend_request_flows (id,job_id,route_id,route_path,http_method,controller_name,service_names,repository_names,middleware_chain,source_evidence) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT (id) DO NOTHING",
             [
-              flow.id,
+              scoped(flow.id),
               jobId,
-              flow.routeId,
+              scoped(flow.routeId),
               flow.routePath,
               flow.httpMethod,
               flow.controllerName ?? null,
@@ -752,10 +785,15 @@ export class AnalysisProcessor {
         "info",
         "Analysis completed successfully",
       );
+      await authorize?.(client);
+      await client.query("COMMIT");
+      committed = true;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      await this.handleFailure(client, jobId, message);
+      await client.query("ROLLBACK");
+      if (authorize) throw error;
+      await this.handleFailure(client, jobId, "ANALYSIS_FAILED");
     } finally {
+      if (!committed) await client.query("ROLLBACK");
       client.release();
     }
   }
@@ -855,7 +893,7 @@ export class AnalysisProcessor {
     message: string,
   ): Promise<void> {
     await client.query(
-      "INSERT INTO analysis_job_logs (id,job_id,stage,level,message) VALUES ($1,$2,$3,$4,$5)",
+      "INSERT INTO analysis_logs (id,job_id,stage,level,message) VALUES ($1,$2,$3,$4,$5)",
       [randomUUID(), jobId, stage, level, message],
     );
   }

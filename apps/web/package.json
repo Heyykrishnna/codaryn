@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test src/lib/workspace-request.test.mjs"
+    "test": "node --experimental-strip-types --test src/lib/workspace-request.test.mjs && tsx --test src/features/graph/view.release.test.tsx"
   },
   "dependencies": {
     "@codaryn/contracts": "workspace:*",
@@ -26,6 +26,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.4",
     "tailwindcss": "4.3.4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "tsx": "^4.20.6"
   }
 }
