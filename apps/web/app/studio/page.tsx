@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { workspaceListSchema, type WorkspaceSummary } from "@codaryn/contracts";
 import { authClient } from "@/src/lib/auth-client";
 import { Studio } from "@/src/features/analysis-studio/studio";
+import { AIQueryConsole } from "@/src/features/analysis-studio/ai-query-console";
 import { CandyButton } from "@/src/components/ui/candy-button";
 import { DropdownSelect } from "@/src/components/ui/custom-dropdown";
 import { LoaderOrb } from "@/src/components/ui/loader-orb";
@@ -14,6 +15,7 @@ export default function StudioPage() {
   const [workspaces, setWorkspaces] = useState<WorkspaceSummary[]>([]);
   const [workspaceId, setWorkspaceId] = useState("");
   const [message, setMessage] = useState("");
+  const [showConsole, setShowConsole] = useState(true);
 
   useEffect(() => {
     if (!session) return;
@@ -124,12 +126,12 @@ export default function StudioPage() {
           )}
 
           <CandyButton
-            as="a"
-            href="/workspace"
-            variant="obsidian"
+            type="button"
+            variant={showConsole ? "pearl" : "secondary"}
             size="sm"
+            onClick={() => setShowConsole(!showConsole)}
           >
-            Workspace
+            {showConsole ? "Hide AI Assistant" : "✦ AI Assistant"}
           </CandyButton>
         </div>
       </div>
@@ -142,6 +144,8 @@ export default function StudioPage() {
           {message}
         </div>
       )}
+
+      {showConsole && <AIQueryConsole />}
 
       {workspaces.length === 0 && (
         <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-[#232734] bg-[#14161f] p-12 text-center">
