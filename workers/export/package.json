@@ -1,0 +1,28 @@
+{
+  "name": "@codaryn/export-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --include ../../.env src/index.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "pnpm build && node --test dist/process.test.js",
+    "test:integration": "pnpm build && node --test dist/process.integration.test.js"
+  },
+  "dependencies": {
+    "@codaryn/contracts": "workspace:*",
+    "@codaryn/database": "workspace:*",
+    "@codaryn/diagram-engine": "workspace:*",
+    "@codaryn/documentation-engine": "workspace:*",
+    "@codaryn/export-engine": "workspace:*",
+    "pg": "^8.23.1",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}

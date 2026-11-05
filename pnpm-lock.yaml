@@ -579,6 +579,43 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  workers/export:
+    dependencies:
+      '@codaryn/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@codaryn/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@codaryn/diagram-engine':
+        specifier: workspace:*
+        version: link:../../packages/diagram-engine
+      '@codaryn/documentation-engine':
+        specifier: workspace:*
+        version: link:../../packages/documentation-engine
+      '@codaryn/export-engine':
+        specifier: workspace:*
+        version: link:../../packages/export-engine
+      pg:
+        specifier: ^8.23.1
+        version: 8.23.1
+      zod:
+        specifier: ^4.1.12
+        version: 4.6.7
+    devDependencies:
+      '@types/node':
+        specifier: ^24.10.0
+        version: 24.19.2
+      '@types/pg':
+        specifier: ^8.23.1
+        version: 8.23.1
+      tsx:
+        specifier: ^4.20.6
+        version: 4.23.15
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   workers/ingestion:
     dependencies:
       '@codaryn/database':
