@@ -183,7 +183,7 @@ export class DiagramService {
       end_line: number;
       is_page: boolean;
     }>(
-      "SELECT id,name,file_path,start_line,end_line,is_page FROM analysis_frontend_components WHERE job_id=$1 LIMIT 10000",
+      "SELECT id,name,path AS file_path,COALESCE((source_evidence->>'startLine')::int,1) AS start_line,COALESCE((source_evidence->>'endLine')::int,1) AS end_line,(kind='page') AS is_page FROM analysis_frontend_components WHERE job_id=$1 LIMIT 10000",
       [jobId],
     );
     if (feComponents.rowCount && feComponents.rowCount > 0) {
@@ -212,7 +212,7 @@ export class DiagramService {
       start_line: number;
       end_line: number;
     }>(
-      "SELECT id,method,path,file_path,start_line,end_line FROM analysis_backend_routes WHERE job_id=$1 LIMIT 10000",
+      "SELECT id,method,path,file_path,COALESCE((source_evidence->>'startLine')::int,1) AS start_line,COALESCE((source_evidence->>'endLine')::int,1) AS end_line FROM analysis_backend_routes WHERE job_id=$1 LIMIT 10000",
       [jobId],
     );
     if (beRoutes.rowCount && beRoutes.rowCount > 0) {
@@ -312,6 +312,10 @@ export class DiagramService {
           ],
         );
 
+        await client.query(
+          "INSERT INTO audit_events(id,organization_id,actor_id,action,target_id) VALUES($1,$2,$3,'team.view.saved',$4)",
+          [randomUUID(), workspaceId, actor, id],
+        );
         return savedDiagramLayoutSchema.parse({
           id,
           diagramType: type,

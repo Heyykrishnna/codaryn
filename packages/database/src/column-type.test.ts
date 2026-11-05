@@ -30,3 +30,22 @@ test("schema verification distinguishes arrays and verifies numeric precision an
   );
   assert.throws(() => expectedColumnType("unrecognized"), /Unsupported/);
 });
+
+test("schema verification validates SQL date columns without accepting timestamp substitutes", () => {
+  assert.equal(
+    columnTypeMatches("date", {
+      udt_name: "date",
+      numeric_precision: null,
+      numeric_scale: null,
+    }),
+    true,
+  );
+  assert.equal(
+    columnTypeMatches("date", {
+      udt_name: "timestamptz",
+      numeric_precision: null,
+      numeric_scale: null,
+    }),
+    false,
+  );
+});

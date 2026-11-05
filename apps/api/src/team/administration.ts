@@ -19,6 +19,7 @@ export class AdministrationService {
           [workspace],
         );
         return {
+          actorId: actor,
           role,
           controls,
           permissions,

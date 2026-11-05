@@ -173,8 +173,8 @@ export class SharingService {
       actor,
       workspace,
       async ({ client }) => {
-        const result = await client.query<{ projection: unknown }>(
-          "SELECT s.projection FROM resource_shares s JOIN organization_members a ON a.organization_id=s.organization_id AND a.user_id=s.actor_id JOIN organization_members b ON b.organization_id=s.organization_id AND b.user_id=s.recipient_id JOIN analysis_jobs j ON j.id=s.job_id AND j.organization_id=s.organization_id JOIN connected_repositories r ON r.id=s.repository_id AND j.repository_id=r.id JOIN github_installations i ON i.id=r.installation_id AND i.organization_id=s.organization_id LEFT JOIN workspace_controls c ON c.organization_id=s.organization_id WHERE s.token_hash=$1 AND s.organization_id=$2 AND (s.recipient_id=$3 OR s.actor_id=$3) AND s.revoked_at IS NULL AND s.expires_at>now() AND i.connected=true AND r.active=true AND i.generation=s.installation_generation AND j.status<>'cancelled' AND (a.role IN ('owner','admin') OR COALESCE(c.allow_member_sharing,false)) FOR SHARE OF s,a,b,j,r,i",
+        const result = await client.query<{ id: string; projection: unknown }>(
+          "SELECT s.id,s.projection FROM resource_shares s JOIN organization_members a ON a.organization_id=s.organization_id AND a.user_id=s.actor_id JOIN organization_members b ON b.organization_id=s.organization_id AND b.user_id=s.recipient_id JOIN analysis_jobs j ON j.id=s.job_id AND j.organization_id=s.organization_id JOIN connected_repositories r ON r.id=s.repository_id AND j.repository_id=r.id JOIN github_installations i ON i.id=r.installation_id AND i.organization_id=s.organization_id LEFT JOIN workspace_controls c ON c.organization_id=s.organization_id WHERE s.token_hash=$1 AND s.organization_id=$2 AND (s.recipient_id=$3 OR s.actor_id=$3) AND s.revoked_at IS NULL AND s.expires_at>now() AND i.connected=true AND r.active=true AND i.generation=s.installation_generation AND j.status<>'cancelled' AND (a.role IN ('owner','admin') OR COALESCE(c.allow_member_sharing,false)) FOR SHARE OF s,a,b,j,r,i",
           [tokenHash(token), workspace, actor],
         );
         if (!result.rows[0]) throw new WorkspaceAccessError();
@@ -183,7 +183,7 @@ export class SharingService {
           workspace,
           actor,
           "share.opened",
-          "shared-view",
+          result.rows[0].id,
           "share-opened",
         );
         return sharedProjectionSchema.parse(result.rows[0].projection);
