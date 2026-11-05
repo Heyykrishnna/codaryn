@@ -23,6 +23,7 @@ function options(files: Record<string, string>) {
             baseUrl: z.string().max(1024).optional(),
             paths: z
               .record(z.string(), z.array(z.string().max(1024)).max(20))
+              .refine((paths) => Object.keys(paths).length <= 200)
               .optional(),
           })
           .optional(),
@@ -63,15 +64,20 @@ function extract(
     compatible ? previous.files.map((file) => [file.path, file]) : [],
   );
   let reused = 0,
-    processed = 0;
+    processed = 0,
+    symbols = 0,
+    imports = 0;
   const artifacts = entries.map(([path, source]) => {
     const cache = cached.get(path);
-    if (cache && cache.hash === digest(source) && validArtifact(cache)) {
-      reused++;
-      return cache;
-    }
-    processed++;
-    return analyzeFile(path, source);
+    const reuse =
+      cache && cache.hash === digest(source) && validArtifact(cache);
+    const artifact = reuse ? cache : analyzeFile(path, source);
+    if (reuse) reused++;
+    else processed++;
+    symbols += artifact.symbols.length;
+    imports += artifact.imports.length;
+    if (symbols > 100000 || imports > 30000) throw new Error("VERSION_LIMIT");
+    return artifact;
   });
   const paths = new Set(artifacts.map((file) => file.path)),
     resolver = options(files),

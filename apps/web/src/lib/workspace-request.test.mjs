@@ -131,3 +131,28 @@ test("quality review preserves revision and external lookup remains explicit", a
     revision: 3,
   });
 });
+
+test("comparison mutations retain the explicit baseline and full-verification option", async (context) => {
+  const previous = globalThis.fetch;
+  context.after(() => {
+    globalThis.fetch = previous;
+  });
+  globalThis.fetch = async (input, options) => {
+    assert.match(String(input), /^\/api\/v1\/comparison\/request/);
+    assert.equal(options.headers["x-codaryn-request"], "workspace");
+    assert.deepEqual(JSON.parse(options.body), {
+      workspaceId: "workspace",
+      jobId: "job",
+      baseId: "baseline",
+      verifyFull: true,
+    });
+    return Response.json({ ok: true });
+  };
+  await workspaceRequest(
+    "comparison",
+    "request",
+    "workspace",
+    { jobId: "job", baseId: "baseline", verifyFull: true },
+    true,
+  );
+});

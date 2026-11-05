@@ -15,12 +15,17 @@ export const digest = (value: unknown) =>
           ),
     )
     .digest("hex");
+function redact(value: string) {
+  return value.replace(
+    /\b(?:ghp_|github_pat_|npg_)[A-Za-z0-9_]{12,}\b/g,
+    "[REDACTED]",
+  );
+}
 export function label(value: string) {
-  return value
-    .replace(/\b(?:ghp_|github_pat_|npg_)[A-Za-z0-9_]{12,}\b/g, "[REDACTED]")
-    .slice(0, 256);
+  return redact(value).slice(0, 256);
 }
 export function analyzeFile(path: string, source: string): VersionFile {
+  const identities = new Map<string, number>();
   const sf = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true),
     symbols: VersionFile["symbols"] = [],
     imports: VersionFile["imports"] = [],
@@ -41,9 +46,18 @@ export function analyzeFile(path: string, source: string): VersionFile {
         ts.isVariableDeclaration(node)) &&
       node.name
     ) {
-      const name = label(node.name.getText(sf));
+      const named =
+        ts.isIdentifier(node.name) || ts.isPrivateIdentifier(node.name);
+      const name = named
+        ? label(node.name.getText(sf))
+        : "[pattern declaration]";
+      if (!named) diagnostics.push("DECLARATION_NAME_PARTIAL");
+      const key = digest([path, node.kind, name]),
+        occurrence = identities.get(key) ?? 0;
+      identities.set(key, occurrence + 1);
+      if (symbols.length >= 10000) throw new Error("VERSION_LIMIT");
       symbols.push({
-        id: digest([path, node.kind, name, evidence(node).startLine]),
+        id: digest([key, occurrence]),
         name,
         kind: ts.SyntaxKind[node.kind],
         hash: digest(node.getText(sf)),
@@ -57,8 +71,10 @@ export function analyzeFile(path: string, source: string): VersionFile {
     ) {
       const raw = node.moduleSpecifier.text,
         specifier = /^[\w@./#-]{1,512}$/.test(raw)
-          ? label(raw)
+          ? redact(raw)
           : "[unsupported import]";
+      if (specifier !== raw) diagnostics.push("IMPORT_SPECIFIER_PARTIAL");
+      if (imports.length >= 10000) throw new Error("VERSION_LIMIT");
       imports.push({ specifier, evidence: evidence(node) });
     }
     if (
@@ -68,7 +84,28 @@ export function analyzeFile(path: string, source: string): VersionFile {
       diagnostics.push("DYNAMIC_IMPORT");
     ts.forEachChild(node, visit);
   }
-  if (/\.[cm]?[jt]sx?$/.test(path)) visit(sf);
+  if (/\.[cm]?[jt]sx?$/.test(path)) {
+    visit(sf);
+    try {
+      const checked = ts.transpileModule(source, {
+        fileName: path,
+        reportDiagnostics: true,
+        compilerOptions: {
+          jsx: ts.JsxEmit.Preserve,
+          target: ts.ScriptTarget.ES2022,
+          module: ts.ModuleKind.ESNext,
+        },
+      });
+      if (
+        checked.diagnostics?.some(
+          (item) => item.category === ts.DiagnosticCategory.Error,
+        )
+      )
+        diagnostics.push("SYNTAX_PARTIAL");
+    } catch {
+      diagnostics.push("SYNTAX_PARTIAL");
+    }
+  }
   if (symbols.length > 10000 || imports.length > 10000)
     throw new Error("Version file limit exceeded");
   const artifact = {
@@ -99,7 +136,7 @@ export function sourceInputs(files: Record<string, string>) {
       path.includes("\\") ||
       path.includes("\0") ||
       path.split("/").includes("..") ||
-      label(path) !== path ||
+      redact(path) !== path ||
       Buffer.byteLength(source) > 2 * 1024 * 1024
     )
       throw new Error("Unsafe version source");

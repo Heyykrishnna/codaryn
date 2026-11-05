@@ -4,6 +4,7 @@ import {
   type ComparisonResult,
 } from "@codaryn/contracts";
 import { digest } from "./file.js";
+export class ComparisonLimitError extends Error {}
 export function compareVersions(
   before: VersionSnapshot,
   after: VersionSnapshot,
@@ -36,7 +37,7 @@ export function compareVersions(
     ...snapshot.edges.map((edge) => ({
       summary: `${edge.source} → ${edge.target ?? edge.specifier} (${edge.resolution})`,
       id: edge.id,
-      name: `${edge.source} → ${edge.specifier}`,
+      name: `${edge.source} → ${edge.specifier}`.slice(0, 1024),
       hash: digest([edge.target, edge.resolution]),
       kind: "relationship" as const,
       evidence: edge.evidence,
@@ -59,14 +60,14 @@ export function compareVersions(
       kind: !old ? "added" : !next ? "removed" : "changed",
       object: item.kind,
       name: item.name,
-      beforeSummary: old?.summary ?? null,
-      afterSummary: next?.summary ?? null,
+      beforeSummary: old?.summary.slice(0, 1024) ?? null,
+      afterSummary: next?.summary.slice(0, 1024) ?? null,
       before: old?.hash ?? null,
       after: next?.hash ?? null,
       evidence: item.evidence,
     });
     if (changes.length > 50000)
-      throw new Error("Comparison result limit exceeded");
+      throw new ComparisonLimitError("Comparison result limit exceeded");
   }
   const reverse = new Map<string, Set<string>>();
   for (const edge of [...before.edges, ...after.edges])
@@ -85,10 +86,10 @@ export function compareVersions(
       ),
     ].sort(),
     impact: ComparisonResult["impact"] = [],
-    seen = new Set<string>(changed);
-  for (const path of changed)
+    seen = new Set<string>(changed.slice(0, 10000));
+  for (const path of changed.slice(0, 10000))
     impact.push({ path, depth: 0, reason: "changed", via: null });
-  let truncated = false;
+  let truncated = changed.length > 10000;
   for (let i = 0; i < impact.length; i++) {
     const item = impact[i],
       neighbors = [...(reverse.get(item.path) ?? [])].sort();

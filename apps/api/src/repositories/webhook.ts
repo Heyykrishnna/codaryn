@@ -92,7 +92,9 @@ export async function receiveWebhook(
         );
     }
     await client.query("COMMIT");
-    return { duplicate: false, scheduled };
+    return event === "push"
+      ? { duplicate: false, scheduled }
+      : { duplicate: false };
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;

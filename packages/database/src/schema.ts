@@ -1504,7 +1504,10 @@ export const architectureComparisons = pgTable(
     createdAt: created(),
   },
   (table) => [
-    unique().on(table.fromId, table.toId),
+    unique("architecture_comparisons_from_id_to_id_key").on(
+      table.fromId,
+      table.toId,
+    ),
     check(
       "architecture_comparisons_hash_check",
       sql`${table.hash} ~ '^[a-f0-9]{64}$'`,

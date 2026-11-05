@@ -6,7 +6,11 @@ import {
   comparisonResultSchema,
   studioManifestSchema,
 } from "@codaryn/contracts";
-import { compareVersions, digest } from "@codaryn/version-engine";
+import {
+  compareVersions,
+  digest,
+  ComparisonLimitError,
+} from "@codaryn/version-engine";
 import { WorkspaceAccessError } from "@codaryn/database";
 import { ArtifactSnapshots, type ArtifactRow } from "../artifacts/snapshots.js";
 import { RequestFailure } from "../http/access.js";
@@ -122,8 +126,19 @@ export class ComparisonService {
             "COMPARISON_LIMIT",
             "Wait before requesting more comparisons",
           );
-        const result = compareVersions(before.data, after.data),
-          hash = digest(result),
+        let result: ReturnType<typeof compareVersions>;
+        try {
+          result = compareVersions(before.data, after.data);
+        } catch (error) {
+          if (error instanceof ComparisonLimitError)
+            throw new RequestFailure(
+              422,
+              "COMPARISON_LIMIT",
+              "Comparison exceeds supported bounds",
+            );
+          throw error;
+        }
+        const hash = digest(result),
           id = randomUUID();
         if (Buffer.byteLength(JSON.stringify(result)) > 20 * 1024 * 1024)
           throw new RequestFailure(

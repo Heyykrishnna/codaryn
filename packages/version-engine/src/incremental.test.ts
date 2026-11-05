@@ -59,3 +59,83 @@ test("source literals and schema defaults are hashed without persisting source e
     extractVersion({ "a.ts": "a".repeat(2 * 1024 * 1024 + 1) }),
   );
 });
+
+test("configuration changes re-link aliases and identify affected importer modules", () => {
+  const files = {
+    "tsconfig.json":
+      '{"compilerOptions":{"baseUrl":".","paths":{"@lib":["one.ts"]}}}',
+    "one.ts": "export const value=1",
+    "two.ts": "export const value=2",
+    "consumer.ts": "import {value} from '@lib';",
+  };
+  const before = extractVersion(files).snapshot,
+    after = extractVersion(
+      {
+        ...files,
+        "tsconfig.json":
+          '{"compilerOptions":{"baseUrl":".","paths":{"@lib":["two.ts"]}}}',
+      },
+      before,
+      true,
+    ).snapshot;
+  assert.equal(before.edges[0].target, "one.ts");
+  assert.equal(after.edges[0].target, "two.ts");
+  assert.equal(after.reuse.invalidated, true);
+  assert.equal(after.reuse.verification, "matched");
+});
+
+test("binding patterns and computed declaration names never retain embedded literals and malformed syntax is diagnostic", () => {
+  const secret = "privateLiteralFixture999",
+    result = extractVersion({
+      "a.ts":
+        "const {value='" +
+        secret +
+        "'}=input; class Example { ['" +
+        secret +
+        "']() {} }",
+      "broken.ts": "export function broken( {",
+    }).snapshot;
+  assert.ok(!JSON.stringify(result).includes(secret));
+  assert.ok(
+    result.files.some((file) =>
+      file.diagnostics.includes("DECLARATION_NAME_PARTIAL"),
+    ),
+  );
+  assert.ok(
+    result.files.some((file) => file.diagnostics.includes("SYNTAX_PARTIAL")),
+  );
+});
+
+test("same-named declarations on one line keep distinct identities without line-number churn", () => {
+  const source = "function one(){const x=1;} function two(){const x=2;}";
+  const before = extractVersion({ "a.ts": source }).snapshot,
+    after = extractVersion({ "a.ts": "\n" + source }).snapshot;
+  const original = before.files[0].symbols;
+  assert.equal(new Set(original.map((item) => item.id)).size, original.length);
+  assert.deepEqual(
+    after.files[0].symbols.map((item) => item.id),
+    original.map((item) => item.id),
+  );
+});
+
+test("per-file declaration work stops at the configured limit", () => {
+  assert.throws(
+    () =>
+      extractVersion({
+        "a.ts": Array.from(
+          { length: 10001 },
+          (_, index) => `const value${index}=0;`,
+        ).join("\n"),
+      }),
+    /VERSION_LIMIT/,
+  );
+});
+
+test("long archive-relative paths retain exact identity and resolve without label truncation", () => {
+  const root = "nested/".repeat(40),
+    snapshot = extractVersion({
+      [root + "entry.ts"]: "import './dependency';",
+      [root + "dependency.ts"]: "export const value=1;",
+    }).snapshot;
+  assert.equal(snapshot.edges[0].target, root + "dependency.ts");
+});

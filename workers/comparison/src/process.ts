@@ -21,19 +21,24 @@ export function runOneVersionRequest(pool: Pool, github: GitHubGateway) {
         "SELECT m.manifest FROM analysis_jobs j JOIN analysis_manifests m ON m.id=j.manifest_id AND m.organization_id=j.organization_id AND m.repository_id=j.repository_id WHERE j.id=$1",
         [context.job_id],
       );
-      const parsed = studioManifestSchema.safeParse(manifest.rows[0]?.manifest),
-        configuration = parsed.success ? parsed.data.configuration : null;
+      const parsed = studioManifestSchema.parse(manifest.rows[0]?.manifest),
+        configuration = parsed.configuration;
+      if (
+        parsed.repositoryId !== context.repository_id ||
+        parsed.commitSha !== context.commit_sha
+      )
+        throw new Error("Version configuration identity mismatch");
       const excluded = exclusionPredicate(new Map(), {
-        excludes: configuration?.exclusions,
+        excludes: configuration.exclusions,
         respectGitignore: false,
       });
       const selected = Object.fromEntries(
         Object.entries(files).filter(
           ([path, source]) =>
             !excluded(path) &&
-            (configuration?.includeTests !== false ||
+            (configuration.includeTests !== false ||
               !/(?:__tests__\/|\.(?:test|spec)\.)/.test(path)) &&
-            (!configuration?.excludeGenerated ||
+            (!configuration.excludeGenerated ||
               !/@generated|automatically generated/i.test(
                 source.slice(0, 512),
               )),
@@ -44,8 +49,8 @@ export function runOneVersionRequest(pool: Pool, github: GitHubGateway) {
         digest([
           analyzerVersion,
           configuration,
-          parsed.success ? parsed.data.analyzers : [],
-          parsed.success ? parsed.data.registryVersion : "",
+          parsed.analyzers,
+          parsed.registryVersion,
         ]);
       const result = extractVersion(
         selected,
