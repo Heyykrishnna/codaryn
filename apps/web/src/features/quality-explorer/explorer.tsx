@@ -1,8 +1,8 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { qualitySummarySchema } from "@codaryn/contracts";
 import { workspaceRequest } from "@/src/lib/workspace-request";
-import { button, control } from "@/src/features/repositories/api";
 import {
   useArtifactResource,
   qualityUrl,
@@ -12,51 +12,95 @@ import {
 } from "./api";
 import { QualityInventory } from "./inventory";
 import { SecurityDashboard } from "./security";
+import { CandyButton } from "@/src/components/ui/candy-button";
+import { DropdownSelect } from "@/src/components/ui/custom-dropdown";
+import { LoaderOrb } from "@/src/components/ui/loader-orb";
+
 export function QualityExplorer({
   workspaceId,
 }: Readonly<{ workspaceId: string }>) {
-  const [refresh, setRefresh] = useState(0),
-    [page, setPage] = useState(1),
-    [jobId, setJobId] = useState(""),
-    [snapshotId, setSnapshotId] = useState(""),
-    [external, setExternal] = useState(false),
-    [busy, setBusy] = useState(false),
-    [message, setMessage] = useState("");
+  const [refresh, setRefresh] = useState(0);
+  const [page, setPage] = useState(1);
+  const [jobId, setJobId] = useState("");
+  const [snapshotId, setSnapshotId] = useState("");
+  const [external, setExternal] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+
   const jobs = useArtifactResource(
-      qualityUrl("jobs", workspaceId, { _retry: refresh }),
-      jobsSchema,
-    ),
-    history = useArtifactResource(
-      qualityUrl("snapshots", workspaceId, { page, _retry: refresh }),
-      summariesSchema,
-    ),
-    overview = useArtifactResource(
-      snapshotId
-        ? qualityUrl("overview", workspaceId, { snapshotId, _retry: refresh })
-        : null,
-      overviewSchema,
-    );
+    qualityUrl("jobs", workspaceId, { _retry: refresh }),
+    jobsSchema,
+  );
+  const history = useArtifactResource(
+    qualityUrl("snapshots", workspaceId, { page, _retry: refresh }),
+    summariesSchema,
+  );
+  const overview = useArtifactResource(
+    snapshotId
+      ? qualityUrl("overview", workspaceId, { snapshotId, _retry: refresh })
+      : null,
+    overviewSchema,
+  );
+
   const status = overview.data?.snapshot.status;
+
   useEffect(() => {
-    if (!snapshotId || !status || !["queued", "running"].includes(status))
+    if (!snapshotId || !status || !["queued", "running"].includes(status)) {
       return;
+    }
     const timer = setInterval(() => setRefresh((n) => n + 1), 3000);
     return () => clearInterval(timer);
   }, [snapshotId, status]);
+
   const error = jobs.error || history.error || overview.error;
+
+  const jobOptions =
+    jobs.data?.jobs.map((job) => ({
+      value: job.id,
+      label: `${job.full_name} · ${job.ref}`,
+      badge: job.commit_sha.slice(0, 8),
+      description: job.id,
+    })) ?? [];
+
+  const snapshotOptions =
+    history.data?.snapshots.map((s) => ({
+      value: s.id,
+      label: `${s.commitSha.slice(0, 8)} · ${s.status}`,
+      badge: `${s.findingCount} findings`,
+      description: s.id.slice(0, 8),
+    })) ?? [];
+
   return (
-    <div className="flex min-w-0 flex-col gap-6">
-      <p>
-        Explore infrastructure, testing evidence and security signals for an
-        immutable repository commit. Findings require review. An empty result
-        does not establish that a repository is secure.
-      </p>
-      <output aria-live="polite">
-        {busy ? "Queuing quality analysis…" : message}
-      </output>
-      {error && <p role="alert">{error}</p>}
+    <div className="flex min-w-0 flex-col gap-8">
+      <div className="flex flex-col gap-2 rounded-xl border border-[#232734] bg-[#14161f] p-4 text-xs text-zinc-300">
+        <div className="flex items-center justify-between">
+          <span className="font-semibold text-white">Engineering Quality & Compliance</span>
+          {busy && <LoaderOrb variant="inline" label="Processing quality snapshot…" />}
+        </div>
+        <p className="text-zinc-400">
+          Audit test assertions, coverage distributions, infrastructure dependencies, and security vulnerability advisories for immutable commits.
+        </p>
+        {message && (
+          <div
+            role="alert"
+            className="mt-1 rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-xs text-blue-300 font-mono"
+          >
+            {message}
+          </div>
+        )}
+      </div>
+
+      {error && (
+        <div
+          role="alert"
+          className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300"
+        >
+          {error}
+        </div>
+      )}
+
       <form
-        className="flex flex-col gap-3"
+        className="flex flex-col gap-4 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl"
         action={async () => {
           setBusy(true);
           setMessage("");
@@ -73,10 +117,10 @@ export function QualityExplorer({
             setSnapshotId(result.id);
             setRefresh((n) => n + 1);
             setMessage("Quality snapshot queued for the selected commit.");
-          } catch (error) {
+          } catch (err) {
             setMessage(
-              error instanceof Error
-                ? error.message
+              err instanceof Error
+                ? err.message
                 : "Quality request failed.",
             );
           } finally {
@@ -84,25 +128,22 @@ export function QualityExplorer({
           }
         }}
       >
-        <label className="flex min-w-0 flex-col gap-2">
-          Repository analysis
-          <select
-            className={control}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            Repository analysis job
+          </label>
+          <DropdownSelect
             value={jobId}
-            onChange={(e) => setJobId(e.target.value)}
-            required
-          >
-            <option value="">Select a recent analysis job</option>
-            {jobs.data?.jobs.map((job) => (
-              <option key={job.id} value={job.id}>
-                {job.full_name} · {job.ref} · {job.commit_sha.slice(0, 12)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex items-start gap-3">
+            options={jobOptions}
+            searchable
+            placeholder="Select a recent analysis job…"
+            onChange={setJobId}
+          />
+        </div>
+
+        <label className="flex items-start gap-3 rounded-xl border border-[#232734] bg-[#161821] p-3 text-xs text-zinc-300 cursor-pointer">
           <input
-            className="mt-1 accent-indigo-600"
+            className="mt-0.5 accent-blue-600 rounded"
             type="checkbox"
             checked={external}
             onChange={(e) => setExternal(e.target.checked)}
@@ -113,125 +154,196 @@ export function QualityExplorer({
                 : false
             }
           />
-          <span>
-            Allow OSV lookup: send resolved dependency names and versions to the
-            public OSV service. Requires an owner or administrator and
-            deployment approval. Source files and declared ranges are not
-            submitted.
+          <span className="leading-relaxed">
+            Allow OSV vulnerability lookup: query public OSV database using package names and resolved lockfile versions. Requires workspace admin privileges. Source code is never transmitted.
           </span>
         </label>
-        <button className={`${button} self-start`} disabled={busy || !jobId}>
-          Extract quality snapshot
-        </button>
-      </form>
-      {jobs.loading && <output>Loading analysis jobs…</output>}
-      {jobs.data && !jobs.data.jobs.length && (
-        <p>
-          No eligible jobs. Create an analysis job in Analysis Studio first.
-        </p>
-      )}
-      <div className="flex flex-wrap items-end gap-3">
-        <label className="flex min-w-0 flex-1 flex-col gap-2">
-          Quality snapshot
-          <select
-            className={control}
-            value={snapshotId}
-            onChange={(e) => setSnapshotId(e.target.value)}
+
+        <div className="flex items-center gap-3 pt-1">
+          <CandyButton
+            type="submit"
+            variant="pearl"
+            size="default"
+            disabled={busy || !jobId}
           >
-            <option value="">Select a snapshot</option>
-            {snapshotId &&
-              !history.data?.snapshots.some((s) => s.id === snapshotId) && (
-                <option value={snapshotId}>Requested snapshot</option>
-              )}
-            {history.data?.snapshots.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.commitSha.slice(0, 12)} · {s.status} · {s.findingCount}{" "}
-                findings · {s.id.slice(0, 8)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button className={control} onClick={() => setRefresh((n) => n + 1)}>
-          Refresh
-        </button>
-        <button
-          className={control}
-          disabled={page === 1}
-          onClick={() => setPage(page - 1)}
-        >
-          Previous snapshots
-        </button>
-        <button
-          className={control}
-          disabled={(history.data?.snapshots.length ?? 0) < 20}
-          onClick={() => setPage(page + 1)}
-        >
-          Next snapshots
-        </button>
+            Extract quality snapshot
+          </CandyButton>
+        </div>
+      </form>
+
+      <div className="flex flex-col gap-4 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            Select quality snapshot
+          </label>
+          <DropdownSelect
+            value={snapshotId}
+            options={snapshotOptions}
+            searchable
+            placeholder="Select a snapshot…"
+            onChange={setSnapshotId}
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+          <div className="flex items-center gap-2">
+            <CandyButton
+              type="button"
+              variant="outline"
+              size="xs"
+              onClick={() => setRefresh((n) => n + 1)}
+            >
+              Refresh
+            </CandyButton>
+          </div>
+          <div className="flex items-center gap-2">
+            <CandyButton
+              type="button"
+              variant="secondary"
+              size="xs"
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+            >
+              ← Previous snapshots
+            </CandyButton>
+            <span className="text-xs font-mono text-zinc-400">Page {page}</span>
+            <CandyButton
+              type="button"
+              variant="secondary"
+              size="xs"
+              disabled={(history.data?.snapshots.length ?? 0) < 20}
+              onClick={() => setPage(page + 1)}
+            >
+              Next snapshots →
+            </CandyButton>
+          </div>
+        </div>
       </div>
-      {history.loading && <output>Loading snapshot history…</output>}
-      {history.data && !history.data.snapshots.length && (
-        <p>No quality snapshots on this page.</p>
+
+      {overview.loading && (
+        <LoaderOrb
+          label="Loading quality overview…"
+          description="Synthesizing scanner reports and test coverage"
+        />
       )}
-      {overview.loading && <output>Loading quality overview…</output>}
+
       {overview.data && (
-        <section className="flex flex-col gap-3 rounded-xl border border-zinc-300 p-5 dark:border-zinc-700">
-          <h2 className="text-xl font-semibold">Quality overview · {status}</h2>
-          <p>
-            {overview.data.resources} resources · {overview.data.tests} tests ·{" "}
-            {overview.data.dependencies} dependency records ·{" "}
-            {overview.data.findings} findings
-          </p>
-          <p className="text-xs break-all">
-            Commit: {overview.data.snapshot.commitSha} · SHA-256:{" "}
-            {overview.data.snapshot.hash ?? "Pending"}
-          </p>
+        <section className="flex flex-col gap-6 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl">
+          <div className="flex items-center justify-between border-b border-[#222532] pb-4">
+            <div className="flex items-center gap-2">
+              <span
+                className={`h-2.5 w-2.5 rounded-full ${
+                  status === "completed" ? "bg-emerald-500" : "bg-amber-500 animate-pulse"
+                }`}
+              />
+              <h2 className="text-lg font-bold text-white">
+                Quality overview · <span className="uppercase font-mono text-xs">{status}</span>
+              </h2>
+            </div>
+            <span className="text-xs font-mono text-zinc-400 truncate max-w-xs">
+              {overview.data.snapshot.commitSha.slice(0, 12)}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="flex flex-col gap-1 rounded-xl border border-[#252936] bg-[#161821] p-4">
+              <span className="text-xs text-zinc-400">Resources</span>
+              <span className="text-2xl font-bold font-mono text-white">
+                {overview.data.resources}
+              </span>
+            </div>
+            <div className="flex flex-col gap-1 rounded-xl border border-[#252936] bg-[#161821] p-4">
+              <span className="text-xs text-zinc-400">Tests</span>
+              <span className="text-2xl font-bold font-mono text-white">
+                {overview.data.tests}
+              </span>
+            </div>
+            <div className="flex flex-col gap-1 rounded-xl border border-[#252936] bg-[#161821] p-4">
+              <span className="text-xs text-zinc-400">Dependencies</span>
+              <span className="text-2xl font-bold font-mono text-white">
+                {overview.data.dependencies}
+              </span>
+            </div>
+            <div className="flex flex-col gap-1 rounded-xl border border-[#252936] bg-[#161821] p-4">
+              <span className="text-xs text-zinc-400">Findings</span>
+              <span className={`text-2xl font-bold font-mono ${overview.data.findings > 0 ? "text-amber-400" : "text-emerald-400"}`}>
+                {overview.data.findings}
+              </span>
+            </div>
+          </div>
+
           {overview.data.snapshot.failureCode && (
-            <p role="alert">
-              Analysis failed: {overview.data.snapshot.failureCode}. Verify
-              worker configuration and repository access before retrying.
-            </p>
+            <div
+              role="alert"
+              className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300"
+            >
+              Analysis failed: {overview.data.snapshot.failureCode}. Verify worker configuration and repository access before retrying.
+            </div>
           )}
-          <ul>
-            {overview.data.scanners.map((scanner) => (
-              <li key={scanner.tool}>
-                <strong>
-                  {scanner.tool}: {scanner.status}
-                </strong>{" "}
-                · {scanner.message} · {scanner.version}
-                {scanner.checkedAt ? ` · ${scanner.checkedAt}` : ""}
-              </li>
-            ))}
-          </ul>
+
+          <div className="flex flex-col gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+              Configured Scanners
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {overview.data.scanners.map((scanner) => (
+                <div
+                  key={scanner.tool}
+                  className="flex items-center justify-between rounded-xl border border-[#252936] bg-[#161821] px-3.5 py-2.5 text-xs"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-white">{scanner.tool}</span>
+                    <span className="text-zinc-500 font-mono text-[11px]">
+                      v{scanner.version}
+                    </span>
+                  </div>
+                  <span className="rounded bg-[#202431] px-2 py-0.5 text-[10px] font-mono text-emerald-400 border border-emerald-500/20">
+                    {scanner.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
       )}
+
       {status === "completed" && overview.data && (
         <>
           <QualityInventory
-            key={snapshotId}
+            key={`inv:${snapshotId}`}
             workspaceId={workspaceId}
             snapshotId={snapshotId}
           />
           <SecurityDashboard
-            key={snapshotId}
+            key={`sec:${snapshotId}`}
             workspaceId={workspaceId}
             snapshotId={snapshotId}
             overview={overview.data}
             onReview={() => setRefresh((n) => n + 1)}
           />
-          <details>
-            <summary className="cursor-pointer font-semibold">
+          <details className="rounded-2xl border border-[#242835] bg-[#13151d] p-5">
+            <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wider text-zinc-300 select-none">
               Analysis diagnostics ({overview.data.diagnosticCount})
             </summary>
-            <ul>
+            <div className="mt-4 flex flex-col gap-2">
               {overview.data.diagnostics.map((d, i) => (
-                <li key={`${d.code}:${i}`}>
-                  {d.code}: {d.message} · {d.evidence.path}:
-                  {d.evidence.startLine}
-                </li>
+                <div
+                  key={`${d.code}:${i}`}
+                  className="flex flex-col gap-1 rounded-xl border border-[#222632] bg-[#161821] p-3 text-xs font-mono"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-amber-400 font-semibold">{d.code}</span>
+                    <span className="text-zinc-500">
+                      {d.evidence.path}:{d.evidence.startLine}
+                    </span>
+                  </div>
+                  <p className="text-zinc-300">{d.message}</p>
+                </div>
               ))}
-            </ul>
-            <p>Showing up to 30 diagnostics.</p>
+              <p className="text-[11px] text-zinc-500 font-mono">
+                Showing up to 30 diagnostics.
+              </p>
+            </div>
           </details>
         </>
       )}
