@@ -22,7 +22,7 @@ test("runOneExportJob fails closed when tenant authorization check fails", async
   let updateError = "";
 
   const mockClient = {
-    async query(sql: string) {
+    async query(sql: string, values?: unknown[]) {
       if (sql.includes("SELECT o.id AS organization_id")) {
         return { rows: [] };
       }
@@ -37,7 +37,12 @@ test("runOneExportJob fails closed when tenant authorization check fails", async
   };
 
   const mockPool = {
-    async query(sql: string) {
+    async query(sql: string, values?: unknown[]) {
+      if (sql.includes("UPDATE export_jobs SET status='failed'")) {
+        updateStatus = "failed";
+        updateError = typeof values?.[0] === "string" ? values[0] : "";
+        return { rowCount: 1, rows: [] };
+      }
       if (sql.includes("WITH candidate AS")) {
         return {
           rows: [
