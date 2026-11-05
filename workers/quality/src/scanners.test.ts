@@ -135,3 +135,96 @@ test("trusted scanner subprocess receives no backend secrets and stderr is never
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("credential signals keep raw lockfiles away from the OSV CLI and query only sanitized dependencies", async () => {
+  const credential = "ghp_" + "s".repeat(24);
+  const files = {
+    "config.ts": "const password='" + credential + "';",
+    "package-lock.json": JSON.stringify({
+      packages: {
+        ["node_modules/" + credential]: { version: "1.2.3" },
+        "node_modules/example": { version: "2.0.0" },
+      },
+    }),
+  };
+  const result = extractQuality(files);
+  let commands = 0,
+    requests = 0;
+  await runConfiguredScanners(files, result.snapshot, true, {
+    allowOsv: true,
+    osvBinary: "/trusted/osv-scanner",
+    command: async () => {
+      commands++;
+      throw new Error("Raw lockfile must not be scanned");
+    },
+    request: async (_url, options) => {
+      requests++;
+      assert.ok(!String(options?.body).includes(credential));
+      assert.ok(String(options?.body).includes('"name":"example"'));
+      return Response.json({ results: [{}] });
+    },
+  });
+  assert.equal(commands, 0);
+  assert.equal(requests, 1);
+  assert.equal(
+    result.snapshot.scanners.find((scanner) => scanner.tool === "osv")?.status,
+    "partial",
+  );
+});
+
+test("OSV CLI receives only curated locks and fixed no-resolution scan arguments", async () => {
+  const files = {
+    "package-lock.json": JSON.stringify({
+      packages: { "node_modules/example": { version: "1.2.3" } },
+    }),
+    "osv-scanner.toml": "untrusted",
+    "package.json": "{}",
+    "install.sh": "exit 1",
+  };
+  const result = extractQuality(files);
+  let calls = 0;
+  await runConfiguredScanners(files, result.snapshot, true, {
+    allowOsv: true,
+    osvBinary: "/trusted/osv-scanner",
+    command: async (binary, args, cwd) => {
+      calls++;
+      assert.equal(binary, "/trusted/osv-scanner");
+      assert.deepEqual(await readdir(cwd), ["package-lock.json"]);
+      assert.ok(args.includes("--no-resolve"));
+      assert.ok(args.includes("--no-call-analysis=go"));
+      assert.ok(args.includes("--all-packages"));
+      assert.ok(args.includes("--lockfile=:" + join(cwd, "package-lock.json")));
+      assert.equal(
+        await readFile(args[args.indexOf("--config") + 1], "utf8"),
+        "",
+      );
+      return JSON.stringify({
+        results: [
+          {
+            source: { path: join(cwd, "package-lock.json") },
+            packages: [
+              {
+                package: {
+                  name: "example",
+                  version: "1.2.3",
+                  ecosystem: "npm",
+                },
+                vulnerabilities: [{ id: "GHSA-fixture-only" }],
+              },
+            ],
+          },
+        ],
+      });
+    },
+  });
+  assert.equal(calls, 1);
+  assert.ok(
+    result.snapshot.findings.some(
+      (finding) => finding.ruleId === "osv:GHSA-fixture-only",
+    ),
+  );
+  assert.equal(
+    result.snapshot.scanners.find((scanner) => scanner.tool === "osv")?.status,
+    "completed",
+  );
+});

@@ -136,7 +136,10 @@ export async function runConfiguredScanners(
     }
   }
   if (!external || !options.allowOsv) return;
-  if (!options.osvBinary) {
+  if (
+    !options.osvBinary ||
+    snapshot.findings.some((finding) => finding.category === "secret")
+  ) {
     await lookupOsv(snapshot, options.request);
     return;
   }
