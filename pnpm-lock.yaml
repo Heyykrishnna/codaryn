@@ -508,6 +508,9 @@ importers:
 
   workers/analysis:
     dependencies:
+      '@codaryn/artifact-worker':
+        specifier: workspace:*
+        version: link:../../packages/artifact-worker
       '@codaryn/ast':
         specifier: workspace:*
         version: link:../../packages/ast
@@ -532,15 +535,24 @@ importers:
       '@codaryn/frontend-analyzer':
         specifier: workspace:*
         version: link:../../packages/frontend-analyzer
+      '@codaryn/github':
+        specifier: workspace:*
+        version: link:../../packages/github
       '@codaryn/module-resolver':
         specifier: workspace:*
         version: link:../../packages/module-resolver
+      '@codaryn/repository-ingestion':
+        specifier: workspace:*
+        version: link:../../packages/repository-ingestion
       '@codaryn/symbol-resolver':
         specifier: workspace:*
         version: link:../../packages/symbol-resolver
       '@codaryn/symbols':
         specifier: workspace:*
         version: link:../../packages/symbols
+      '@codaryn/version-engine':
+        specifier: workspace:*
+        version: link:../../packages/version-engine
       bullmq:
         specifier: ^5.63.0
         version: 5.81.5
@@ -566,6 +578,9 @@ importers:
       '@types/pg':
         specifier: ^8.15.5
         version: 8.23.1
+      tar:
+        specifier: ^7.5.22
+        version: 7.5.22
       tsx:
         specifier: ^4.20.6
         version: 4.23.15

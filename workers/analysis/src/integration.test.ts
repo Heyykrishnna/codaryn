@@ -32,7 +32,7 @@ test(
     const pool = new Pool({ connectionString: databaseUrl });
     const worker = spawn(
       process.execPath,
-      [new URL("./index.js", import.meta.url).pathname],
+      [new URL("./foundation.fixture.js", import.meta.url).pathname],
       { env: process.env, stdio: "ignore" },
     );
     try {

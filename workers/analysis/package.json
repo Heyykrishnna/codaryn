@@ -8,7 +8,8 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "pnpm run build && node --test dist/processor.test.js",
-    "test:integration": "pnpm run build && node --env-file-if-exists=../../.env --test dist/integration.test.js"
+    "test:integration": "pnpm run build && node --env-file-if-exists=../../.env --test dist/integration.test.js dist/runner.integration.test.js",
+    "bench": "pnpm build && node --max-old-space-size=384 dist/release.bench.js"
   },
   "dependencies": {
     "@codaryn/ast": "workspace:*",
@@ -27,12 +28,21 @@
     "ioredis": "^5.8.1",
     "pg": "^8.16.3",
     "typescript": "^5.9.3",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "@codaryn/artifact-worker": "workspace:*",
+    "@codaryn/github": "workspace:*",
+    "@codaryn/repository-ingestion": "workspace:*",
+    "@codaryn/version-engine": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.10.0",
     "@types/pg": "^8.15.5",
     "tsx": "^4.20.6",
-    "typescript": "^5.9.3"
-  }
+    "typescript": "^5.9.3",
+    "tar": "^7.5.22"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ]
 }

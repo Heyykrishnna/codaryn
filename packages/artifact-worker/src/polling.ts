@@ -2,7 +2,7 @@ import type { Pool } from "pg";
 export function startArtifactPolling(
   pool: Pool,
   run: () => Promise<boolean>,
-  label: "Schema" | "Execution" | "Quality" | "Comparison",
+  label: "Schema" | "Execution" | "Quality" | "Comparison" | "Analysis",
 ) {
   let stopping = false,
     running: Promise<void> | null = null,
