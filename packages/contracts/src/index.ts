@@ -177,3 +177,4 @@ export * from "./quality.js";
 export * from "./diagrams.js";
 export * from "./documentation.js";
 export * from "./comparison.js";
+export * from "./team.js";
