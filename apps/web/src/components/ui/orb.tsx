@@ -123,7 +123,7 @@ export function Orb({
       onClick={handleClick}
       aria-label={`Orb state is ${currentState}. Click to cycle state.`}
       className={cn(
-        "inline-flex shrink-0 items-center justify-center p-0 border-0 bg-transparent cursor-pointer select-none transition-transform duration-200 ease-out hover:scale-105 active:scale-95 outline-none rounded-full focus-visible:ring-2 focus-visible:ring-zinc-500 dark:focus-visible:ring-white/60",
+        "inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 transition-transform duration-200 ease-out outline-none select-none hover:scale-105 focus-visible:ring-2 focus-visible:ring-zinc-500 active:scale-95 dark:focus-visible:ring-white/60",
         className,
       )}
       style={{ width: px, height: px }}

@@ -57,7 +57,9 @@ export function QualityInventory({
           Infrastructure, tests and dependencies
         </h2>
         <p className="text-xs text-zinc-400">
-          Source evidence describes static configuration and potential test calls. Coverage is imported from committed reports; freshness and execution are bounded.
+          Source evidence describes static configuration and potential test
+          calls. Coverage is imported from committed reports; freshness and
+          execution are bounded.
         </p>
       </div>
 
@@ -68,10 +70,10 @@ export function QualityInventory({
               key={v}
               type="button"
               className={cn(
-                "rounded-lg px-3 py-1 text-xs font-medium capitalize transition-all select-none cursor-pointer",
+                "cursor-pointer rounded-lg px-3 py-1 text-xs font-medium capitalize transition-all select-none",
                 kind === v
-                  ? "bg-white text-zinc-950 font-semibold shadow-[0_2px_0_0_#d4d4d8]"
-                  : "text-zinc-400 hover:text-white hover:bg-[#202330]",
+                  ? "bg-white font-semibold text-zinc-950 shadow-[0_2px_0_0_#d4d4d8]"
+                  : "text-zinc-400 hover:bg-[#202330] hover:text-white",
               )}
               onClick={() => {
                 setKind(v);
@@ -84,9 +86,19 @@ export function QualityInventory({
           ))}
         </div>
 
-        <div className="flex min-w-[16rem] flex-1 max-w-md items-center rounded-lg border border-[#2b2f3d] bg-[#14161f] px-3 py-1.5 text-xs">
-          <svg className="h-4 w-4 text-zinc-500 mr-2 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        <div className="flex max-w-md min-w-[16rem] flex-1 items-center rounded-lg border border-[#2b2f3d] bg-[#14161f] px-3 py-1.5 text-xs">
+          <svg
+            className="mr-2 h-4 w-4 shrink-0 text-zinc-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
           </svg>
           <input
             className="w-full bg-transparent text-white placeholder-zinc-500 outline-none"
@@ -102,13 +114,16 @@ export function QualityInventory({
       </div>
 
       {error && (
-        <div role="alert" className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300">
+        <div
+          role="alert"
+          className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300"
+        >
           {error}
         </div>
       )}
 
       {list.loading && (
-        <div className="text-xs text-zinc-400 py-4 font-mono">
+        <div className="py-4 font-mono text-xs text-zinc-400">
           Loading {kind} evidence…
         </div>
       )}
@@ -127,17 +142,19 @@ export function QualityInventory({
             {item.view === "resource" && (
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-white truncate">
+                  <span className="truncate text-sm font-semibold text-white">
                     {item.name}
                   </span>
-                  <span className="rounded bg-[#202432] px-2 py-0.5 text-[10px] font-mono text-blue-400 border border-blue-500/20">
+                  <span className="rounded border border-blue-500/20 bg-[#202432] px-2 py-0.5 font-mono text-[10px] text-blue-400">
                     {item.kind}
                   </span>
                 </div>
                 {item.details.length > 0 && (
-                  <ul className="text-xs text-zinc-400 flex flex-col gap-0.5">
+                  <ul className="flex flex-col gap-0.5 text-xs text-zinc-400">
                     {item.details.map((detail) => (
-                      <li key={detail} className="truncate">• {detail}</li>
+                      <li key={detail} className="truncate">
+                        • {detail}
+                      </li>
                     ))}
                   </ul>
                 )}
@@ -146,9 +163,13 @@ export function QualityInventory({
                     type="button"
                     variant={selected === item.id ? "pearl" : "secondary"}
                     size="xs"
-                    onClick={() => setSelected(selected === item.id ? "" : item.id)}
+                    onClick={() =>
+                      setSelected(selected === item.id ? "" : item.id)
+                    }
                   >
-                    {selected === item.id ? "Hide relations" : "Inspect relations"}
+                    {selected === item.id
+                      ? "Hide relations"
+                      : "Inspect relations"}
                   </CandyButton>
                 </div>
               </div>
@@ -157,22 +178,25 @@ export function QualityInventory({
             {item.view === "test" && (
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-white truncate">
+                  <span className="truncate text-sm font-semibold text-white">
                     {item.name}
                   </span>
-                  <span className="rounded bg-[#202432] px-2 py-0.5 text-[10px] font-mono text-teal-400 border border-teal-500/20">
+                  <span className="rounded border border-teal-500/20 bg-[#202432] px-2 py-0.5 font-mono text-[10px] text-teal-400">
                     {item.framework}
                   </span>
                 </div>
                 <p className="text-xs text-zinc-400">
-                  Mode: {item.mode} {item.parameterized ? "· parameterized" : ""}
+                  Mode: {item.mode}{" "}
+                  {item.parameterized ? "· parameterized" : ""}
                 </p>
                 <div className="pt-2">
                   <CandyButton
                     type="button"
                     variant={selected === item.id ? "pearl" : "secondary"}
                     size="xs"
-                    onClick={() => setSelected(selected === item.id ? "" : item.id)}
+                    onClick={() =>
+                      setSelected(selected === item.id ? "" : item.id)
+                    }
                   >
                     {selected === item.id ? "Hide links" : "Inspect links"}
                   </CandyButton>
@@ -183,10 +207,10 @@ export function QualityInventory({
             {item.view === "coverage" && (
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono text-white truncate max-w-xs">
+                  <span className="max-w-xs truncate font-mono text-xs text-white">
                     {item.path}
                   </span>
-                  <span className="rounded bg-[#202432] px-2 py-0.5 text-[10px] font-mono text-purple-400">
+                  <span className="rounded bg-[#202432] px-2 py-0.5 font-mono text-[10px] text-purple-400">
                     {item.format}
                   </span>
                 </div>
@@ -194,20 +218,21 @@ export function QualityInventory({
                   <span className="text-zinc-400">
                     {item.covered}/{item.total} {item.metric}
                   </span>
-                  <span className="font-mono text-emerald-400 font-semibold">
+                  <span className="font-mono font-semibold text-emerald-400">
                     {Math.round((item.covered / (item.total || 1)) * 100)}%
                   </span>
                 </div>
-                <div className="h-1.5 w-full rounded-full bg-[#202432] overflow-hidden">
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#202432]">
                   <div
-                    className="h-full bg-emerald-500 rounded-full"
+                    className="h-full rounded-full bg-emerald-500"
                     style={{
                       width: `${Math.min(100, Math.round((item.covered / (item.total || 1)) * 100))}%`,
                     }}
                   />
                 </div>
-                <span className="text-[11px] font-mono text-zinc-500 truncate">
-                  Report: {item.reportEvidence.path}:{item.reportEvidence.startLine}
+                <span className="truncate font-mono text-[11px] text-zinc-500">
+                  Report: {item.reportEvidence.path}:
+                  {item.reportEvidence.startLine}
                 </span>
               </div>
             )}
@@ -215,10 +240,10 @@ export function QualityInventory({
             {item.view === "dependency" && (
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-white truncate">
+                  <span className="truncate text-sm font-semibold text-white">
                     {item.name}
                   </span>
-                  <span className="rounded bg-[#202432] px-2 py-0.5 text-[10px] font-mono text-zinc-300">
+                  <span className="rounded bg-[#202432] px-2 py-0.5 font-mono text-[10px] text-zinc-300">
                     v{item.version}
                   </span>
                 </div>
@@ -233,16 +258,19 @@ export function QualityInventory({
 
             {item.view === "environment" && (
               <div className="flex flex-col gap-1">
-                <span className="text-sm font-semibold text-white font-mono">
+                <span className="font-mono text-sm font-semibold text-white">
                   {item.name}
                 </span>
-                <span className="text-xs text-zinc-400">Source: {item.source}</span>
+                <span className="text-xs text-zinc-400">
+                  Source: {item.source}
+                </span>
               </div>
             )}
 
             {"evidence" in item && (
-              <span className="text-[11px] font-mono text-zinc-500 truncate pt-1 border-t border-[#222532]">
-                {item.evidence.path}:{item.evidence.startLine}–{item.evidence.endLine}
+              <span className="truncate border-t border-[#222532] pt-1 font-mono text-[11px] text-zinc-500">
+                {item.evidence.path}:{item.evidence.startLine}–
+                {item.evidence.endLine}
               </span>
             )}
           </div>
@@ -251,11 +279,12 @@ export function QualityInventory({
 
       {list.data && !list.data.items.length && (
         <p className="text-xs text-zinc-500">
-          No matching evidence found. Refine query or check snapshot boundary diagnostics.
+          No matching evidence found. Refine query or check snapshot boundary
+          diagnostics.
         </p>
       )}
 
-      <div className="flex items-center justify-between pt-2 border-t border-[#222532]">
+      <div className="flex items-center justify-between border-t border-[#222532] pt-2">
         <CandyButton
           type="button"
           variant="secondary"
@@ -265,7 +294,7 @@ export function QualityInventory({
         >
           ← Previous
         </CandyButton>
-        <span className="text-xs font-mono text-zinc-400">Page {page}</span>
+        <span className="font-mono text-xs text-zinc-400">Page {page}</span>
         <CandyButton
           type="button"
           variant="secondary"
@@ -279,15 +308,17 @@ export function QualityInventory({
 
       {resource.data && (
         <aside className="rounded-xl border border-blue-500/30 bg-[#141824] p-5">
-          <h3 className="text-sm font-bold text-white mb-2">
+          <h3 className="mb-2 text-sm font-bold text-white">
             Resource topology: {resource.data.resource.name}
           </h3>
-          <ul className="flex flex-col gap-1.5 text-xs font-mono text-zinc-300">
+          <ul className="flex flex-col gap-1.5 font-mono text-xs text-zinc-300">
             {resource.data.relations.map((edge) => (
               <li key={edge.id} className="truncate">
-                {resource.data?.resources.find((r) => r.id === edge.sourceId)?.name ?? edge.sourceId}{" "}
+                {resource.data?.resources.find((r) => r.id === edge.sourceId)
+                  ?.name ?? edge.sourceId}{" "}
                 → <span className="text-blue-400">{edge.kind}</span> →{" "}
-                {resource.data?.resources.find((r) => r.id === edge.targetId)?.name ?? edge.targetId}{" "}
+                {resource.data?.resources.find((r) => r.id === edge.targetId)
+                  ?.name ?? edge.targetId}{" "}
                 <span className="text-zinc-500">
                   ({edge.evidence.path}:{edge.evidence.startLine})
                 </span>
@@ -295,26 +326,31 @@ export function QualityInventory({
             ))}
           </ul>
           {!resource.data.relations.length && (
-            <p className="text-xs text-zinc-500">No supported resource relationships resolved.</p>
+            <p className="text-xs text-zinc-500">
+              No supported resource relationships resolved.
+            </p>
           )}
         </aside>
       )}
 
       {test.data && (
         <aside className="rounded-xl border border-teal-500/30 bg-[#121c1f] p-5">
-          <h3 className="text-sm font-bold text-white mb-2">
+          <h3 className="mb-2 text-sm font-bold text-white">
             Test links: {test.data.test.name}
           </h3>
-          <ul className="flex flex-col gap-1.5 text-xs font-mono text-zinc-300">
+          <ul className="flex flex-col gap-1.5 font-mono text-xs text-zinc-300">
             {test.data.links.map((link) => (
               <li key={link.id} className="truncate">
-                <span className="text-teal-400">{link.kind}</span>: {link.symbolName} · target{" "}
-                {link.targetEvidence.path}:{link.targetEvidence.startLine}
+                <span className="text-teal-400">{link.kind}</span>:{" "}
+                {link.symbolName} · target {link.targetEvidence.path}:
+                {link.targetEvidence.startLine}
               </li>
             ))}
           </ul>
           {!test.data.links.length && (
-            <p className="text-xs text-zinc-500">No supported source-symbol relationship resolved.</p>
+            <p className="text-xs text-zinc-500">
+              No supported source-symbol relationship resolved.
+            </p>
           )}
         </aside>
       )}

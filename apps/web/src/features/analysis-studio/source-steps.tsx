@@ -87,7 +87,7 @@ export function RepositoryStep({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+        <label className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
           Connected repository
         </label>
         <DropdownSelect
@@ -112,10 +112,7 @@ export function RepositoryStep({
       {repositories.length === 0 && (
         <div className="rounded-xl border border-[#2b2f3d] bg-[#14161f] p-4 text-xs text-zinc-400">
           No repositories found on page {repoPage}.{" "}
-          <Link
-            className="text-blue-400 hover:underline"
-            href="/repositories"
-          >
+          <Link className="text-blue-400 hover:underline" href="/repositories">
             Connect and sync your GitHub installation
           </Link>
           .
@@ -132,7 +129,7 @@ export function RepositoryStep({
         >
           Previous page
         </CandyButton>
-        <span className="text-xs font-mono text-zinc-400">Page {repoPage}</span>
+        <span className="font-mono text-xs text-zinc-400">Page {repoPage}</span>
         <CandyButton
           type="button"
           variant="secondary"
@@ -198,7 +195,7 @@ export function RevisionStep({
       )}
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+        <label className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
           Git branch
         </label>
         <DropdownSelect
@@ -224,7 +221,7 @@ export function RevisionStep({
           >
             ← Previous branches
           </CandyButton>
-          <span className="text-[11px] font-mono text-zinc-500">
+          <span className="font-mono text-[11px] text-zinc-500">
             Branch page {branchPage}
           </span>
           <CandyButton
@@ -240,7 +237,7 @@ export function RevisionStep({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+        <label className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
           Commit SHA
         </label>
         <DropdownSelect
@@ -261,7 +258,7 @@ export function RevisionStep({
           >
             ← Previous commits
           </CandyButton>
-          <span className="text-[11px] font-mono text-zinc-500">
+          <span className="font-mono text-[11px] text-zinc-500">
             Commit page {commitPage}
           </span>
           <CandyButton
@@ -277,11 +274,11 @@ export function RevisionStep({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+        <label className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
           Or manual commit SHA (40 hex characters)
         </label>
         <input
-          className="h-9 w-full rounded-lg border border-[#2b2f3d] bg-[#14161f] px-3 text-xs text-white placeholder-zinc-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono"
+          className="h-9 w-full rounded-lg border border-[#2b2f3d] bg-[#14161f] px-3 font-mono text-xs text-white placeholder-zinc-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
           placeholder="e.g. 7ab99ec..."
           value={commit}
           maxLength={40}
@@ -323,7 +320,7 @@ export function ProfileStep({
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
-        <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+        <label className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
           Preset templates
         </label>
         <div className="grid gap-2.5 sm:grid-cols-2">
@@ -331,7 +328,7 @@ export function ProfileStep({
             <button
               type="button"
               key={preset.name}
-              className="flex items-center justify-between rounded-xl border border-[#272b39] bg-[#161822] p-3 text-left transition-all duration-150 hover:border-[#383e52] hover:bg-[#1b1e2b] cursor-pointer"
+              className="flex cursor-pointer items-center justify-between rounded-xl border border-[#272b39] bg-[#161822] p-3 text-left transition-all duration-150 hover:border-[#383e52] hover:bg-[#1b1e2b]"
               onClick={() => choosePreset(preset.configuration)}
             >
               <div className="flex flex-col">
@@ -343,7 +340,7 @@ export function ProfileStep({
                   {preset.configuration.depth}
                 </span>
               </div>
-              <span className="rounded bg-[#202330] px-2 py-0.5 text-[10px] font-mono text-blue-400">
+              <span className="rounded bg-[#202330] px-2 py-0.5 font-mono text-[10px] text-blue-400">
                 Load
               </span>
             </button>
@@ -352,7 +349,7 @@ export function ProfileStep({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+        <label className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
           Saved workspace profiles
         </label>
         <DropdownSelect
@@ -378,7 +375,7 @@ export function ProfileStep({
           >
             ← Previous profiles
           </CandyButton>
-          <span className="text-[11px] font-mono text-zinc-500">
+          <span className="font-mono text-[11px] text-zinc-500">
             Profile page {profilePage}
           </span>
           <CandyButton
@@ -393,8 +390,9 @@ export function ProfileStep({
         </div>
       </div>
 
-      <p className="text-xs text-zinc-400 leading-relaxed">
-        Select any preset, customize modules across analyzer steps, and save as a versioned profile below.
+      <p className="text-xs leading-relaxed text-zinc-400">
+        Select any preset, customize modules across analyzer steps, and save as
+        a versioned profile below.
       </p>
     </div>
   );

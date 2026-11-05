@@ -25,9 +25,9 @@ export function AppHeader() {
         <div className="flex items-center gap-6">
           <Link
             href="/"
-            className="flex items-center gap-2.5 text-base font-bold tracking-tight text-white hover:opacity-90 transition-opacity"
+            className="flex items-center gap-2.5 text-base font-bold tracking-tight text-white transition-opacity hover:opacity-90"
           >
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#2d3240] bg-[#161821] text-xs font-mono font-semibold text-blue-400">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#2d3240] bg-[#161821] font-mono text-xs font-semibold text-blue-400">
               CD
             </span>
             <span>codaryn</span>
@@ -35,7 +35,7 @@ export function AppHeader() {
 
           <nav
             aria-label="Primary navigation"
-            className="hidden md:flex items-center gap-1"
+            className="hidden items-center gap-1 md:flex"
           >
             {navItems.map((item) => {
               const active =
@@ -49,8 +49,8 @@ export function AppHeader() {
                   className={cn(
                     "rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors select-none",
                     active
-                      ? "bg-[#1f232f] text-white border border-[#2f3546]"
-                      : "text-zinc-400 hover:text-zinc-200 hover:bg-[#161820]",
+                      ? "border border-[#2f3546] bg-[#1f232f] text-white"
+                      : "text-zinc-400 hover:bg-[#161820] hover:text-zinc-200",
                   )}
                 >
                   {item.label}
@@ -61,14 +61,14 @@ export function AppHeader() {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-full border border-[#242733] bg-[#12141a] text-[11px] text-zinc-400 font-mono">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="hidden items-center gap-2 rounded-full border border-[#242733] bg-[#12141a] px-2.5 py-1 font-mono text-[11px] text-zinc-400 sm:flex">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
             <span>Architecture Live</span>
           </div>
 
           <Link
             href="/docs"
-            className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors hidden lg:block"
+            className="hidden text-xs text-zinc-400 transition-colors hover:text-zinc-200 lg:block"
           >
             Docs
           </Link>

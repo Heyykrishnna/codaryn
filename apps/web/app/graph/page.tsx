@@ -66,7 +66,7 @@ export default function GraphPage() {
   return (
     <Suspense
       fallback={
-        <div className="py-16 flex items-center justify-center">
+        <div className="flex items-center justify-center py-16">
           <LoaderOrb
             label="Loading dependency graph…"
             description="Computing topological node depth and bounding limits"

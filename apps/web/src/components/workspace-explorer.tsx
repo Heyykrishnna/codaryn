@@ -21,7 +21,7 @@ export function WorkspaceExplorer({
 
   if (isPending) {
     return (
-      <main className="mx-auto flex max-w-7xl flex-col items-center justify-center min-h-[60vh] px-6 py-12">
+      <main className="mx-auto flex min-h-[60vh] max-w-7xl flex-col items-center justify-center px-6 py-12">
         <LoaderOrb
           label={`Connecting to ${title}…`}
           description="Verifying authorization and active workspace resources"
@@ -32,9 +32,11 @@ export function WorkspaceExplorer({
 
   if (error) {
     return (
-      <main className="mx-auto flex max-w-md flex-col items-center justify-center min-h-[50vh] gap-4 p-8 text-center">
+      <main className="mx-auto flex min-h-[50vh] max-w-md flex-col items-center justify-center gap-4 p-8 text-center">
         <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-6 text-sm text-red-300">
-          <p className="font-semibold text-white mb-1">Session verification failed</p>
+          <p className="mb-1 font-semibold text-white">
+            Session verification failed
+          </p>
           <p>Unable to verify your account session. Please reload to retry.</p>
         </div>
         <CandyButton
@@ -50,16 +52,27 @@ export function WorkspaceExplorer({
 
   if (!session) {
     return (
-      <main className="mx-auto flex max-w-md flex-col items-center justify-center min-h-[60vh] gap-6 p-8 text-center">
+      <main className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center gap-6 p-8 text-center">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#2b2f3d] bg-[#14161f] text-blue-400">
-          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          <svg
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+            />
           </svg>
         </div>
         <div className="flex flex-col gap-1.5">
           <h1 className="text-xl font-bold text-white">Sign in required</h1>
           <p className="text-sm text-zinc-400">
-            Sign in to your account to explore {title} and inspect architecture evidence.
+            Sign in to your account to explore {title} and inspect architecture
+            evidence.
           </p>
         </div>
         <CandyButton as="a" href="/workspace" variant="pearl" size="default">
@@ -136,8 +149,8 @@ function WorkspaceExplorerContent({
     <main className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6">
       <div className="flex flex-col gap-4 border-b border-[#232733] pb-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2 text-xs text-zinc-500 font-mono">
-            <Link href="/" className="hover:text-zinc-300 transition-colors">
+          <div className="flex items-center gap-2 font-mono text-xs text-zinc-500">
+            <Link href="/" className="transition-colors hover:text-zinc-300">
               codaryn
             </Link>
             <span>/</span>
@@ -193,10 +206,12 @@ function WorkspaceExplorerContent({
 
       {data && !data.items.length && (
         <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-[#232734] bg-[#14161f] p-12 text-center">
-          <h2 className="text-lg font-semibold text-white">No active workspaces</h2>
+          <h2 className="text-lg font-semibold text-white">
+            No active workspaces
+          </h2>
           <p className="max-w-md text-xs text-zinc-400">
-            Create or join a workspace to begin mapping architectural dependencies,
-            symbol coverage, and execution traces.
+            Create or join a workspace to begin mapping architectural
+            dependencies, symbol coverage, and execution traces.
           </p>
           <CandyButton as="a" href="/workspace" variant="pearl" size="sm">
             Create workspace

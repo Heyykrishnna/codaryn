@@ -24,7 +24,9 @@
   --color-border-focus: var(--border-focus);
   --color-muted: var(--muted);
   --color-muted-dark: var(--muted-dark);
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
 }
 
 html {

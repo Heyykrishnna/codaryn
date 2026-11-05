@@ -120,7 +120,7 @@ export function CustomDropdown({
             role="menu"
             aria-labelledby={triggerId}
             className={cn(
-              "absolute z-40 mt-1.5 flex flex-col gap-0.5 rounded-xl border border-[#2b2f3d] bg-[#14161f] p-1.5 shadow-2xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-100 ease-out",
+              "animate-in fade-in zoom-in-95 absolute z-40 mt-1.5 flex flex-col gap-0.5 rounded-xl border border-[#2b2f3d] bg-[#14161f] p-1.5 shadow-2xl backdrop-blur-xl duration-100 ease-out",
               alignmentClass,
               widthClass,
             )}
@@ -202,18 +202,18 @@ export function DropdownItem({
         }
       }}
       className={cn(
-        "group flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-1.5 text-xs text-left select-none transition-colors duration-100 outline-none disabled:opacity-40 disabled:pointer-events-none cursor-pointer",
+        "group flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors duration-100 outline-none select-none disabled:pointer-events-none disabled:opacity-40",
         variantClass,
         className,
       )}
     >
-      <div className="flex items-center gap-2.5 min-w-0">
+      <div className="flex min-w-0 items-center gap-2.5">
         {icon && (
-          <span className="shrink-0 text-zinc-400 group-hover:text-white transition-colors">
+          <span className="shrink-0 text-zinc-400 transition-colors group-hover:text-white">
             {icon}
           </span>
         )}
-        <div className="flex flex-col min-w-0">
+        <div className="flex min-w-0 flex-col">
           <span className="truncate">{label}</span>
           {description && (
             <span className="truncate text-[10px] text-zinc-500">
@@ -223,14 +223,14 @@ export function DropdownItem({
         </div>
       </div>
 
-      <div className="flex items-center gap-1.5 shrink-0">
+      <div className="flex shrink-0 items-center gap-1.5">
         {badge && (
-          <span className="rounded bg-[#212431] px-1.5 py-0.5 text-[10px] text-zinc-400 font-mono">
+          <span className="rounded bg-[#212431] px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">
             {badge}
           </span>
         )}
         {shortcut && (
-          <kbd className="rounded border border-[#2e3344] bg-[#1a1d27] px-1.5 py-0.5 text-[10px] font-mono text-zinc-400">
+          <kbd className="rounded border border-[#2e3344] bg-[#1a1d27] px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">
             {shortcut}
           </kbd>
         )}
@@ -243,7 +243,7 @@ export function DropdownSeparator({ className }: { className?: string }) {
   return (
     <div
       role="separator"
-      className={cn("my-1 h-px bg-[#262a37] -mx-1", className)}
+      className={cn("-mx-1 my-1 h-px bg-[#262a37]", className)}
     />
   );
 }
@@ -293,7 +293,7 @@ export function DropdownSelect({
         <button
           type="button"
           disabled={disabled}
-          className="flex h-9 w-full items-center justify-between gap-2 rounded-lg border border-[#2b2f3d] bg-[#14161f] px-3 py-1.5 text-xs text-zinc-200 outline-none transition-all duration-150 hover:border-[#3b4154] hover:bg-[#181b25] focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+          className="flex h-9 w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-[#2b2f3d] bg-[#14161f] px-3 py-1.5 text-xs text-zinc-200 transition-all duration-150 outline-none hover:border-[#3b4154] hover:bg-[#181b25] focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
         >
           <div className="flex items-center gap-2 truncate">
             {selectedOption?.icon && (
@@ -310,13 +310,17 @@ export function DropdownSelect({
             stroke="currentColor"
             strokeWidth={2}
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </button>
       }
     >
       {searchable && (
-        <div className="p-1 border-b border-[#262a37]">
+        <div className="border-b border-[#262a37] p-1">
           <input
             type="text"
             value={query}
@@ -328,7 +332,9 @@ export function DropdownSelect({
       )}
       <div className="max-h-60 overflow-y-auto">
         {filtered.length === 0 ? (
-          <div className="px-3 py-2 text-xs text-zinc-500">No results found</div>
+          <div className="px-3 py-2 text-xs text-zinc-500">
+            No results found
+          </div>
         ) : (
           filtered.map((opt) => (
             <DropdownItem
