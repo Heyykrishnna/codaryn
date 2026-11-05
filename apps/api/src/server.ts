@@ -1,3 +1,5 @@
+import { registerExecution } from "./execution/routes.js";
+import { ExecutionService } from "./execution/service.js";
 import { registerSchema } from "./schema/routes.js";
 import { SchemaService } from "./schema/service.js";
 import { registerStudio } from "./studio/routes.js";
@@ -93,6 +95,12 @@ registerAnalysis(app, auth, new AnalysisService(pool), environment.WEB_ORIGIN);
 registerGraph(app, auth, new GraphService(pool), environment.WEB_ORIGIN);
 registerFrontend(app, auth, new FrontendService(pool), environment.WEB_ORIGIN);
 registerBackend(app, auth, new BackendService(pool), environment.WEB_ORIGIN);
+registerExecution(
+  app,
+  auth,
+  new ExecutionService(pool),
+  environment.WEB_ORIGIN,
+);
 registerSchema(app, auth, new SchemaService(pool), environment.WEB_ORIGIN);
 app.addHook("onClose", async () => {
   await pool.end();
