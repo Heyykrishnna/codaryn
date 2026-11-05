@@ -1225,3 +1225,169 @@ export const qualityFindingEvents = pgTable(
     ),
   ],
 );
+
+export const savedDiagramLayouts = pgTable(
+  "saved_diagram_layouts",
+  {
+    id: uuid("id").primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id),
+    repositoryId: uuid("repository_id")
+      .notNull()
+      .references(() => repositories.id),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    diagramType: text("diagram_type").notNull(),
+    name: text("name").notNull(),
+    layoutConfig: jsonb("layout_config").notNull(),
+    actorId: text("actor_id")
+      .notNull()
+      .references(() => users.id),
+    createdAt: created(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    check(
+      "saved_diagram_layouts_diagram_type_check",
+      sql`${t.diagramType} IN ('system','frontend','backend','api','erd','dependencies','execution','infrastructure')`,
+    ),
+    index("saved_diagram_layouts_workspace_idx").on(
+      t.organizationId,
+      t.createdAt.desc(),
+    ),
+    index("saved_diagram_layouts_job_idx").on(t.jobId, t.diagramType),
+  ],
+);
+
+export const analysisGeneratedDocuments = pgTable(
+  "analysis_generated_documents",
+  {
+    id: uuid("id").primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id),
+    repositoryId: uuid("repository_id")
+      .notNull()
+      .references(() => repositories.id),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    templateId: text("template_id").notNull(),
+    title: text("title").notNull(),
+    version: integer("version").notNull().default(1),
+    contentMarkdown: text("content_markdown").notNull(),
+    metadata: jsonb("metadata").notNull(),
+    createdAt: created(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    check(
+      "analysis_generated_documents_template_id_check",
+      sql`${t.templateId} IN ('overview','architecture','frontend','backend','api','schema','dependencies','execution','infrastructure','security')`,
+    ),
+    check("analysis_generated_documents_version_check", sql`${t.version} > 0`),
+    index("analysis_generated_docs_workspace_idx").on(
+      t.organizationId,
+      t.createdAt.desc(),
+    ),
+    index("analysis_generated_docs_job_idx").on(t.jobId, t.templateId),
+  ],
+);
+
+export const exportJobs = pgTable(
+  "export_jobs",
+  {
+    id: uuid("id").primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id),
+    repositoryId: uuid("repository_id")
+      .notNull()
+      .references(() => repositories.id),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    actorId: text("actor_id")
+      .notNull()
+      .references(() => users.id),
+    exportType: text("export_type").notNull(),
+    format: text("format").notNull(),
+    targetId: text("target_id").notNull(),
+    status: text("status").notNull().default("queued"),
+    attempts: integer("attempts").notNull().default(0),
+    leaseId: uuid("lease_id"),
+    leaseAt: timestamp("lease_at", { withTimezone: true }),
+    artifactSize: integer("artifact_size"),
+    artifactHash: text("artifact_hash"),
+    errorMessage: text("error_message"),
+    createdAt: created(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+  },
+  (t) => [
+    check(
+      "export_jobs_export_type_check",
+      sql`${t.exportType} IN ('diagram','document','bundle')`,
+    ),
+    check(
+      "export_jobs_format_check",
+      sql`${t.format} IN ('svg','png','pdf','markdown','mermaid','dbml','json')`,
+    ),
+    check(
+      "export_jobs_status_check",
+      sql`${t.status} IN ('queued','running','completed','failed')`,
+    ),
+    check("export_jobs_attempts_check", sql`${t.attempts} BETWEEN 0 AND 3`),
+    check(
+      "export_jobs_artifact_size_check",
+      sql`${t.artifactSize} IS NULL OR ${t.artifactSize} >= 0`,
+    ),
+    check(
+      "export_jobs_artifact_hash_check",
+      sql`${t.artifactHash} IS NULL OR ${t.artifactHash} ~ '^[a-f0-9]{64}$'`,
+    ),
+    check(
+      "export_jobs_completion_check",
+      sql`CASE WHEN ${t.status}='completed' THEN ${t.artifactSize} IS NOT NULL AND ${t.artifactHash} IS NOT NULL ELSE true END`,
+    ),
+    index("export_jobs_workspace_idx").on(
+      t.organizationId,
+      t.createdAt.desc(),
+    ),
+    index("export_jobs_queue_idx").on(t.status, t.createdAt),
+    index("export_jobs_job_idx").on(t.jobId, t.createdAt.desc()),
+  ],
+);
+
+export const exportArtifacts = pgTable(
+  "export_artifacts",
+  {
+    id: uuid("id").primaryKey(),
+    exportJobId: uuid("export_job_id")
+      .notNull()
+      .references(() => exportJobs.id, { onDelete: "cascade" }),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id),
+    contentType: text("content_type").notNull(),
+    filename: text("filename").notNull(),
+    payload: text("payload").notNull(),
+    size: integer("size").notNull(),
+    hash: text("hash").notNull(),
+    createdAt: created(),
+  },
+  (t) => [
+    check("export_artifacts_size_check", sql`${t.size} >= 0`),
+    check("export_artifacts_hash_check", sql`${t.hash} ~ '^[a-f0-9]{64}$'`),
+    index("export_artifacts_job_idx").on(t.exportJobId),
+    index("export_artifacts_workspace_idx").on(
+      t.organizationId,
+      t.createdAt.desc(),
+    ),
+  ],
+);

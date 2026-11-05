@@ -16,6 +16,7 @@ export const migrationNames = [
   "0011_schema_studio.sql",
   "0012_execution_intelligence.sql",
   "0013_engineering_quality.sql",
+  "0014_diagrams_documentation.sql",
 ];
 export async function migrationContent(name: string) {
   const sql = await readFile(
