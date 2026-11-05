@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  type AnyPgColumn,
   bigint,
   check,
   index,
@@ -1385,6 +1386,132 @@ export const exportArtifacts = pgTable(
     index("export_artifacts_workspace_idx").on(
       t.organizationId,
       t.createdAt.desc(),
+    ),
+  ],
+);
+
+export const analysisVersionSnapshots = pgTable(
+  "analysis_version_snapshots",
+  {
+    id: uuid("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id),
+    repositoryId: uuid("repository_id")
+      .notNull()
+      .references(() => repositories.id),
+    actorId: text("actor_id")
+      .notNull()
+      .references(() => users.id),
+    commitSha: text("commit_sha").notNull(),
+    installationGeneration: integer("installation_generation").notNull(),
+    verifyFull: boolean("verify_full").notNull().default(false),
+    baseSnapshotId: uuid("base_snapshot_id").references(
+      (): AnyPgColumn => analysisVersionSnapshots.id,
+    ),
+    triggerKey: text("trigger_key").unique(),
+    status: text("status").notNull().default("queued"),
+    attempts: integer("attempts").notNull().default(0),
+    leaseId: uuid("lease_id"),
+    leaseAt: timestamp("lease_at", { withTimezone: true }),
+    snapshot: jsonb("snapshot"),
+    hash: text("hash"),
+    fileCount: integer("file_count").notNull().default(0),
+    failureCode: text("failure_code"),
+    createdAt: created(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+  },
+  (t) => [
+    check(
+      "analysis_version_snapshots_commit_sha_check",
+      sql`${t.commitSha} ~ '^[a-f0-9]{40}$'`,
+    ),
+    check(
+      "analysis_version_snapshots_status_check",
+      sql`${t.status} IN ('queued','running','completed','failed')`,
+    ),
+    check(
+      "analysis_version_snapshots_attempts_check",
+      sql`${t.attempts} BETWEEN 0 AND 3`,
+    ),
+    check(
+      "analysis_version_snapshots_hash_check",
+      sql`${t.hash} IS NULL OR ${t.hash} ~ '^[a-f0-9]{64}$'`,
+    ),
+    check(
+      "analysis_version_snapshots_file_count_check",
+      sql`${t.fileCount} >= 0`,
+    ),
+    check(
+      "analysis_version_snapshots_completion_check",
+      sql`CASE WHEN ${t.status}='completed' THEN ${t.snapshot} IS NOT NULL AND ${t.hash} IS NOT NULL ELSE ${t.snapshot} IS NULL AND ${t.hash} IS NULL END`,
+    ),
+    index("analysis_version_snapshots_workspace_idx").on(
+      t.organizationId,
+      t.createdAt.desc(),
+    ),
+    index("analysis_version_snapshots_job_idx").on(t.jobId, t.createdAt.desc()),
+    index("analysis_version_snapshots_queue_idx").on(t.status, t.createdAt),
+  ],
+);
+
+export const repositoryAnalysisPolicies = pgTable(
+  "repository_analysis_policies",
+  {
+    repositoryId: uuid("repository_id")
+      .primaryKey()
+      .references(() => repositories.id, { onDelete: "cascade" }),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id),
+    manifestId: uuid("manifest_id")
+      .notNull()
+      .references(() => analysisManifests.id),
+    actorId: text("actor_id")
+      .notNull()
+      .references(() => users.id),
+    ref: text("ref").notNull(),
+    enabled: boolean("enabled").notNull().default(false),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+);
+export const architectureComparisons = pgTable(
+  "architecture_comparisons",
+  {
+    id: uuid("id").primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id),
+    repositoryId: uuid("repository_id")
+      .notNull()
+      .references(() => repositories.id),
+    actorId: text("actor_id")
+      .notNull()
+      .references(() => users.id),
+    fromId: uuid("from_id")
+      .notNull()
+      .references(() => analysisVersionSnapshots.id),
+    toId: uuid("to_id")
+      .notNull()
+      .references(() => analysisVersionSnapshots.id),
+    result: jsonb("result").notNull(),
+    hash: text("hash").notNull(),
+    createdAt: created(),
+  },
+  (table) => [
+    unique().on(table.fromId, table.toId),
+    check(
+      "architecture_comparisons_hash_check",
+      sql`${table.hash} ~ '^[a-f0-9]{64}$'`,
+    ),
+    index("architecture_comparisons_workspace_idx").on(
+      table.organizationId,
+      table.createdAt.desc(),
     ),
   ],
 );
