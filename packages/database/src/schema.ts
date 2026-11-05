@@ -1037,3 +1037,69 @@ export const analysisSchemaSnapshots = pgTable(
     index("analysis_schema_snapshots_queue_idx").on(t.status, t.createdAt),
   ],
 );
+
+export const analysisExecutionSnapshots = pgTable(
+  "analysis_execution_snapshots",
+  {
+    id: uuid("id").primaryKey(),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id),
+    repositoryId: uuid("repository_id")
+      .notNull()
+      .references(() => repositories.id),
+    actorId: text("actor_id")
+      .notNull()
+      .references(() => users.id),
+    commitSha: text("commit_sha").notNull(),
+    installationGeneration: integer("installation_generation").notNull(),
+    status: text("status").notNull().default("queued"),
+    attempts: integer("attempts").notNull().default(0),
+    leaseId: uuid("lease_id"),
+    leaseAt: timestamp("lease_at", { withTimezone: true }),
+    snapshot: jsonb("snapshot"),
+    hash: text("hash"),
+    functionCount: integer("function_count").notNull().default(0),
+    failureCode: text("failure_code"),
+    createdAt: created(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+  },
+  (t) => [
+    check(
+      "analysis_execution_snapshots_commit_sha_check",
+      sql`${t.commitSha} ~ '^[a-f0-9]{40}$'`,
+    ),
+    check(
+      "analysis_execution_snapshots_status_check",
+      sql`${t.status} IN ('queued','running','completed','failed')`,
+    ),
+    check(
+      "analysis_execution_snapshots_attempts_check",
+      sql`${t.attempts} BETWEEN 0 AND 3`,
+    ),
+    check(
+      "analysis_execution_snapshots_hash_check",
+      sql`${t.hash} IS NULL OR ${t.hash} ~ '^[a-f0-9]{64}$'`,
+    ),
+    check(
+      "analysis_execution_snapshots_function_count_check",
+      sql`${t.functionCount} >= 0`,
+    ),
+    check(
+      "analysis_execution_snapshots_completion_check",
+      sql`CASE WHEN ${t.status}='completed' THEN ${t.snapshot} IS NOT NULL AND ${t.hash} IS NOT NULL ELSE ${t.snapshot} IS NULL AND ${t.hash} IS NULL END`,
+    ),
+    index("analysis_execution_snapshots_workspace_idx").on(
+      t.organizationId,
+      t.createdAt.desc(),
+    ),
+    index("analysis_execution_snapshots_job_idx").on(
+      t.jobId,
+      t.createdAt.desc(),
+    ),
+    index("analysis_execution_snapshots_queue_idx").on(t.status, t.createdAt),
+  ],
+);
