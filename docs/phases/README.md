@@ -17,7 +17,7 @@ This roadmap contains phases 0–14 from the [product specification](../product-
 | 10    | [Infrastructure, testing and security intelligence](10-infrastructure-testing-security/README.md) | [Acceptance tests](10-infrastructure-testing-security/acceptance-tests.md) | Implemented |
 | 11    | [Diagram and documentation system](11-diagrams-documentation/README.md)                           | [Acceptance tests](11-diagrams-documentation/acceptance-tests.md)          | Implemented |
 | 12    | [Incremental analysis, comparison and impact](12-incremental-comparison-impact/README.md)         | [Acceptance tests](12-incremental-comparison-impact/acceptance-tests.md)   | Implemented |
-| 13    | [Collaboration, administration and exports](13-collaboration-administration/README.md)            | [Acceptance tests](13-collaboration-administration/acceptance-tests.md)    | Planned     |
+| 13    | [Collaboration, administration and exports](13-collaboration-administration/README.md)            | [Acceptance tests](13-collaboration-administration/acceptance-tests.md)    | Implemented |
 | 14    | [Performance, security and production launch](14-production-launch/README.md)                     | [Acceptance tests](14-production-launch/acceptance-tests.md)               | Planned     |
 
 ## Shared completion gates

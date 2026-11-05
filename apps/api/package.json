@@ -7,9 +7,9 @@
     "dev": "tsx watch --include ../../.env src/server.ts",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "pnpm run build && node --test dist/*.test.js dist/studio/manifest.test.js dist/diagrams/diagrams.test.js dist/exports/exports.test.js",
+    "test": "pnpm run build && node --test dist/*.test.js dist/studio/manifest.test.js dist/diagrams/diagrams.test.js dist/exports/exports.test.js dist/team/downloads.test.js",
     "auth:migrate": "tsx src/identity/migrate.ts",
-    "test:integration": "pnpm run build && node --env-file-if-exists=../../.env --test dist/identity/auth.integration.test.js dist/repositories/repositories.integration.test.js dist/studio/studio.integration.test.js dist/analysis/analysis.integration.test.js dist/graph/graph.integration.test.js dist/frontend/frontend.integration.test.js dist/backend/backend.integration.test.js dist/schema/schema.integration.test.js dist/execution/execution.integration.test.js dist/quality/quality.integration.test.js dist/comparison/comparison.integration.test.js",
+    "test:integration": "pnpm run build && node --env-file-if-exists=../../.env --test dist/identity/auth.integration.test.js dist/repositories/repositories.integration.test.js dist/studio/studio.integration.test.js dist/analysis/analysis.integration.test.js dist/graph/graph.integration.test.js dist/frontend/frontend.integration.test.js dist/backend/backend.integration.test.js dist/schema/schema.integration.test.js dist/execution/execution.integration.test.js dist/quality/quality.integration.test.js dist/comparison/comparison.integration.test.js dist/team/team.integration.test.js",
     "auth:verify": "tsx src/identity/migrate.ts --check"
   },
   "dependencies": {

@@ -8,6 +8,7 @@ export function expectedColumnType(sqlType: string) {
     };
   const types: Record<string, string> = {
     text: "text",
+    date: "date",
     "text[]": "_text",
     uuid: "uuid",
     bigint: "int8",

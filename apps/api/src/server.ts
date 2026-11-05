@@ -1,3 +1,9 @@
+import { registerTeam } from "./team/routes.js";
+import { TeamStore } from "./team/store.js";
+import { AdministrationService } from "./team/administration.js";
+import { SharingService } from "./team/sharing.js";
+import { DownloadService } from "./team/downloads.js";
+import { RetentionService } from "./team/retention.js";
 import { registerComparison } from "./comparison/routes.js";
 import { ComparisonService } from "./comparison/service.js";
 import { registerExports } from "./exports/routes.js";
@@ -125,6 +131,21 @@ for (const signal of ["SIGINT", "SIGTERM"] as const)
   process.once(signal, () => {
     void app.close();
   });
+const teamStore = new TeamStore(pool);
+registerTeam(
+  app,
+  auth,
+  {
+    administration: new AdministrationService(teamStore),
+    sharing: new SharingService(teamStore, new DiagramService(pool)),
+    downloads: new DownloadService(
+      teamStore,
+      z.string().min(32).parse(process.env.AUTH_SECRET),
+    ),
+    retention: new RetentionService(teamStore),
+  },
+  environment.WEB_ORIGIN,
+);
 try {
   registerComparison(
     app,

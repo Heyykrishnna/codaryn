@@ -1,25 +1,16 @@
-# Phase 13: acceptance test plan
+# Phase 13 acceptance tests
 
-**Status:** Planned; these scenarios have not been executed. Scope and original acceptance criteria: [phase overview](README.md).
+The executable tests are `apps/api/src/team/team.integration.test.ts`, `apps/api/src/team/downloads.test.ts`, `packages/contracts/src/team.test.ts` and `workers/export/src/process.integration.test.ts`, plus existing workspace, Studio, diagram and export suites.
 
-Implement these scenarios at the appropriate unit, integration, end-to-end or operational layer. Use controlled fixtures with expected outputs, isolate test data, and record the command, environment, actual result and evidence for each run. A scenario passes only when its expected result is observed.
+| ID       | Scenario                                                               | Expected evidence                                                                                                                                                                                    |
+| -------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P13-AT01 | Owner/member/outsider create/open/revoke version and diagram shares    | API fixture verifies capability denial, cross-workspace denial, recipient binding, current membership, expiry/revocation and no source/default literal in projections                                |
+| P13-AT02 | Schedule a job-scoped export, inspect frozen bytes, publish and redeem | API verifies job/commit/hash and redaction; worker verifies atomic concurrent claiming, checksum rejection, permission revocation and legacy-binding safe failure                                    |
+| P13-AT03 | Grant tampering, wrong actor, expiry, revoke and concurrent replay     | MAC unit binds all signed fields; real API permits one redemption and rejects remaining attempts                                                                                                     |
+| P13-AT04 | Change workspace flags/revision with owner/member/stale session        | API denies member/stale session, detects stale revisions and invalidates member-created access when disabled                                                                                         |
+| P13-AT05 | Preview/apply bounded retention with stale policy                      | API refuses wrong revision/stale session; removes eligible old snapshot and keeps shared version, baseline/comparison endpoints, latest version and granted artifact accessible with original hashes |
+| P13-AT06 | Read activity and usage                                                | API observes administrative events and counters without token/source values; existing workspace and preset suites verify their mutation auditing                                                     |
+| P13-AT07 | UI states and responsive dashboard                                     | Manual browser inspection of actual workspace, narrow viewport, loading/empty/error states; fixture data is never inserted into production for presentation                                          |
+| P13-AT08 | Migration, repeated sync and runtime packaging                         | Schema verifier, full integration chain and isolated Node 22 container fixtures; no live worker startup                                                                                              |
 
-| ID | Scenario and action | Expected result |
-|---|---|---|
-| P13-AT01 | **Role and sharing:** Create and open shared views as permitted and forbidden users. | Every request is checked server-side and unauthorized users cannot view private source. |
-| P13-AT02 | **Export lifecycle:** Generate an export for a snapshot, use its signed link and try after expiry or permission revocation. | The artifact is scoped correctly and access follows the documented expiry and revocation policy. |
-| P13-AT03 | **Administration:** Change membership, role, preset and retention settings. | Authorized changes persist and relevant events are auditable without sensitive payloads. |
-| P13-AT04 | **Retention:** Apply a retention policy to eligible snapshots and artifacts. | Eligible data is removed according to policy while protected data remains accessible. |
-
-## Cross-cutting checks
-
-- Verify relevant loading, empty, error and permission-denied states, including keyboard access for affected UI.
-- Verify server-side authorization and workspace isolation for affected resources; avoid secrets and private source in logs and errors.
-- Test malformed input, boundary conditions, retries and failures appropriate to the change. Confirm evidence and uncertainty are represented accurately.
-- Run the applicable lint, type checks, tests and production build; record unavailable checks and unresolved failures. Update fixtures, documentation and supported-version information.
-
-## Completion evidence
-
-- Implementation and review links; fixture and version identifiers.
-- Test commands, environment, date, actual outcomes and any defects or limitations.
-- Evidence that every original acceptance criterion in the overview is met; obtain the relevant release owners’ review before marking the phase complete.
+See [verification](verification.md) for commands and actual results. Repository release approval remains with maintainers; no phase document grants permission to merge or start live workers.

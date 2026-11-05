@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   type AnyPgColumn,
+  date,
   bigint,
   check,
   index,
@@ -1324,6 +1325,7 @@ export const exportJobs = pgTable(
     attempts: integer("attempts").notNull().default(0),
     leaseId: uuid("lease_id"),
     leaseAt: timestamp("lease_at", { withTimezone: true }),
+    artifactBinding: jsonb("artifact_binding"),
     artifactSize: integer("artifact_size"),
     artifactHash: text("artifact_hash"),
     errorMessage: text("error_message"),
@@ -1515,6 +1517,126 @@ export const architectureComparisons = pgTable(
     index("architecture_comparisons_workspace_idx").on(
       table.organizationId,
       table.createdAt.desc(),
+    ),
+  ],
+);
+
+export const workspaceControls = pgTable(
+  "workspace_controls",
+  {
+    organizationId: uuid("organization_id")
+      .primaryKey()
+      .references(() => organizations.id),
+    revision: integer("revision").notNull().default(1),
+    retentionDays: integer("retention_days").notNull().default(90),
+    retentionEnabled: boolean("retention_enabled").notNull().default(false),
+    allowMemberSharing: boolean("allow_member_sharing")
+      .notNull()
+      .default(false),
+    allowMemberExports: boolean("allow_member_exports").notNull().default(true),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    check("workspace_controls_revision_check", sql`${t.revision}>0`),
+    check(
+      "workspace_controls_retention_days_check",
+      sql`${t.retentionDays} BETWEEN 7 AND 3650`,
+    ),
+  ],
+);
+export const resourceShares = pgTable(
+  "resource_shares",
+  {
+    id: uuid("id").primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id),
+    repositoryId: uuid("repository_id")
+      .notNull()
+      .references(() => repositories.id),
+    jobId: uuid("job_id")
+      .notNull()
+      .references(() => analysisJobs.id, { onDelete: "cascade" }),
+    actorId: text("actor_id")
+      .notNull()
+      .references(() => users.id),
+    recipientId: text("recipient_id")
+      .notNull()
+      .references(() => users.id),
+    resourceKind: text("resource_kind").notNull(),
+    resourceId: uuid("resource_id").notNull(),
+    installationGeneration: integer("installation_generation").notNull(),
+    tokenHash: text("token_hash").notNull().unique(),
+    projection: jsonb("projection").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    createdAt: created(),
+  },
+  (t) => [
+    check(
+      "resource_shares_resource_kind_check",
+      sql`${t.resourceKind} IN ('version','diagram')`,
+    ),
+    check(
+      "resource_shares_token_hash_check",
+      sql`${t.tokenHash} ~ '^[a-f0-9]{64}$'`,
+    ),
+    index("resource_shares_workspace_idx").on(
+      t.organizationId,
+      t.createdAt.desc(),
+    ),
+  ],
+);
+export const exportDownloadGrants = pgTable(
+  "export_download_grants",
+  {
+    id: uuid("id").primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id),
+    exportId: uuid("export_id")
+      .notNull()
+      .references(() => exportJobs.id, { onDelete: "cascade" }),
+    actorId: text("actor_id")
+      .notNull()
+      .references(() => users.id),
+    artifactHash: text("artifact_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+    createdAt: created(),
+  },
+  (t) => [
+    check(
+      "export_download_grants_artifact_hash_check",
+      sql`${t.artifactHash} ~ '^[a-f0-9]{64}$'`,
+    ),
+    index("export_download_grants_workspace_idx").on(
+      t.organizationId,
+      t.createdAt.desc(),
+    ),
+  ],
+);
+export const workspaceUsageDaily = pgTable(
+  "workspace_usage_daily",
+  {
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id),
+    day: date("day")
+      .notNull()
+      .default(sql`CURRENT_DATE`),
+    metric: text("metric").notNull(),
+    count: integer("count").notNull().default(0),
+  },
+  (t) => [
+    primaryKey({ columns: [t.organizationId, t.day, t.metric] }),
+    check("workspace_usage_daily_count_check", sql`${t.count}>=0`),
+    check(
+      "workspace_usage_daily_metric_check",
+      sql`${t.metric} IN ('share-created','share-opened','download-issued','download-used','retention-deleted')`,
     ),
   ],
 );
