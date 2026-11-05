@@ -9,3 +9,13 @@
 .codex
 .agents
 .DS_Store
+
+docs
+skills-agents-all
+.github
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+**/.aws
+**/.ssh

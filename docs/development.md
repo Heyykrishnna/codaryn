@@ -15,3 +15,7 @@ Execution Explorer uses `pnpm --filter @codaryn/execution-worker dev` and the sa
 Engineering Quality uses `/quality` and `pnpm --filter @codaryn/quality-worker dev`. Built-in rules are local; optional Semgrep and OSV configuration, external-lookup consent and review permissions are documented in [Phase 10 operations](phases/10-infrastructure-testing-security/operations.md).
 
 Architecture Comparison uses `/comparisons` and `pnpm --filter @codaryn/comparison-worker dev`. See [Phase 12 operations](phases/12-incremental-comparison-impact/operations.md) for compatible baselines, full verification and explicit push policies.
+
+## Development services and worker authorization
+
+`pnpm dev` starts only web and API. Workers are intentionally separate: `pnpm dev:workers` starts the real queue consumers and can read private GitHub repositories and write analysis artifacts to the configured database. Run it only with operator authorization and the intended environment. Use explicit disposable database/Redis URLs for integration tests; never start live workers just to verify a build.

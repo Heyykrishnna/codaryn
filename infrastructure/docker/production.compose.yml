@@ -1,0 +1,70 @@
+services:
+  api:
+    image: ${API_IMAGE:?Set a qualified API image digest}
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 4000
+      DATABASE_URL: ${DATABASE_URL:?Set the pooled database URL}
+      AUTH_SECRET: ${AUTH_SECRET:?Set the authentication secret}
+      AUTH_BASE_URL: ${AUTH_BASE_URL:?Set the HTTPS public web URL}
+      WEB_ORIGIN: ${WEB_ORIGIN:?Set the HTTPS public origin}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:?Set the GitHub OAuth client ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:?Set the GitHub OAuth secret}
+      GITHUB_APP_ID: ${GITHUB_APP_ID:?Set the GitHub App ID}
+      GITHUB_APP_PRIVATE_KEY: ${GITHUB_APP_PRIVATE_KEY:?Set the GitHub App key}
+      GITHUB_APP_SLUG: ${GITHUB_APP_SLUG:?Set the GitHub App slug}
+      GITHUB_WEBHOOK_SECRET: ${GITHUB_WEBHOOK_SECRET:?Set the webhook secret}
+      OPERATIONS_TOKEN: ${OPERATIONS_TOKEN:?Set the private operations token}
+      TRUSTED_PROXY: ${TRUSTED_PROXY:-}
+    expose: [4000]
+    read_only: true
+    tmpfs: [/tmp:size=67108864, mode=1777]
+    mem_limit: 768m
+    cpus: 1
+    pids_limit: 64
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    stop_grace_period: 60s
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:4000/api/v1/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+  web:
+    image: ${WEB_IMAGE:?Set a qualified web image digest}
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+    ports: ["127.0.0.1:${WEB_PORT:-3000}:3000"]
+    depends_on:
+      api:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp:size=67108864,mode=1777
+      - /app/apps/web/.next/cache:size=67108864,mode=1777
+    mem_limit: 768m
+    cpus: 1
+    pids_limit: 64
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    stop_grace_period: 60s
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:3000/docs').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3

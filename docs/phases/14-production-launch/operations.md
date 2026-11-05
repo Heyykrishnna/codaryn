@@ -8,7 +8,7 @@
 4. Configure HTTPS AUTH_BASE_URL and WEB_ORIGIN, stable AUTH_SECRET, GitHub OAuth/App settings and a distinct OPERATIONS_TOKEN of at least 32 characters. Optional values should be omitted or blank. Rotate operations credentials without exposing the authentication secret. Rotating AUTH_SECRET invalidates sessions and Phase 13 signed grants.
 5. Configure a trusted TLS proxy that overwrites client forwarding headers and protects direct API access. TRUSTED_PROXY is optional and off by default. With it disabled, users behind one proxy share its request budget. Validate your proxy chain before enabling it; never use an indiscriminate trust-all setting.
 6. Check liveness/readiness, HTTPS redirects, secure session cookies, narrow origins, private cache headers, webhook verification and private metric collection in staging. Use real user journeys and representative organizations before production approval.
-7. Start live workers only with operator authorization. The current task leaves them stopped. The analysis worker now consumes real queued analysis jobs, fetches private repository archives and writes analysis artifacts; it is no longer the foundation smoke process.
+7. Start live workers only with operator authorization. Root `pnpm dev` starts web/API only; `pnpm dev:workers` is a separate explicit queue-consumer command. The current task leaves them stopped. The analysis worker now consumes real queued analysis jobs, fetches private repository archives and writes analysis artifacts; it is no longer the foundation smoke process.
 
 ## Worker operation
 

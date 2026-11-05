@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.19.0",
   "scripts": {
-    "dev": "turbo dev",
+    "dev": "turbo dev --filter=@codaryn/web --filter=@codaryn/api",
     "build": "turbo build",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
@@ -13,7 +13,8 @@
     "db:migrate": "pnpm --filter @codaryn/database migrate",
     "test:integration": "pnpm --filter @codaryn/database test:integration && pnpm --filter @codaryn/analysis-worker test:integration && pnpm --filter @codaryn/api test:integration && pnpm --filter @codaryn/ingestion-worker test:integration && pnpm --filter @codaryn/schema-worker test:integration && pnpm --filter @codaryn/execution-worker test:integration && pnpm --filter @codaryn/quality-worker test:integration && pnpm --filter @codaryn/comparison-worker test:integration && pnpm --filter @codaryn/export-worker test:integration",
     "db:verify": "pnpm --filter @codaryn/database verify && pnpm --filter @codaryn/api auth:verify",
-    "db:sync": "pnpm db:migrate && pnpm --filter @codaryn/api auth:migrate && pnpm db:verify"
+    "db:sync": "pnpm db:migrate && pnpm --filter @codaryn/api auth:migrate && pnpm db:verify",
+    "dev:workers": "turbo dev --filter=@codaryn/analysis-worker --filter=@codaryn/ingestion-worker --filter=@codaryn/schema-worker --filter=@codaryn/execution-worker --filter=@codaryn/quality-worker --filter=@codaryn/comparison-worker --filter=@codaryn/export-worker"
   },
   "devDependencies": {
     "prettier": "^3.6.2",
