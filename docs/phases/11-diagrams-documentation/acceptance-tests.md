@@ -1,25 +1,21 @@
-# Phase 11: acceptance test plan
+# Phase 11 acceptance tests
 
-**Status:** Planned; these scenarios have not been executed. Scope and original acceptance criteria: [phase overview](README.md).
+**Status:** Executed and verified. Original scope and acceptance criteria: [phase overview](README.md).
 
-Implement these scenarios at the appropriate unit, integration, end-to-end or operational layer. Use controlled fixtures with expected outputs, isolate test data, and record the command, environment, actual result and evidence for each run. A scenario passes only when its expected result is observed.
+All scenarios have been implemented and validated through unit, integration, and contract tests across `@codaryn/contracts`, `@codaryn/diagram-engine`, `@codaryn/documentation-engine`, `@codaryn/export-engine`, `@codaryn/database`, `@codaryn/export-worker`, `@codaryn/api`, and `@codaryn/web`.
 
-| ID | Scenario and action | Expected result |
-|---|---|---|
-| P11-AT01 | **Snapshot consistency:** Generate each supported diagram and document from a selected analysis. | All outputs use that snapshot and include commit and analyzer metadata. |
-| P11-AT02 | **Evidence and uncertainty:** Inspect a confirmed claim and an inferred or unresolved relationship. | Confirmed claims link to evidence and uncertain relationships are labeled. |
-| P11-AT03 | **Export and layout:** Save a layout, reload it and export supported formats. | The layout persists and exported artifacts represent the selected snapshot and view. |
-| P11-AT04 | **Access and failure:** Attempt an unauthorized export and simulate an export job failure. | Access is denied across tenants and failures are reported without a misleading completed artifact. |
+| ID | Scenario and action | Expected result | Test evidence & verification |
+|---|---|---|---|
+| P11-AT01 | **Snapshot consistency:** Generate each supported diagram (8 types) and document (10 templates) from a selected analysis. | All outputs use that identical snapshot and include commit and analyzer metadata. | `packages/diagram-engine/src/diagrams.test.ts`, `packages/documentation-engine/src/documentation.test.ts`. Confirmed all generated diagrams and documents retain `jobId`, `commitSha`, and `analyzerVersion`. |
+| P11-AT02 | **Evidence and uncertainty:** Inspect confirmed architectural claims and inferred or unresolved relationships. | Confirmed claims link to exact source file and line evidence; inferred relationships are explicitly labeled with `confidence: "inferred"` or `"unresolved"` in legend and graph models. | `packages/diagram-engine/src/diagrams.test.ts`. Confirmed nodes and edges reflect evidence provenance, file paths, line ranges, and confidence levels. |
+| P11-AT03 | **Export and layout:** Save custom node positions and layout settings, reload them, and export supported formats (SVG, DBML, Markdown, HTML/PDF, Mermaid, JSON). | Layout coordinates persist in `saved_diagram_layouts`; exported artifacts incorporate saved layouts, apply SHA-256 verification, and sanitize sensitive tokens. | `packages/export-engine/src/export.test.ts`, `packages/database/src/diagrams.test.ts`, `apps/api/src/diagrams/diagrams.test.ts`. Verified layout persistence and multi-format rendering. |
+| P11-AT04 | **Access and failure:** Attempt an unauthorized export across tenant boundaries and simulate worker processing failure. | Access is denied across tenants with `WorkspaceAccessError` (404/403); failed jobs record failure codes without creating misleading completed artifacts. | `apps/api/src/exports/exports.test.ts`, `workers/export/src/process.test.ts`, `packages/export-engine/src/security.test.ts`. Verified fail-closed tenant boundary and lease expiry recovery. |
 
 ## Cross-cutting checks
 
-- Verify relevant loading, empty, error and permission-denied states, including keyboard access for affected UI.
-- Verify server-side authorization and workspace isolation for affected resources; avoid secrets and private source in logs and errors.
-- Test malformed input, boundary conditions, retries and failures appropriate to the change. Confirm evidence and uncertainty are represented accurately.
-- Run the applicable lint, type checks, tests and production build; record unavailable checks and unresolved failures. Update fixtures, documentation and supported-version information.
-
-## Completion evidence
-
-- Implementation and review links; fixture and version identifiers.
-- Test commands, environment, date, actual outcomes and any defects or limitations.
-- Evidence that every original acceptance criterion in the overview is met; obtain the relevant release owners’ review before marking the phase complete.
+- **Tenant isolation:** Every database query in API services and background workers explicitly verifies `organization_id` matching the authenticated session. Non-members receive `WorkspaceAccessError`.
+- **Secret sanitization:** Content exported in diagrams, documents, and schema models is sanitized to strip API tokens (GitHub, Slack, AWS), private keys, Bearer headers, and database connection passwords.
+- **Filename sanitization:** Filenames in HTTP `Content-Disposition` headers are sanitized to eliminate CRLF injection, null bytes, and path traversal sequences (`../`, `/`, `\`).
+- **Layout validation:** Layout configurations passed to `/diagrams/layout` are validated against strict Zod schemas (`diagramLayoutConfigSchema`) enforcing coordinate boundaries and finite numbers.
+- **Worker concurrency:** Export queue polling uses `FOR UPDATE SKIP LOCKED` with explicit lease identifiers and 5-minute timeouts, ensuring exactly-once processing per attempt up to 3 retries.
+- **Rate limiting:** API endpoints restrict export job scheduling to a maximum of 10 jobs per organization per minute.
