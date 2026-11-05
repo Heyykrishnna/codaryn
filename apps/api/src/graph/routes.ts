@@ -1,3 +1,5 @@
+import { protectAnalysisReads } from "../http/analysis-read.js";
+import type { SessionReader } from "../http/access.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { GraphService } from "./service.js";
@@ -5,7 +7,8 @@ import type { GraphService } from "./service.js";
 const graphQuerySchema = z.object({
   workspaceId: z.string().min(1),
   jobId: z.string().min(1),
-  search: z.string().optional(),
+  search: z.string().max(256).optional(),
+  page: z.coerce.number().int().min(1).max(1000).default(1),
   kind: z.string().optional(),
   resolution: z.string().optional(),
 });
@@ -20,10 +23,17 @@ const neighborhoodQuerySchema = z.object({
 
 export function registerGraph(
   app: FastifyInstance,
-  auth: unknown,
+  auth: SessionReader,
   service: GraphService,
   origin: string,
 ): void {
+  protectAnalysisReads(
+    app,
+    auth,
+    (actor, workspace, job) => service.authorize(actor, workspace, job),
+    origin,
+    "graph",
+  );
   const allowOrigin = (reply: {
     header: (name: string, value: string) => void;
   }) => {
@@ -53,14 +63,23 @@ export function registerGraph(
           search: parsed.data.search,
           kind: parsed.data.kind,
           resolution: parsed.data.resolution,
+          page: parsed.data.page,
         },
       );
+      if (Buffer.byteLength(JSON.stringify(snapshot)) > 1048576)
+        return reply.code(422).send({
+          error: {
+            code: "GRAPH_LIMIT",
+            message:
+              "Graph page evidence is too large; use a more specific search",
+          },
+        });
       return reply.send(snapshot);
-    } catch (err) {
+    } catch {
       return reply.status(404).send({
         error: {
           code: "NOT_FOUND",
-          message: err instanceof Error ? err.message : "Graph not found.",
+          message: "Resource not found or access denied.",
         },
       });
     }
@@ -87,12 +106,11 @@ export function registerGraph(
         parsed.data.direction,
       );
       return reply.send(result);
-    } catch (err) {
+    } catch {
       return reply.status(404).send({
         error: {
           code: "NOT_FOUND",
-          message:
-            err instanceof Error ? err.message : "Neighborhood not found.",
+          message: "Resource not found or access denied.",
         },
       });
     }
@@ -116,11 +134,11 @@ export function registerGraph(
         parsed.data.jobId,
       );
       return reply.send(cycles);
-    } catch (err) {
+    } catch {
       return reply.status(404).send({
         error: {
           code: "NOT_FOUND",
-          message: err instanceof Error ? err.message : "Cycles not found.",
+          message: "Resource not found or access denied.",
         },
       });
     }
@@ -144,14 +162,11 @@ export function registerGraph(
         parsed.data.jobId,
       );
       return reply.send(unresolved);
-    } catch (err) {
+    } catch {
       return reply.status(404).send({
         error: {
           code: "NOT_FOUND",
-          message:
-            err instanceof Error
-              ? err.message
-              : "Unresolved references not found.",
+          message: "Resource not found or access denied.",
         },
       });
     }
@@ -175,11 +190,11 @@ export function registerGraph(
         parsed.data.jobId,
       );
       return reply.send(metrics);
-    } catch (err) {
+    } catch {
       return reply.status(404).send({
         error: {
           code: "NOT_FOUND",
-          message: err instanceof Error ? err.message : "Metrics not found.",
+          message: "Resource not found or access denied.",
         },
       });
     }

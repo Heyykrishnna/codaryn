@@ -116,6 +116,8 @@ function createMockPool(workspaceId: string, jobId: string): Pool {
         }
         return { rows: [] };
       }
+      if (sql.includes("SELECT count(*) AS count FROM ("))
+        return { rows: [{ count: String(nodes.length) }] };
       if (sql.includes("FROM analysis_graph_nodes")) {
         if (sql.includes("AND id = ANY")) {
           const ids = values?.[1] as string[];

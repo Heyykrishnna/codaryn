@@ -504,7 +504,6 @@ export const analysisGraphNodes = pgTable(
     ),
     index("analysis_graph_nodes_job_kind_idx").on(table.jobId, table.kind),
     index("analysis_graph_nodes_job_path_idx").on(table.jobId, table.path),
-    index("graph_nodes_page_idx").on(table.jobId, table.path, table.id),
   ],
 );
 

@@ -110,6 +110,10 @@ export const graphSnapshotResponseSchema = z.object({
   totalNodes: z.number().int().nonnegative(),
   totalEdges: z.number().int().nonnegative(),
   totalCycles: z.number().int().nonnegative(),
+  page: z.number().int().positive().optional(),
+  pageSize: z.number().int().positive().optional(),
+  hasMore: z.boolean().optional(),
+  truncated: z.boolean().optional(),
 });
 
 export type GraphSnapshotResponse = z.infer<typeof graphSnapshotResponseSchema>;
