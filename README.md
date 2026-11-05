@@ -14,3 +14,5 @@ Implemented capabilities include GitHub authentication and workspace management,
 - [Security and privacy](docs/security.md)
 
 The repository uses a pnpm workspace. See the development guide for setup, checks and limitations.
+
+Architecture Comparison at `/comparisons` adds incremental module/schema versions, commit diffs and potential dependency impact. See the [Phase 12 guide](docs/phases/12-incremental-comparison-impact/README.md) for opt-in push scheduling and supported analysis limits.

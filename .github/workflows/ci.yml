@@ -62,3 +62,15 @@ jobs:
           --entrypoint node codaryn-quality-worker:ci --test
           /app/node_modules/.pnpm/@codaryn+engineering-analyzer@file+packages+engineering-analyzer/node_modules/@codaryn/engineering-analyzer/dist/engineering.test.js
           /app/dist/scanners.test.js
+      - name: Build comparison worker image
+        run: docker build -f infrastructure/docker/comparison.Dockerfile -t codaryn-comparison-worker:ci .
+      - name: Verify incremental comparison in isolated Node 22 image
+        run: >-
+          docker run --rm --network none --read-only
+          --tmpfs /tmp:size=201326592,mode=1777 --cap-drop ALL
+          --security-opt no-new-privileges:true
+          --mount "type=bind,source=$PWD/packages/version-engine/dist/incremental.test.js,target=/app/node_modules/.pnpm/@codaryn+version-engine@file+packages+version-engine/node_modules/@codaryn/version-engine/dist/incremental.test.js,readonly"
+          --mount "type=bind,source=$PWD/packages/version-engine/dist/comparison.test.js,target=/app/node_modules/.pnpm/@codaryn+version-engine@file+packages+version-engine/node_modules/@codaryn/version-engine/dist/comparison.test.js,readonly"
+          --entrypoint node codaryn-comparison-worker:ci --test
+          /app/node_modules/.pnpm/@codaryn+version-engine@file+packages+version-engine/node_modules/@codaryn/version-engine/dist/incremental.test.js
+          /app/node_modules/.pnpm/@codaryn+version-engine@file+packages+version-engine/node_modules/@codaryn/version-engine/dist/comparison.test.js

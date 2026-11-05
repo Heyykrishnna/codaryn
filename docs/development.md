@@ -13,3 +13,5 @@ Schema Studio uses a dedicated worker: `pnpm --filter @codaryn/schema-worker dev
 Execution Explorer uses `pnpm --filter @codaryn/execution-worker dev` and the same backend environment. See [Phase 9 operations](phases/09-execution-data-flow/operations.md) for bounded static analysis and deployment requirements.
 
 Engineering Quality uses `/quality` and `pnpm --filter @codaryn/quality-worker dev`. Built-in rules are local; optional Semgrep and OSV configuration, external-lookup consent and review permissions are documented in [Phase 10 operations](phases/10-infrastructure-testing-security/operations.md).
+
+Architecture Comparison uses `/comparisons` and `pnpm --filter @codaryn/comparison-worker dev`. See [Phase 12 operations](phases/12-incremental-comparison-impact/operations.md) for compatible baselines, full verification and explicit push policies.

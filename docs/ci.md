@@ -41,3 +41,7 @@ The full eight-step workflow above passed in Linux with Node 22.23.4, using a fr
 ## Phase 10 checks
 
 The workflow includes the quality worker integration chain and builds schema, execution and quality worker images after project checks. The 19 quality analyzer/scanner fixtures also run in its non-root Node 22 image with a read-only root and no network. Production dependency auditing uses `pnpm audit --prod --audit-level=moderate`. Phase 10 SonarCloud verification is omitted at the user’s explicit request; this does not represent a passing SonarCloud result. See [Phase 10 verification](phases/10-infrastructure-testing-security/verification.md).
+
+## Phase 12 checks
+
+The workflow now builds the comparison worker image and runs its eleven incremental/comparison fixtures in a non-root Node 22 container with a read-only root, dropped capabilities and no network. The complete integration chain includes the comparison API and worker lifecycle, signed push deduplication/capacity handling and full-analysis equivalence. Existing quality-image fixtures and prior worker builds remain required. See [Phase 12 verification](phases/12-incremental-comparison-impact/verification.md) for exact local outcomes and unperformed live/visual checks.

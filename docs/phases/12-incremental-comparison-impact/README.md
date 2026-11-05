@@ -45,10 +45,17 @@
 
 ## Planning and dependencies
 
-**Status:** Planned; none of the acceptance criteria is claimed as complete by this document.
+**Status:** Implemented for the bounded static module/schema version projection. See [verification](verification.md) for actual outcomes and limits.
 
 **Dependencies:** Immutable snapshots and domain analyzers from earlier phases; schema comparison uses Phase 8.
 
-Implement the scope above with the shared requirements in the [phase index](../README.md). Record design decisions, supported versions, migrations, operational requirements and limitations as implementation progresses. The acceptance criteria above are release obligations; the [acceptance test plan](acceptance-tests.md) turns them into executable scenarios to implement and record.
+The `/comparisons` explorer and dedicated comparison worker implement immutable versions, compatible file-result reuse, optional full equivalence, architecture/schema diffs, potential dependency impact and opt-in signed-push scheduling.
+
+- [Architecture and security](architecture.md)
+- [Supported projection and limitations](supported-analysis.md)
+- [API contracts](api.md)
+- [Operations and recovery](operations.md)
+- [Acceptance tests](acceptance-tests.md)
+- [Verification evidence](verification.md)
 
 [Full product specification](../../product-specification.md) · [All phases](../README.md)

@@ -40,3 +40,5 @@ The connection credential provided in chat should be rotated, then the ignored l
 Neon documents compatibility with conventional PostgreSQL clients and the distinction between pooled and direct connections in its [connection guide](https://neon.com/docs/connect/connect-from-any-app) and [pooling guide](https://neon.com/docs/connect/connection-pooling).
 
 Phase 10 adds migration `0013_engineering_quality.sql`: immutable quality snapshots, current finding reviews and review events. Both isolated testing and the configured runtime schema verified 45 application tables after this migration. Test fixtures were confined to a disposable local database. See [Phase 10 architecture](phases/10-infrastructure-testing-security/architecture.md) for review atomicity and retention behavior.
+
+Phase 12 migration `0015_incremental_comparison.sql` adds version snapshots, immutable comparisons/impact and repository push policies. The tested local and configured Neon schemas verify 52 application tables plus authentication. Fixtures remain confined to disposable local services; historical baselines and comparison endpoints are protected by foreign keys.

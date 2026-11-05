@@ -26,3 +26,5 @@ When implementation changes a contract or behavior, update the relevant guide an
 [Execution Explorer](phases/09-execution-data-flow/README.md) documents call resolution, control/data-flow limits and secure worker operation.
 
 [Engineering Quality](phases/10-infrastructure-testing-security/README.md) documents infrastructure, test relationships, coverage provenance, dependency security and audited review.
+
+[Architecture Comparison](phases/12-incremental-comparison-impact/README.md) documents incremental version reuse, commit/schema diffs, potential impact and opt-in push scheduling.

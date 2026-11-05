@@ -1,15 +1,23 @@
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { Pool } from "pg";
+import type { Pool, PoolClient } from "pg";
 import type { GitHubGateway } from "@codaryn/github";
 import { withRepositoryArchive } from "@codaryn/repository-ingestion";
 export interface ArtifactExtractor {
-  kind: "schema" | "execution" | "quality";
+  kind: "schema" | "execution" | "quality" | "version";
   accept?: (path: string) => boolean;
+  published?: (client: PoolClient, id: string) => Promise<void>;
   extract(
     files: Record<string, string>,
     infer: boolean,
+    context: {
+      id: string;
+      job_id: string;
+      repository_id: string;
+      organization_id: string;
+      commit_sha: string;
+    },
   ):
     | { snapshot: unknown; hash: string; count: number }
     | Promise<{ snapshot: unknown; hash: string; count: number }>;
@@ -18,11 +26,13 @@ const tables = {
   schema: "analysis_schema_snapshots",
   execution: "analysis_execution_snapshots",
   quality: "analysis_quality_snapshots",
+  version: "analysis_version_snapshots",
 } as const;
 const counts = {
   schema: "table_count",
   execution: "function_count",
   quality: "finding_count",
+  version: "file_count",
 } as const;
 async function* sourceBatches(directory: string, paths: string[]) {
   for (let offset = 0; offset < paths.length; offset += 8)
@@ -39,6 +49,9 @@ interface RequestRow {
   full_name: string;
   installation_id: string;
   infer_relations?: boolean;
+  job_id: string;
+  repository_id: string;
+  organization_id: string;
 }
 function accessQuery(table: string) {
   const option =
@@ -46,12 +59,16 @@ function accessQuery(table: string) {
       ? "s.infer_relations,"
       : table === tables.quality
         ? "s.external_scans AS infer_relations,"
-        : "";
+        : table === tables.version
+          ? "s.verify_full AS infer_relations,"
+          : "";
   const policy =
     table === tables.quality
       ? " AND (s.external_scans=false OR m.role IN ('owner','admin'))"
-      : "";
-  return `SELECT s.id,s.commit_sha,${option}r.full_name,r.installation_id FROM ${table} s JOIN analysis_jobs j ON j.id=s.job_id AND j.repository_id=s.repository_id AND j.organization_id=s.organization_id AND j.commit_sha=s.commit_sha JOIN connected_repositories r ON r.id=s.repository_id JOIN github_installations i ON i.id=r.installation_id AND i.organization_id=s.organization_id JOIN organization_members m ON m.organization_id=s.organization_id AND m.user_id=s.actor_id JOIN organizations o ON o.id=s.organization_id WHERE s.id=$1 AND s.lease_id=$2 AND s.status='running' AND i.generation=s.installation_generation AND i.connected=true AND r.active=true AND o.deleted_at IS NULL AND j.status<>'cancelled'${policy}`;
+      : table === tables.version
+        ? " AND (s.trigger_key IS NULL OR (m.role IN ('owner','admin') AND EXISTS(SELECT 1 FROM repository_analysis_policies p WHERE p.repository_id=s.repository_id AND p.organization_id=s.organization_id AND p.actor_id=s.actor_id AND p.ref=j.ref AND p.enabled=true)))"
+        : "";
+  return `SELECT s.id,s.commit_sha,s.job_id,s.repository_id,s.organization_id,${option}r.full_name,r.installation_id FROM ${table} s JOIN analysis_jobs j ON j.id=s.job_id AND j.repository_id=s.repository_id AND j.organization_id=s.organization_id AND j.commit_sha=s.commit_sha JOIN connected_repositories r ON r.id=s.repository_id JOIN github_installations i ON i.id=r.installation_id AND i.organization_id=s.organization_id JOIN organization_members m ON m.organization_id=s.organization_id AND m.user_id=s.actor_id JOIN organizations o ON o.id=s.organization_id WHERE s.id=$1 AND s.lease_id=$2 AND s.status='running' AND i.generation=s.installation_generation AND i.connected=true AND r.active=true AND o.deleted_at IS NULL AND j.status<>'cancelled'${policy}`;
 }
 export async function runOneArtifactRequest(
   pool: Pool,
@@ -61,9 +78,12 @@ export async function runOneArtifactRequest(
   const table = tables[extractor.kind],
     count = counts[extractor.kind],
     accessible = accessQuery(table),
-    prefix = { schema: "SCHEMA", execution: "EXECUTION", quality: "QUALITY" }[
-      extractor.kind
-    ],
+    prefix = {
+      schema: "SCHEMA",
+      execution: "EXECUTION",
+      quality: "QUALITY",
+      version: "VERSION",
+    }[extractor.kind],
     limitCode = `${prefix}_LIMIT`,
     failureCode = `${prefix}_EXTRACTION_FAILED`;
   await pool.query(
@@ -106,6 +126,7 @@ export async function runOneArtifactRequest(
       const result = await extractor.extract(
         files,
         request.infer_relations ?? false,
+        request,
       );
       if (Buffer.byteLength(JSON.stringify(result.snapshot)) > 20 * 1024 * 1024)
         throw new Error(limitCode);
@@ -128,6 +149,7 @@ export async function runOneArtifactRequest(
           [id, lease, result.snapshot, result.hash, result.count],
         );
         if (!updated.rowCount) throw new Error("LEASE_EXPIRED");
+        await extractor.published?.(client, id);
         await client.query("COMMIT");
       } catch (error) {
         await client.query("ROLLBACK");
