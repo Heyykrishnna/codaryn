@@ -17,8 +17,12 @@ packages:
   - packages/backend-analyzer
   - packages/github
   - packages/repository-ingestion
+  - packages/diagram-engine
+  - packages/documentation-engine
+  - packages/export-engine
   - workers/analysis
   - workers/ingestion
   - workers/schema
   - workers/execution
   - workers/quality
+  - workers/export
