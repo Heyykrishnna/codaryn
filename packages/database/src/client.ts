@@ -28,6 +28,8 @@ export function databasePoolOptions(connectionString: string): PoolConfig {
     connectionString: url.toString(),
     enableChannelBinding: !local,
     max: 5,
+    statement_timeout: 15000,
+    idle_in_transaction_session_timeout: 15000,
     connectionTimeoutMillis: 15000,
     idleTimeoutMillis: 30000,
   };

@@ -319,6 +319,8 @@ export const analysisJobs = pgTable(
     retries: integer("retries").notNull().default(0),
     maxRetries: integer("max_retries").notNull().default(3),
     failureReason: text("failure_reason"),
+    leaseId: uuid("lease_id"),
+    leaseAt: timestamp("lease_at", { withTimezone: true }),
     fileCount: integer("file_count").notNull().default(0),
     symbolCount: integer("symbol_count").notNull().default(0),
     diagnosticCount: integer("diagnostic_count").notNull().default(0),
@@ -502,6 +504,7 @@ export const analysisGraphNodes = pgTable(
     ),
     index("analysis_graph_nodes_job_kind_idx").on(table.jobId, table.kind),
     index("analysis_graph_nodes_job_path_idx").on(table.jobId, table.path),
+    index("graph_nodes_page_idx").on(table.jobId, table.path, table.id),
   ],
 );
 
@@ -1638,5 +1641,20 @@ export const workspaceUsageDaily = pgTable(
       "workspace_usage_daily_metric_check",
       sql`${t.metric} IN ('share-created','share-opened','download-issued','download-used','retention-deleted')`,
     ),
+  ],
+);
+
+export const apiRequestBudgets = pgTable(
+  "api_request_budgets",
+  {
+    key: text("key").notNull(),
+    windowId: bigint("window_id", { mode: "number" }).notNull(),
+    count: integer("count").notNull().default(1),
+  },
+  (t) => [
+    primaryKey({ columns: [t.key, t.windowId] }),
+    check("api_request_budgets_key_check", sql`${t.key} ~ '^[a-f0-9]{64}$'`),
+    check("api_request_budgets_count_check", sql`${t.count}>0`),
+    index("api_request_budgets_window_idx").on(t.windowId),
   ],
 );
