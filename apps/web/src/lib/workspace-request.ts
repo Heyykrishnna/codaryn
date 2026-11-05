@@ -8,7 +8,9 @@ type ApiScope =
   | "backend"
   | "schema"
   | "execution"
-  | "quality";
+  | "quality"
+  | "diagrams"
+  | "exports";
 export async function workspaceRequest(
   scope: ApiScope,
   action: string,
