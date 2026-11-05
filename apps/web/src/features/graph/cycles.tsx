@@ -14,12 +14,13 @@ export function DependencyCyclesPanel({
       <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-5 dark:border-emerald-900/50 dark:bg-emerald-950/20">
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
-            ✓ No Circular Dependencies Detected
+            No cycles in the returned summary
           </span>
         </div>
         <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-400">
-          The repository dependency graph is strictly acyclic across all
-          analyzed modules.
+          This bounded static summary contains no detected cycles. It does not
+          prove runtime behavior or absence of cycles outside the analyzed
+          evidence.
         </p>
       </div>
     );

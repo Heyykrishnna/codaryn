@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useMemo, useDeferredValue } from "react";
 import type { DependencyEdge, DependencyNode } from "@codaryn/contracts";
 
 export function DependencyGraphView({
@@ -18,21 +18,29 @@ export function DependencyGraphView({
   const [filter, setFilter] = useState("");
   const [resolutionFilter, setResolutionFilter] = useState("all");
 
-  const filteredNodes = nodes.filter(
-    (n) =>
-      n.path.toLowerCase().includes(filter.toLowerCase()) ||
-      n.name.toLowerCase().includes(filter.toLowerCase()),
+  const deferredFilter = useDeferredValue(filter);
+  const filteredNodes = useMemo(
+    () =>
+      nodes
+        .filter(
+          (n) =>
+            n.path.toLowerCase().includes(deferredFilter.toLowerCase()) ||
+            n.name.toLowerCase().includes(deferredFilter.toLowerCase()),
+        )
+        .slice(0, 200),
+    [nodes, deferredFilter],
   );
-
-  const visibleNodeIds = new Set(filteredNodes.map((n) => n.id));
-
-  const filteredEdges = edges.filter((e) => {
-    const matchesNodes =
-      visibleNodeIds.has(e.sourceId) && visibleNodeIds.has(e.targetId);
-    const matchesRes =
-      resolutionFilter === "all" || e.resolution === resolutionFilter;
-    return matchesNodes && matchesRes;
-  });
+  const filteredEdges = useMemo(() => {
+    const visible = new Set(filteredNodes.map((n) => n.id));
+    return edges
+      .filter(
+        (e) =>
+          visible.has(e.sourceId) &&
+          visible.has(e.targetId) &&
+          (resolutionFilter === "all" || e.resolution === resolutionFilter),
+      )
+      .slice(0, 400);
+  }, [edges, filteredNodes, resolutionFilter]);
 
   const width = 800;
   const height = 480;
@@ -92,6 +100,8 @@ export function DependencyGraphView({
 
       <div className="relative overflow-hidden rounded-lg border border-zinc-100 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-950/40">
         <svg
+          role="group"
+          aria-label="Dependency graph, select nodes or relationships with Enter"
           viewBox={`0 0 ${width} ${height}`}
           className="h-[480px] w-full select-none"
         >
@@ -144,6 +154,15 @@ export function DependencyGraphView({
                 }
                 markerEnd={isConnected ? "url(#arrow-selected)" : "url(#arrow)"}
                 className="cursor-pointer transition-all hover:stroke-indigo-600"
+                role="button"
+                tabIndex={0}
+                aria-label={`Inspect relationship ${edge.sourceId} to ${edge.targetId}`}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onSelectEdge?.(edge);
+                  }
+                }}
                 onClick={() => onSelectEdge?.(edge)}
               />
             );
@@ -160,7 +179,17 @@ export function DependencyGraphView({
               <g
                 key={node.id}
                 transform={`translate(${pos.x},${pos.y})`}
-                className="cursor-pointer"
+                className="cursor-pointer focus:stroke-amber-500 focus:outline-none"
+                role="button"
+                tabIndex={0}
+                aria-label={`Select ${node.path}`}
+                aria-pressed={isSelected}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onSelectNode?.(node.id);
+                  }
+                }}
                 onClick={() => onSelectNode?.(node.id)}
               >
                 <circle
