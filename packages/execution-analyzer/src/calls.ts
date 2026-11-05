@@ -30,6 +30,27 @@ function callTarget(
   node: ts.CallExpression | ts.NewExpression,
   index: FunctionIndex,
 ) {
+  const type = checker.getTypeAtLocation(node.expression);
+  if (
+    type.flags &
+    (ts.TypeFlags.Any |
+      ts.TypeFlags.Unknown |
+      ts.TypeFlags.Union |
+      ts.TypeFlags.Intersection |
+      ts.TypeFlags.TypeParameter)
+  )
+    return undefined;
+  const symbol = resolveSymbol(checker, node.expression);
+  if (
+    symbol?.declarations?.some(
+      (declaration) =>
+        ts.isParameter(declaration) ||
+        (ts.isVariableDeclaration(declaration) &&
+          ts.isVariableDeclarationList(declaration.parent) &&
+          !(declaration.parent.flags & ts.NodeFlags.Const)),
+    )
+  )
+    return undefined;
   if (
     ts.isElementAccessExpression(node.expression) &&
     !ts.isStringLiteral(node.expression.argumentExpression)

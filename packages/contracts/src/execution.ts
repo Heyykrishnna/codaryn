@@ -92,7 +92,7 @@ export type ExecutionFunction = z.infer<typeof executionFunctionSchema>;
 export type ExecutionCall = z.infer<typeof executionCallSchema>;
 export type ExecutionControlNode = z.infer<typeof executionControlNodeSchema>;
 export type ExecutionValue = z.infer<typeof executionValueSchema>;
-export const executionSummarySchema = z.object({
+export const executionSnapshotSummarySchema = z.object({
   id: z.uuid(),
   jobId: z.uuid(),
   commitSha: z.string().regex(/^[a-f0-9]{40}$/),
@@ -111,3 +111,7 @@ export const executionPathSchema = z.object({
   visited: z.number(),
   semantics: z.literal("potential-static"),
 });
+
+export type ExecutionSnapshotSummary = z.infer<
+  typeof executionSnapshotSummarySchema
+>;

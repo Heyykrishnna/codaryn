@@ -57,39 +57,38 @@ export function collectEntries(
         label: "Decorated HTTP handler; framework registration is potential",
         evidence: evidence(node),
       });
-    const parent = node.parent;
-    if (
-      ts.isCallExpression(parent) &&
-      ts.isPropertyAccessExpression(parent.expression) &&
-      ["get", "post", "put", "patch", "delete", "route", "all", "use"].includes(
-        parent.expression.name.text,
-      ) &&
-      /from\s*["'](?:express|fastify)["']/.test(parent.getSourceFile().text)
-    )
-      result.entries.push({
-        id: identifier(node, "http-entry"),
-        functionId,
-        kind: "http-handler",
-        label: `Potential HTTP ${parent.expression.name.text} handler registration`,
-        evidence: evidence(node),
-      });
     bounded(result);
   }
-  for (const call of result.calls.filter(
-    (item) => item.kind === "callback" && item.targetId,
-  )) {
-    const source = index.nodes.get(call.sourceId)?.getSourceFile();
-    if (source && /from\s*["'](?:express|fastify)["']/.test(source.text)) {
-      const targetId = call.targetId;
-      if (targetId)
-        result.entries.push({
-          id: `${call.id}:entry`,
-          functionId: targetId,
-          kind: "http-handler",
-          label:
-            "Callback reference in an HTTP framework file; verify registration",
-          evidence: call.evidence,
-        });
+  const callbacks = new Map(
+    result.calls
+      .filter((call) => call.kind === "callback")
+      .map((call) => [call.id, call]),
+  );
+  function registrations(node: ts.Node) {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(node.expression) &&
+      ["get", "post", "put", "patch", "delete", "route", "all", "use"].includes(
+        node.expression.name.text,
+      ) &&
+      /from\s*["'](?:express|fastify)["']/.test(node.getSourceFile().text)
+    ) {
+      for (const argument of node.arguments) {
+        const call = callbacks.get(identifier(argument, "callback-reference"));
+        if (call?.targetId)
+          result.entries.push({
+            id: `${call.id}:entry`,
+            functionId: call.targetId,
+            kind: "http-handler",
+            label:
+              "Potential HTTP handler registration; static receiver matching",
+            evidence: call.evidence,
+          });
+      }
     }
+    ts.forEachChild(node, registrations);
   }
+  for (const node of index.nodes.values())
+    if (ts.isSourceFile(node)) registrations(node);
+  bounded(result);
 }
