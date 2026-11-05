@@ -74,3 +74,12 @@ jobs:
           --entrypoint node codaryn-comparison-worker:ci --test
           /app/node_modules/.pnpm/@codaryn+version-engine@file+packages+version-engine/node_modules/@codaryn/version-engine/dist/incremental.test.js
           /app/node_modules/.pnpm/@codaryn+version-engine@file+packages+version-engine/node_modules/@codaryn/version-engine/dist/comparison.test.js
+      - name: Build export worker image
+        run: docker build -f infrastructure/docker/export.Dockerfile -t codaryn-export-worker:ci .
+      - name: Verify export fencing in isolated Node 22 image
+        run: >-
+          docker run --rm --network none --read-only
+          --tmpfs /tmp:size=201326592,mode=1777 --cap-drop ALL
+          --security-opt no-new-privileges:true
+          --mount "type=bind,source=$PWD/workers/export/dist/process.test.js,target=/app/dist/process.test.js,readonly"
+          --entrypoint node codaryn-export-worker:ci --test /app/dist/process.test.js

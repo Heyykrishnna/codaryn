@@ -40,3 +40,5 @@ Browser evidence is saved outside the repository as `phase-13-team.png` in the t
 The interruption stopped local services; the first repeat-migration attempt failed with `ECONNREFUSED` against the disposable database. After restoring that service, the same migration and verification commands passed. No failed check was suppressed. Docker image packaging was likewise resumed after the local Docker service restarted.
 
 Hosted CI is verified for the exact pushed revision and linked in the feature PR. No SonarCloud result is claimed. Release load testing, populated browser workflows and native PNG/PDF generation remain outside the supported claims described in [supported boundaries](supported-analysis.md).
+
+All five configured worker images (schema, execution, quality, comparison and export) built successfully. Offline Node 22 fixtures passed: quality 19/19, comparison 11/11, export 2/2. The final tree recheck passed lint (22 tasks), type checking (51 tasks), build (30 tasks) and unit tests (47 tasks). Hosted CI links and outcomes are maintained in the PR to avoid changing the revision being verified.
