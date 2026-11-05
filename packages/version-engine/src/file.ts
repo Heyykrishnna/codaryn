@@ -68,7 +68,7 @@ export function analyzeFile(path: string, source: string): VersionFile {
       diagnostics.push("DYNAMIC_IMPORT");
     ts.forEachChild(node, visit);
   }
-  visit(sf);
+  if (/\.[cm]?[jt]sx?$/.test(path)) visit(sf);
   if (symbols.length > 10000 || imports.length > 10000)
     throw new Error("Version file limit exceeded");
   const artifact = {

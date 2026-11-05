@@ -106,3 +106,5 @@ export async function withRepositoryArchive<T>(
     await rm(directory, { recursive: true, force: true });
   }
 }
+
+export { exclusionPredicate } from "./exclusions.js";

@@ -66,7 +66,9 @@ export function compareVersions(
   const changed = [
       ...new Set(
         changes
-          .filter((item) => item.object === "file")
+          .filter(
+            (item) => item.object === "file" || item.object === "relationship",
+          )
           .map((item) => item.evidence.path),
       ),
     ].sort(),
