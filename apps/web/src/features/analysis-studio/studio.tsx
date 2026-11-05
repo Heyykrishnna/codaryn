@@ -218,12 +218,13 @@ export function Studio({
           )}
         </div>
         <p className="text-zinc-400">
-          Configure an immutable static analysis manifest. Analyzers extract evidence, AST topology, and API contracts.
+          Configure an immutable static analysis manifest. Analyzers extract
+          evidence, AST topology, and API contracts.
         </p>
         {message && (
           <div
             role="alert"
-            className="mt-1 rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-xs text-blue-300 font-mono"
+            className="mt-1 rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 font-mono text-xs text-blue-300"
           >
             {message}
           </div>
@@ -241,18 +242,18 @@ export function Studio({
               aria-current={isCurrent ? "step" : undefined}
               disabled={busy}
               className={cn(
-                "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition-all select-none cursor-pointer outline-none",
+                "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition-all outline-none select-none",
                 isCurrent
                   ? "bg-white text-zinc-950 shadow-[0_2px_0_0_#d4d4d8]"
                   : isDone
-                    ? "bg-[#181a23] text-zinc-300 border border-[#262a37] hover:bg-[#202330]"
-                    : "bg-[#12141a] text-zinc-500 border border-[#1d202a] hover:bg-[#181a23] hover:text-zinc-300",
+                    ? "border border-[#262a37] bg-[#181a23] text-zinc-300 hover:bg-[#202330]"
+                    : "border border-[#1d202a] bg-[#12141a] text-zinc-500 hover:bg-[#181a23] hover:text-zinc-300",
               )}
               onClick={() => setStep(index)}
             >
               <span
                 className={cn(
-                  "flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-mono",
+                  "flex h-4 w-4 items-center justify-center rounded-full font-mono text-[10px]",
                   isCurrent
                     ? "bg-zinc-900 text-white"
                     : isDone
@@ -274,14 +275,14 @@ export function Studio({
       >
         <div className="flex items-center justify-between border-b border-[#222532] pb-4">
           <div className="flex items-center gap-3">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/10 font-mono text-xs font-bold text-blue-400 border border-blue-500/20">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/10 font-mono text-xs font-bold text-blue-400">
               {step + 1}
             </span>
             <h2 tabIndex={-1} className="text-lg font-bold text-white">
               {steps[step]}
             </h2>
           </div>
-          <span className="text-xs font-mono text-zinc-500">
+          <span className="font-mono text-xs text-zinc-500">
             Step {step + 1} of {steps.length}
           </span>
         </div>
@@ -347,22 +348,28 @@ export function Studio({
               <h3 className="text-sm font-semibold text-white">
                 Ready to generate manifest
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
-                <div className="rounded-lg bg-[#11131a] p-3 border border-[#222632]">
-                  <span className="text-zinc-500 block mb-1">Target Repository</span>
-                  <span className="text-white break-all">
+              <div className="grid grid-cols-1 gap-3 font-mono text-xs sm:grid-cols-2">
+                <div className="rounded-lg border border-[#222632] bg-[#11131a] p-3">
+                  <span className="mb-1 block text-zinc-500">
+                    Target Repository
+                  </span>
+                  <span className="break-all text-white">
                     {repositoryId || "Not selected"}
                   </span>
                 </div>
-                <div className="rounded-lg bg-[#11131a] p-3 border border-[#222632]">
-                  <span className="text-zinc-500 block mb-1">Target Commit</span>
-                  <span className="text-white break-all">
+                <div className="rounded-lg border border-[#222632] bg-[#11131a] p-3">
+                  <span className="mb-1 block text-zinc-500">
+                    Target Commit
+                  </span>
+                  <span className="break-all text-white">
                     {commit || "Not selected"}
                   </span>
                 </div>
               </div>
               <p className="text-xs text-zinc-400">
-                Review the normalized configuration below. The API verifies the commit and permissions independently before triggering ingestion.
+                Review the normalized configuration below. The API verifies the
+                commit and permissions independently before triggering
+                ingestion.
               </p>
               <CandyButton
                 type="button"
@@ -383,9 +390,7 @@ export function Studio({
                     );
                     setManifest(created);
                     setHistory([created, ...history].slice(0, 50));
-                    setMessage(
-                      "Manifest created. Analyzer extraction queued.",
-                    );
+                    setMessage("Manifest created. Analyzer extraction queued.");
                   });
                 }}
               >
@@ -422,14 +427,19 @@ export function Studio({
         className="flex min-w-0 flex-col gap-4 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl"
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-white">Configuration preview</h2>
-          <span className="rounded bg-[#1c1f2b] px-2 py-0.5 text-[11px] font-mono text-zinc-400">
+          <h2 className="text-base font-bold text-white">
+            Configuration preview
+          </h2>
+          <span className="rounded bg-[#1c1f2b] px-2 py-0.5 font-mono text-[11px] text-zinc-400">
             {configuration.analyzers.length} analyzers active
           </span>
         </div>
 
         {validation && (
-          <div role="alert" className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300">
+          <div
+            role="alert"
+            className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300"
+          >
             {validation}
           </div>
         )}
@@ -438,14 +448,14 @@ export function Studio({
           <div className="flex flex-col gap-2">
             <p className="text-xs text-zinc-400">
               Required dependency modules included automatically:{" "}
-              <span className="text-blue-400 font-mono">
+              <span className="font-mono text-blue-400">
                 {preview.analyzers
                   .filter((id) => !configuration.analyzers.includes(id))
                   .join(", ") || "none"}
               </span>
               .
             </p>
-            <pre className="max-h-80 overflow-auto rounded-xl border border-[#242735] bg-[#0c0d12] p-4 text-xs font-mono text-zinc-300 leading-relaxed">
+            <pre className="max-h-80 overflow-auto rounded-xl border border-[#242735] bg-[#0c0d12] p-4 font-mono text-xs leading-relaxed text-zinc-300">
               {JSON.stringify(preview, null, 2)}
             </pre>
           </div>
@@ -489,9 +499,9 @@ export function Studio({
         </div>
 
         {manage ? (
-          <div className="flex flex-wrap items-end gap-3 pt-4 border-t border-[#222532]">
-            <div className="flex flex-col gap-1.5 flex-1 min-w-[16rem]">
-              <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+          <div className="flex flex-wrap items-end gap-3 border-t border-[#222532] pt-4">
+            <div className="flex min-w-[16rem] flex-1 flex-col gap-1.5">
+              <label className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
                 Custom profile name
               </label>
               <input
@@ -560,7 +570,7 @@ export function Studio({
             )}
           </div>
         ) : (
-          <p className="text-xs text-zinc-500 pt-2">
+          <p className="pt-2 text-xs text-zinc-500">
             Workspace owners and admins can save and manage versioned profiles.
           </p>
         )}
@@ -575,10 +585,10 @@ export function Studio({
             <span className="h-2 w-2 rounded-full bg-emerald-500" />
             <h2 className="text-base font-bold text-white">Manifest created</h2>
           </div>
-          <p className="text-xs font-mono text-zinc-400 break-all">
+          <p className="font-mono text-xs break-all text-zinc-400">
             SHA-256: {manifest.hash}
           </p>
-          <pre className="max-h-80 overflow-auto rounded-xl border border-[#242735] bg-[#0c0d12] p-4 text-xs font-mono text-zinc-300">
+          <pre className="max-h-80 overflow-auto rounded-xl border border-[#242735] bg-[#0c0d12] p-4 font-mono text-xs text-zinc-300">
             {JSON.stringify(manifest, null, 2)}
           </pre>
         </section>
@@ -587,7 +597,7 @@ export function Studio({
       <section className="flex flex-col gap-4 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-white">Recent manifests</h2>
-          <span className="text-xs font-mono text-zinc-500">
+          <span className="font-mono text-xs text-zinc-500">
             {history.length} manifests recorded
           </span>
         </div>
@@ -595,23 +605,23 @@ export function Studio({
         {history.length === 0 ? (
           <p className="text-xs text-zinc-500">No manifests generated yet.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {history.map((item) => (
               <button
                 type="button"
                 key={item.id}
-                className="flex flex-col gap-2 rounded-xl border border-[#262a37] bg-[#161821] p-3 text-left transition-all duration-150 hover:border-[#383e52] hover:bg-[#1b1e2a] cursor-pointer"
+                className="flex cursor-pointer flex-col gap-2 rounded-xl border border-[#262a37] bg-[#161821] p-3 text-left transition-all duration-150 hover:border-[#383e52] hover:bg-[#1b1e2a]"
                 onClick={() => setManifest(item)}
               >
-                <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="text-white font-semibold">
+                <div className="flex items-center justify-between font-mono text-xs">
+                  <span className="font-semibold text-white">
                     {item.manifest.commitSha.slice(0, 8)}
                   </span>
                   <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] text-emerald-400">
                     {item.status}
                   </span>
                 </div>
-                <span className="text-[11px] font-mono text-zinc-500 truncate">
+                <span className="truncate font-mono text-[11px] text-zinc-500">
                   {item.hash}
                 </span>
               </button>

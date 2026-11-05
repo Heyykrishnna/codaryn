@@ -17,8 +17,7 @@ export type CandyButtonVariant =
 
 export type CandyButtonSize = "xs" | "sm" | "default" | "lg" | "icon";
 
-export interface CandyButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface CandyButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   as?: React.ElementType;
   href?: string;
   target?: string;
@@ -44,8 +43,7 @@ const variantStyles: Record<CandyButtonVariant, string> = {
     "bg-[#7c3aed] text-white border border-[#6d28d9] shadow-[0_2px_0_0_#5b21b6] hover:bg-[#6d28d9] active:translate-y-[1px] active:shadow-none focus-visible:ring-violet-400",
   amber:
     "bg-[#d97706] text-white border border-[#b45309] shadow-[0_2px_0_0_#92400e] hover:bg-[#b45309] active:translate-y-[1px] active:shadow-none focus-visible:ring-amber-400",
-  ruby:
-    "bg-[#dc2626] text-white border border-[#b91c1c] shadow-[0_2px_0_0_#991b1b] hover:bg-[#b91c1c] active:translate-y-[1px] active:shadow-none focus-visible:ring-red-400",
+  ruby: "bg-[#dc2626] text-white border border-[#b91c1c] shadow-[0_2px_0_0_#991b1b] hover:bg-[#b91c1c] active:translate-y-[1px] active:shadow-none focus-visible:ring-red-400",
   outline:
     "bg-transparent text-zinc-200 border border-[#2d313e] shadow-[0_1px_0_0_#14161d] hover:bg-[#1a1d26] hover:border-[#3b4152] active:translate-y-[1px] active:shadow-none focus-visible:ring-zinc-500",
   ghost:

@@ -3,7 +3,12 @@ import assert from "node:assert/strict";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { CandyButton } from "./candy-button";
-import { CustomDropdown, DropdownItem, DropdownSection, DropdownSelect } from "./custom-dropdown";
+import {
+  CustomDropdown,
+  DropdownItem,
+  DropdownSection,
+  DropdownSelect,
+} from "./custom-dropdown";
 import { LoaderOrb } from "./loader-orb";
 import { AIQueryConsole } from "@/src/features/analysis-studio/ai-query-console";
 import { TelemetryDashboard } from "@/src/features/graph/telemetry-dashboard";
@@ -34,9 +39,7 @@ test("CandyButton renders as an anchor link when href is supplied", () => {
 
 test("CustomDropdown renders trigger and maintains accessibility", () => {
   const html = renderToStaticMarkup(
-    <CustomDropdown
-      trigger={<button type="button">Options ▾</button>}
-    >
+    <CustomDropdown trigger={<button type="button">Options ▾</button>}>
       <DropdownSection title="ACTIONS">
         <DropdownItem label="Sort ascending" shortcut="S" />
         <DropdownItem label="Filter" shortcut="F" />
@@ -75,10 +78,7 @@ test("LoaderOrb renders connecting state with light blur backdrop", () => {
   assert.ok(cardHtml.includes("Parsing AST tokens"));
 
   const inlineHtml = renderToStaticMarkup(
-    <LoaderOrb
-      label="Connecting…"
-      variant="inline"
-    />,
+    <LoaderOrb label="Connecting…" variant="inline" />,
   );
   assert.ok(inlineHtml.includes("Connecting…"));
 });
