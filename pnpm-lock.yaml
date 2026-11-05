@@ -29,6 +29,9 @@ importers:
       '@codaryn/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@codaryn/execution-analyzer':
+        specifier: workspace:*
+        version: link:../../packages/execution-analyzer
       '@codaryn/github':
         specifier: workspace:*
         version: link:../../packages/github
@@ -108,6 +111,28 @@ importers:
         version: 4.3.4
       typescript:
         specifier: ^5
+        version: 5.9.3
+
+  packages/artifact-worker:
+    dependencies:
+      '@codaryn/github':
+        specifier: workspace:*
+        version: link:../github
+      '@codaryn/repository-ingestion':
+        specifier: workspace:*
+        version: link:../repository-ingestion
+      pg:
+        specifier: ^8.23.1
+        version: 8.23.1
+    devDependencies:
+      '@types/node':
+        specifier: ^24.10.0
+        version: 24.19.2
+      '@types/pg':
+        specifier: ^8.23.1
+        version: 8.23.1
+      typescript:
+        specifier: ^5.9.3
         version: 5.9.3
 
   packages/ast:
@@ -220,6 +245,19 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+
+  packages/execution-analyzer:
+    dependencies:
+      '@codaryn/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+    devDependencies:
+      '@types/node':
+        specifier: ^24.10.0
+        version: 24.19.2
 
   packages/file-classifier:
     dependencies:
@@ -416,6 +454,49 @@ importers:
         specifier: ^4.20.6
         version: 4.23.15
 
+  workers/execution:
+    dependencies:
+      '@codaryn/artifact-worker':
+        specifier: workspace:*
+        version: link:../../packages/artifact-worker
+      '@codaryn/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@codaryn/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@codaryn/execution-analyzer':
+        specifier: workspace:*
+        version: link:../../packages/execution-analyzer
+      '@codaryn/github':
+        specifier: workspace:*
+        version: link:../../packages/github
+      '@codaryn/repository-ingestion':
+        specifier: workspace:*
+        version: link:../../packages/repository-ingestion
+      pg:
+        specifier: ^8.23.1
+        version: 8.23.1
+      zod:
+        specifier: ^4.1.12
+        version: 4.6.7
+    devDependencies:
+      '@types/node':
+        specifier: ^24.10.0
+        version: 24.19.2
+      '@types/pg':
+        specifier: ^8.23.1
+        version: 8.23.1
+      tar:
+        specifier: ^7.5.22
+        version: 7.5.22
+      tsx:
+        specifier: ^4.20.6
+        version: 4.23.15
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   workers/ingestion:
     dependencies:
       '@codaryn/database':
@@ -458,6 +539,9 @@ importers:
 
   workers/schema:
     dependencies:
+      '@codaryn/artifact-worker':
+        specifier: workspace:*
+        version: link:../../packages/artifact-worker
       '@codaryn/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
