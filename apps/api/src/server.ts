@@ -1,3 +1,5 @@
+import { registerDiagrams } from "./diagrams/routes.js";
+import { DiagramService } from "./diagrams/service.js";
 import { registerQuality } from "./quality/routes.js";
 import { QualityService } from "./quality/service.js";
 import { registerExecution } from "./execution/routes.js";
@@ -110,6 +112,12 @@ registerExecution(
   environment.WEB_ORIGIN,
 );
 registerSchema(app, auth, new SchemaService(pool), environment.WEB_ORIGIN);
+registerDiagrams(
+  app,
+  auth,
+  new DiagramService(pool),
+  environment.WEB_ORIGIN,
+);
 app.addHook("onClose", async () => {
   await pool.end();
 });

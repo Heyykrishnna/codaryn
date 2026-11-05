@@ -29,12 +29,21 @@ importers:
       '@codaryn/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@codaryn/diagram-engine':
+        specifier: workspace:*
+        version: link:../../packages/diagram-engine
+      '@codaryn/documentation-engine':
+        specifier: workspace:*
+        version: link:../../packages/documentation-engine
       '@codaryn/engineering-analyzer':
         specifier: workspace:*
         version: link:../../packages/engineering-analyzer
       '@codaryn/execution-analyzer':
         specifier: workspace:*
         version: link:../../packages/execution-analyzer
+      '@codaryn/export-engine':
+        specifier: workspace:*
+        version: link:../../packages/export-engine
       '@codaryn/github':
         specifier: workspace:*
         version: link:../../packages/github
