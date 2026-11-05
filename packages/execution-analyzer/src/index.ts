@@ -33,3 +33,15 @@ export function extractExecution(files: Record<string, string>) {
     hash: createHash("sha256").update(JSON.stringify(parsed)).digest("hex"),
   };
 }
+
+export function extractCallIndex(files: Record<string, string>) {
+  const program = createExecutionProgram(files),
+    snapshot = emptySnapshot(),
+    index = collectFunctions(program, snapshot);
+  collectCalls(program, index, snapshot);
+  return {
+    functions: snapshot.functions,
+    calls: snapshot.calls,
+    diagnostics: snapshot.diagnostics,
+  };
+}

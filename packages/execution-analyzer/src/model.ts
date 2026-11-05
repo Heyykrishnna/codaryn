@@ -22,13 +22,13 @@ export function callable(node: ts.Node): node is Callable {
 export function evidence(node: ts.Node): SourceEvidence {
   const sf = node.getSourceFile();
   return {
-    path: sf.fileName,
+    path: sf.fileName.replace(/^\/+/, ""),
     startLine: sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1,
     endLine: sf.getLineAndCharacterOfPosition(node.end).line + 1,
   };
 }
 export function identifier(node: ts.Node, kind: string) {
-  return `${node.getSourceFile().fileName}:${node.getStart()}:${kind}`;
+  return `${node.getSourceFile().fileName.replace(/^\/+/, "")}:${node.getStart()}:${kind}`;
 }
 export function label(node: ts.Node) {
   return node.getText().slice(0, 300);

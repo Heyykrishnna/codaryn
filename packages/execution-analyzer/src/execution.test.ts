@@ -183,3 +183,19 @@ test("local assignments flow to later reads without merging a shadowed binding",
     ),
   );
 });
+
+test("nested virtual imports keep repository-relative evidence and symbol identities", () => {
+  const { snapshot } = extractExecution({
+    "src/math.ts": "export function add(){return 1;}",
+    "a.ts":
+      "import {add} from './src/math'; export function run(){return add();}",
+  });
+  assert.ok(
+    snapshot.calls.some((call) => call.expression === "add" && call.targetId),
+  );
+  assert.ok(
+    snapshot.functions.every(
+      (fn) => !fn.evidence.path.startsWith("/") && !fn.id.startsWith("/"),
+    ),
+  );
+});
