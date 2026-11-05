@@ -29,6 +29,9 @@ importers:
       '@codaryn/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@codaryn/engineering-analyzer':
+        specifier: workspace:*
+        version: link:../../packages/engineering-analyzer
       '@codaryn/execution-analyzer':
         specifier: workspace:*
         version: link:../../packages/execution-analyzer
@@ -245,6 +248,28 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+
+  packages/engineering-analyzer:
+    dependencies:
+      '@codaryn/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@codaryn/execution-analyzer':
+        specifier: workspace:*
+        version: link:../execution-analyzer
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      yaml:
+        specifier: ^2.8.1
+        version: 2.9.1
+      zod:
+        specifier: ^4.1.12
+        version: 4.6.7
+    devDependencies:
+      '@types/node':
+        specifier: ^24.10.0
+        version: 24.19.2
 
   packages/execution-analyzer:
     dependencies:
@@ -514,6 +539,49 @@ importers:
       ioredis:
         specifier: ^5.8.1
         version: 5.11.1
+      pg:
+        specifier: ^8.23.1
+        version: 8.23.1
+      zod:
+        specifier: ^4.1.12
+        version: 4.6.7
+    devDependencies:
+      '@types/node':
+        specifier: ^24.10.0
+        version: 24.19.2
+      '@types/pg':
+        specifier: ^8.23.1
+        version: 8.23.1
+      tar:
+        specifier: ^7.5.22
+        version: 7.5.22
+      tsx:
+        specifier: ^4.20.6
+        version: 4.23.15
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  workers/quality:
+    dependencies:
+      '@codaryn/artifact-worker':
+        specifier: workspace:*
+        version: link:../../packages/artifact-worker
+      '@codaryn/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@codaryn/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@codaryn/engineering-analyzer':
+        specifier: workspace:*
+        version: link:../../packages/engineering-analyzer
+      '@codaryn/github':
+        specifier: workspace:*
+        version: link:../../packages/github
+      '@codaryn/repository-ingestion':
+        specifier: workspace:*
+        version: link:../../packages/repository-ingestion
       pg:
         specifier: ^8.23.1
         version: 8.23.1
@@ -3384,6 +3452,11 @@ packages:
   yallist@5.0.0:
     resolution: {integrity: sha512-YgvUTfwqyc7UXVMrB+SImsVYSmTS8X/tSrtdNZMImM+n7+QTriRXyXim0mBrTXNeqzVF0KWGgHPeiyViFFrNDw==}
     engines: {node: '>=18'}
+
+  yaml@2.9.1:
+    resolution: {integrity: sha512-3NxN8+78OdzbT7C/WjGsyfPAtJaN3FNDsWxv7Y7mcDsT/oOmgW8BpyQQFFBnvZE3j9Y2Sdz1ULFLezL7Eb2yFw==}
+    engines: {node: '>= 14.6'}
+    hasBin: true
 
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
@@ -6277,6 +6350,8 @@ snapshots:
   yallist@3.1.1: {}
 
   yallist@5.0.0: {}
+
+  yaml@2.9.1: {}
 
   yocto-queue@0.1.0: {}
 

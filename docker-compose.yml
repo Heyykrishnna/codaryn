@@ -81,5 +81,27 @@ services:
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
 
+  quality:
+    profiles: [workers]
+    build:
+      context: .
+      dockerfile: infrastructure/docker/quality.Dockerfile
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-}
+      GITHUB_APP_ID: ${GITHUB_APP_ID:-}
+      GITHUB_APP_PRIVATE_KEY: ${GITHUB_APP_PRIVATE_KEY:-}
+      ALLOW_OSV_NETWORK: ${ALLOW_OSV_NETWORK:-false}
+      SEMGREP_BINARY: ${SEMGREP_BINARY:-}
+      OSV_SCANNER_BINARY: ${OSV_SCANNER_BINARY:-}
+    stop_grace_period: 60s
+    read_only: true
+    tmpfs:
+      - /tmp:size=201326592,mode=1777
+    mem_limit: 768m
+    cpus: 1
+    pids_limit: 64
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+
 volumes:
   postgres_data:
