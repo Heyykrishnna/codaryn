@@ -22,3 +22,5 @@ When implementation changes a contract or behavior, update the relevant guide an
 - [CI validation and remediation](ci.md): authoritative checks, isolated testing and fixes for workflow and quality-gate failures.
 
 - [Schema Studio](phases/08-schema-studio/README.md): static schema adapters, immutable snapshots, ERDs, evidence, exports and structural comparison.
+
+[Execution Explorer](phases/09-execution-data-flow/README.md) documents call resolution, control/data-flow limits and secure worker operation.

@@ -1,0 +1,23 @@
+# Supported analysis and uncertainty
+
+| Area             | Initial support                                                                                                                | Boundary                                                                                                                                                                                                                   |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Calls            | Direct functions, relative imports/aliases, static method declarations, constructor targets, const arrow/function declarations | A resolved declaration is a potential static target. Runtime dispatch, mutation and invocation are not guaranteed.                                                                                                         |
+| Dynamic calls    | Explicit unresolved call records with reasons and evidence                                                                     | External implementations, mutable/parameterized function bindings, union/intersection dispatch and dynamic computed access do not acquire invented targets.                                                                |
+| Callbacks        | Inline and named function references passed as arguments                                                                       | Deferred references are dashed in the graph and excluded from invocation-path search. Timing, frequency and callback protocols are unknown.                                                                                |
+| Entry points     | Exports, Next app-route HTTP exports, HTTP callback registrations in Express/Fastify files, decorated handler conventions      | Entry points are candidates. Receiver matching and framework conventions do not establish runtime registration or reachability.                                                                                            |
+| Control          | Statement sequences, if/else, switch cases/fallthrough, loops, breaks/continues, return/throw terminals                        | Loop headers/updates are summarized. Expression-level ternaries, short-circuit operators, exception regions, with and labelled control have explicit partial diagnostics. No feasibility or termination proof is provided. |
+| Local flow       | Scalar local parameters/declarations, assignments, reads and return relationships with lexical symbol identity                 | Conservative preceding definitions may reach reads; this is not SSA or precise reaching-definitions analysis. Shadowed bindings remain separate.                                                                           |
+| Unsupported flow | Explicit scope diagnostics                                                                                                     | Destructuring/property writes, heap aliasing, effects of called functions, loop-carried values, taint analysis and interprocedural propagation are not solved.                                                             |
+
+No configuration, generator, callback or project module is executed. The source of truth is the selected commit, not a live process. TypeScript path aliases and arbitrary project configuration are not evaluated; unsupported resolution remains visible.
+
+## Resource limits
+
+- 10,000 files, 50 MiB combined input, 2 MiB per file; supported source extensions are TS/JS, including JSX and module variants.
+- 10,000 functions, 50,000 calls, 50,000 control nodes, 100,000 control edges, 50,000 values, 100,000 flow edges and 10,000 entries/diagnostics.
+- Stored JSON payload: 20 MiB. Resource failures produce safe failed/retried states, never fabricated partial success.
+- History: 20 summaries per page. Object lists: 50 per page; page numbers at most 1,000; searches at most 100 characters.
+- Inspector: 500 calls, 2,000 control nodes, 4,000 control edges, 1,000 values and 2,000 flow edges, with truncation indicated.
+- Neighborhood: depth 1–3, 200 functions and 500 edges. Canvas: 100 nodes/500 edges, with a notice when bounded.
+- Path search: depth 1–12, at most 20 simple paths, 5,000 visited/queued states. Cycles do not cause unbounded traversal. No supported path within these limits does not prove runtime independence.
