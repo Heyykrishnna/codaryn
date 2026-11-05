@@ -1,0 +1,29 @@
+{
+  "name": "@codaryn/execution-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --include ../../.env src/index.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test:integration": "pnpm build && node --test dist/process.integration.test.js"
+  },
+  "dependencies": {
+    "@codaryn/contracts": "workspace:*",
+    "@codaryn/database": "workspace:*",
+    "@codaryn/github": "workspace:*",
+    "@codaryn/repository-ingestion": "workspace:*",
+    "@codaryn/execution-analyzer": "workspace:*",
+    "pg": "^8.23.1",
+    "zod": "^4.1.12",
+    "@codaryn/artifact-worker": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "tar": "^7.5.22"
+  }
+}

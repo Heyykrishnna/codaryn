@@ -1,7 +1,13 @@
 import { z } from "zod";
 
 type ApiScope =
-  "studio" | "analysis" | "graph" | "frontend" | "backend" | "schema";
+  | "studio"
+  | "analysis"
+  | "graph"
+  | "frontend"
+  | "backend"
+  | "schema"
+  | "execution";
 export async function workspaceRequest(
   scope: ApiScope,
   action: string,

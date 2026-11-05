@@ -13,7 +13,7 @@ This roadmap contains phases 0–14 from the [product specification](../product-
 | 6     | [Frontend architecture intelligence](06-frontend-intelligence/README.md)                          | [Acceptance tests](06-frontend-intelligence/acceptance-tests.md)           | Implemented |
 | 7     | [Backend architecture and API intelligence](07-backend-api-intelligence/README.md)                | [Acceptance tests](07-backend-api-intelligence/acceptance-tests.md)        | Implemented |
 | 8     | [Schema Studio and database intelligence](08-schema-studio/README.md)                             | [Acceptance tests](08-schema-studio/acceptance-tests.md)                   | Implemented |
-| 9     | [Call graphs, execution and data flow](09-execution-data-flow/README.md)                          | [Acceptance tests](09-execution-data-flow/acceptance-tests.md)             | Planned     |
+| 9     | [Call graphs, execution and data flow](09-execution-data-flow/README.md)                          | [Acceptance tests](09-execution-data-flow/acceptance-tests.md)             | Implemented |
 | 10    | [Infrastructure, testing and security intelligence](10-infrastructure-testing-security/README.md) | [Acceptance tests](10-infrastructure-testing-security/acceptance-tests.md) | Planned     |
 | 11    | [Diagram and documentation system](11-diagrams-documentation/README.md)                           | [Acceptance tests](11-diagrams-documentation/acceptance-tests.md)          | Planned     |
 | 12    | [Incremental analysis, comparison and impact](12-incremental-comparison-impact/README.md)         | [Acceptance tests](12-incremental-comparison-impact/acceptance-tests.md)   | Planned     |

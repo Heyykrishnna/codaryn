@@ -9,3 +9,5 @@ Start the API and web app with `pnpm --filter @codaryn/api dev` and `pnpm --filt
 Tests must use a disposable database. Set both database URLs to that test database, set `REDIS_URL`, then run `pnpm db:sync` and `pnpm test:integration`. Local services are available with `docker compose --profile local up -d --wait postgres redis`; set `POSTGRES_PASSWORD` and optional local ports. CI supplies isolated services and runs the same synchronization and test commands.
 
 Schema Studio uses a dedicated worker: `pnpm --filter @codaryn/schema-worker dev`. It reads the same backend environment and processes schema requests for pinned analysis jobs. See [Schema Studio operations](phases/08-schema-studio/operations.md) for container deployment, security boundaries and recovery. See the individual phase guides for supported analysis features and acceptance evidence.
+
+Execution Explorer uses `pnpm --filter @codaryn/execution-worker dev` and the same backend environment. See [Phase 9 operations](phases/09-execution-data-flow/operations.md) for bounded static analysis and deployment requirements.

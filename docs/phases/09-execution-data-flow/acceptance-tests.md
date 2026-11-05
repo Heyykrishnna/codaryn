@@ -1,15 +1,15 @@
 # Phase 9: acceptance test plan
 
-**Status:** Planned; these scenarios have not been executed. Scope and original acceptance criteria: [phase overview](README.md).
+**Status:** Implemented with automated evidence in [verification](verification.md); visual release checks are recorded separately in the PR. Scope and original acceptance criteria: [phase overview](README.md).
 
-Implement these scenarios at the appropriate unit, integration, end-to-end or operational layer. Use controlled fixtures with expected outputs, isolate test data, and record the command, environment, actual result and evidence for each run. A scenario passes only when its expected result is observed.
+Maintain these scenarios at the appropriate unit, integration, end-to-end or operational layer. Use controlled fixtures with expected outputs, isolate test data, and record the command, environment, actual result and evidence for each run. A scenario passes only when its expected result is observed.
 
-| ID | Scenario and action | Expected result |
-|---|---|---|
-| P09-AT01 | **Calls and paths:** Analyze direct calls, methods, constructors and callbacks in controlled fixtures. | Resolved calls link to the correct symbol and source evidence. |
-| P09-AT02 | **Control flow:** Inspect branches, loops and return paths. | The viewer represents supported potential paths without presenting them as guaranteed runtime behavior. |
-| P09-AT03 | **Unresolved calls:** Analyze dynamic dispatch and unsupported callback patterns. | Unresolved calls are visible and no unsupported target is asserted. |
-| P09-AT04 | **Data flow bounds:** Trace a supported intraprocedural value and request an unsupported interprocedural path. | Supported flow is evidenced and analysis boundaries are disclosed. |
+| ID       | Scenario and action                                                                                            | Expected result                                                                                         |
+| -------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| P09-AT01 | **Calls and paths:** Analyze direct calls, methods, constructors and callbacks in controlled fixtures.         | Resolved calls link to the correct symbol and source evidence.                                          |
+| P09-AT02 | **Control flow:** Inspect branches, loops and return paths.                                                    | The viewer represents supported potential paths without presenting them as guaranteed runtime behavior. |
+| P09-AT03 | **Unresolved calls:** Analyze dynamic dispatch and unsupported callback patterns.                              | Unresolved calls are visible and no unsupported target is asserted.                                     |
+| P09-AT04 | **Data flow bounds:** Trace a supported intraprocedural value and request an unsupported interprocedural path. | Supported flow is evidenced and analysis boundaries are disclosed.                                      |
 
 ## Cross-cutting checks
 

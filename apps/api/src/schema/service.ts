@@ -1,4 +1,7 @@
-import { randomUUID } from "node:crypto";
+import {
+  ArtifactSnapshots,
+  type ArtifactRow as SnapshotRow,
+} from "../artifacts/snapshots.js";
 import type { Pool, PoolClient } from "pg";
 import {
   schemaSnapshotSchema,
@@ -13,17 +16,6 @@ import {
   renderSchemaSvg,
 } from "@codaryn/schema-engine";
 import { RequestFailure } from "../http/access.js";
-interface SnapshotRow {
-  id: string;
-  job_id: string;
-  commit_sha: string;
-  status: string;
-  hash: string | null;
-  table_count: number;
-  failure_code: string | null;
-  created_at: Date;
-  snapshot: unknown;
-}
 const summary = (row: Omit<SnapshotRow, "snapshot">): SchemaSnapshotSummary =>
   schemaSnapshotSummarySchema.parse({
     id: row.id,
@@ -31,49 +23,25 @@ const summary = (row: Omit<SnapshotRow, "snapshot">): SchemaSnapshotSummary =>
     commitSha: row.commit_sha,
     status: row.status,
     hash: row.hash,
-    tableCount: row.table_count,
+    tableCount: row.object_count,
     failureCode: row.failure_code,
     createdAt: row.created_at.toISOString(),
   });
 export class SchemaService {
-  constructor(private readonly pool: Pool) {}
-  private async workspace<T>(
+  private readonly store: ArtifactSnapshots;
+  constructor(pool: Pool) {
+    this.store = new ArtifactSnapshots(pool, "schema");
+  }
+  private workspace<T>(
     actor: string,
     workspace: string,
     operation: (client: PoolClient) => Promise<T>,
     write = false,
   ) {
-    const client = await this.pool.connect();
-    try {
-      await client.query("BEGIN");
-      if (write)
-        await client.query(
-          "SELECT pg_advisory_xact_lock(hashtextextended($1,0))",
-          [`schema:${workspace}`],
-        );
-      const membership = await client.query(
-        "SELECT m.role FROM organization_members m JOIN organizations o ON o.id=m.organization_id WHERE m.user_id=$1 AND o.id=$2 AND o.deleted_at IS NULL FOR SHARE OF m,o",
-        [actor, workspace],
-      );
-      if (!membership.rowCount) throw new WorkspaceAccessError();
-      const result = await operation(client);
-      await client.query("COMMIT");
-      return result;
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    } finally {
-      client.release();
-    }
+    return this.store.workspace(actor, workspace, operation, write);
   }
-  private async load(client: PoolClient, workspace: string, id: string) {
-    const result = await client.query<SnapshotRow>(
-      "SELECT * FROM analysis_schema_snapshots WHERE id=$1 AND organization_id=$2",
-      [id, workspace],
-    );
-    const row = result.rows[0];
-    if (!row) throw new WorkspaceAccessError();
-    return row;
+  private load(client: PoolClient, workspace: string, id: string) {
+    return this.store.load(client, workspace, id);
   }
   private ready(row: SnapshotRow): SchemaSnapshot {
     if (row.status !== "completed")
@@ -84,67 +52,19 @@ export class SchemaService {
       );
     return schemaSnapshotSchema.parse(row.snapshot);
   }
-  request(
+  async request(
     actor: string,
     workspace: string,
     jobId: string,
     inferRelations: boolean,
   ) {
-    return this.workspace(
-      actor,
-      workspace,
-      async (client) => {
-        const recent = await client.query<{ count: string }>(
-          "SELECT count(*) FROM analysis_schema_snapshots WHERE organization_id=$1 AND created_at>now()-interval '1 minute'",
-          [workspace],
-        );
-        if (Number(recent.rows[0].count) >= 5)
-          throw new RequestFailure(
-            429,
-            "SCHEMA_LIMIT",
-            "Wait before requesting more schema snapshots",
-          );
-        const job = await client.query<{
-          repository_id: string;
-          commit_sha: string;
-          generation: number;
-        }>(
-          "SELECT j.repository_id,j.commit_sha,i.generation FROM analysis_jobs j JOIN connected_repositories r ON r.id=j.repository_id JOIN github_installations i ON i.id=r.installation_id WHERE j.id=$1 AND j.organization_id=$2 AND i.organization_id=$2 AND j.status<>'cancelled' AND r.active=true AND i.connected=true FOR SHARE OF j,r,i",
-          [jobId, workspace],
-        );
-        const selected = job.rows[0];
-        if (!selected) throw new WorkspaceAccessError();
-        const id = randomUUID();
-        const inserted = await client.query<SnapshotRow>(
-          "INSERT INTO analysis_schema_snapshots (id,job_id,organization_id,repository_id,actor_id,commit_sha,installation_generation,infer_relations) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *",
-          [
-            id,
-            jobId,
-            workspace,
-            selected.repository_id,
-            actor,
-            selected.commit_sha,
-            selected.generation,
-            inferRelations,
-          ],
-        );
-        await client.query(
-          "INSERT INTO audit_events (id,organization_id,actor_id,action,target_id) VALUES ($1,$2,$3,'schema.snapshot.requested',$4)",
-          [randomUUID(), workspace, actor, id],
-        );
-        return summary(inserted.rows[0]);
-      },
-      true,
+    return summary(
+      await this.store.request(actor, workspace, jobId, inferRelations),
     );
   }
-  list(actor: string, workspace: string, page: number, jobId?: string) {
-    return this.workspace(actor, workspace, async (client) => {
-      const result = await client.query<SnapshotRow>(
-        "SELECT id,job_id,commit_sha,status,hash,table_count,failure_code,created_at FROM analysis_schema_snapshots WHERE organization_id=$1 AND ($2::uuid IS NULL OR job_id=$2) ORDER BY created_at DESC,id LIMIT 20 OFFSET $3",
-        [workspace, jobId ?? null, (page - 1) * 20],
-      );
-      return { snapshots: result.rows.map(summary), page, pageSize: 20 };
-    });
+  async list(actor: string, workspace: string, page: number, jobId?: string) {
+    const rows = await this.store.list(actor, workspace, page, jobId);
+    return { snapshots: rows.map(summary), page, pageSize: 20 };
   }
   overview(actor: string, workspace: string, id: string) {
     return this.workspace(actor, workspace, async (client) => {

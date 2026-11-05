@@ -47,3 +47,5 @@ jobs:
         run: pnpm db:migrate && pnpm db:verify
       - name: Build schema worker image
         run: docker build -f infrastructure/docker/schema.Dockerfile -t codaryn-schema-worker:ci .
+      - name: Build execution worker image
+        run: docker build -f infrastructure/docker/execution.Dockerfile -t codaryn-execution-worker:ci .

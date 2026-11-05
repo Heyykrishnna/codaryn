@@ -44,10 +44,20 @@
 
 ## Planning and dependencies
 
-**Status:** Planned; none of the acceptance criteria is claimed as complete by this document.
+**Status:** Implemented for the documented static-analysis subset. See [verification and release evidence](verification.md) for acceptance coverage and remaining review limits.
 
 **Dependencies:** Phase 5 symbol resolution and graph; framework entry points build on Phases 6–7.
 
 Implement the scope above with the shared requirements in the [phase index](../README.md). Record design decisions, supported versions, migrations, operational requirements and limitations as implementation progresses. The acceptance criteria above are release obligations; the [acceptance test plan](acceptance-tests.md) turns them into executable scenarios to implement and record.
 
 [Full product specification](../../product-specification.md) · [All phases](../README.md)
+
+## Implementation guides
+
+- [Architecture](architecture.md)
+- [Supported analysis and limits](supported-analysis.md)
+- [API reference](api.md)
+- [Operations and recovery](operations.md)
+- [Verification](verification.md)
+
+Open `/execution` in an authenticated workspace. Select a recent analysis job, request a snapshot and keep the execution worker running. Completed snapshots expose potential call paths, function/control/value inspectors, entry-point candidates and unresolved targets.
