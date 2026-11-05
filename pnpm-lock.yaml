@@ -265,6 +265,25 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  packages/documentation-engine:
+    dependencies:
+      '@codaryn/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@codaryn/diagram-engine':
+        specifier: workspace:*
+        version: link:../diagram-engine
+      zod:
+        specifier: ^4.1.13
+        version: 4.6.7
+    devDependencies:
+      '@types/node':
+        specifier: ^24.10.0
+        version: 24.19.2
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/engineering-analyzer:
     dependencies:
       '@codaryn/contracts':
