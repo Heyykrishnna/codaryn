@@ -61,6 +61,8 @@ export const frozenExportSchema = z.strictObject({
       "image/svg+xml; charset=utf-8",
       "text/markdown; charset=utf-8",
       "text/plain; charset=utf-8",
+      "text/vnd.mermaid; charset=utf-8",
+      "text/vnd.dbml; charset=utf-8",
       "application/json; charset=utf-8",
       "text/html; charset=utf-8",
     ]),

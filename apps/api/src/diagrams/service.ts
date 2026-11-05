@@ -1,3 +1,7 @@
+import {
+  schemaSnapshotSchema,
+  executionSnapshotSchema,
+} from "@codaryn/contracts";
 import { randomUUID } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
 import {
@@ -103,13 +107,41 @@ export class DiagramService {
       [jobId, workspaceId],
     );
     if (schemaRes.rows[0]?.snapshot) {
-      const raw = schemaRes.rows[0].snapshot as {
-        tables?: unknown[];
-        relations?: unknown[];
-      };
+      const raw = schemaSnapshotSchema.parse(schemaRes.rows[0].snapshot),
+        names = new Map(
+          raw.tables.map((table) => [
+            table.id,
+            `${table.namespace}.${table.name}`,
+          ]),
+        );
       snapshot.schema = {
-        tables: (raw.tables as never) ?? [],
-        relations: (raw.relations as never) ?? [],
+        tables: raw.tables.map((table) => ({
+          name: names.get(table.id) ?? table.name,
+          filePath: table.evidence.path,
+          startLine: table.evidence.startLine,
+          endLine: table.evidence.endLine,
+          columns: table.columns.map((column) => ({
+            name: column.name,
+            dataType: column.type,
+            isPrimaryKey: column.primaryKey,
+            isNullable: column.nullable,
+          })),
+        })),
+        relations: raw.relations.map((edge) => ({
+          id: edge.id,
+          sourceTable: names.get(edge.sourceTableId) ?? "unresolved",
+          sourceColumn: edge.columns[0] ?? "",
+          targetTable: names.get(edge.targetTableId ?? "") ?? "unresolved",
+          targetColumn: edge.targetColumns[0] ?? "",
+          cardinality:
+            edge.cardinality === "one-to-one"
+              ? "one_to_one"
+              : edge.cardinality === "many-to-many"
+                ? "many_to_many"
+                : "one_to_many",
+          status: edge.resolution,
+          evidence: edge.evidence,
+        })),
       };
     }
 
@@ -118,13 +150,28 @@ export class DiagramService {
       [jobId, workspaceId],
     );
     if (execRes.rows[0]?.snapshot) {
-      const raw = execRes.rows[0].snapshot as {
-        functions?: unknown[];
-        calls?: unknown[];
-      };
+      const raw = executionSnapshotSchema.parse(execRes.rows[0].snapshot);
       snapshot.execution = {
-        functions: (raw.functions as never) ?? [],
-        calls: (raw.calls as never) ?? [],
+        functions: raw.functions.map((fn) => ({
+          id: fn.id,
+          name: fn.name,
+          filePath: fn.evidence.path,
+          startLine: fn.evidence.startLine,
+          endLine: fn.evidence.endLine,
+        })),
+        calls: raw.calls.flatMap((call) =>
+          call.targetId
+            ? [
+                {
+                  id: call.id,
+                  callerId: call.sourceId,
+                  calleeId: call.targetId,
+                  status: call.resolution,
+                  evidence: call.evidence,
+                },
+              ]
+            : [],
+        ),
       };
     }
 
@@ -136,7 +183,7 @@ export class DiagramService {
       end_line: number;
       is_page: boolean;
     }>(
-      "SELECT id,name,file_path,start_line,end_line,is_page FROM analysis_frontend_components WHERE job_id=$1",
+      "SELECT id,name,file_path,start_line,end_line,is_page FROM analysis_frontend_components WHERE job_id=$1 LIMIT 10000",
       [jobId],
     );
     if (feComponents.rowCount && feComponents.rowCount > 0) {
@@ -165,7 +212,7 @@ export class DiagramService {
       start_line: number;
       end_line: number;
     }>(
-      "SELECT id,method,path,file_path,start_line,end_line FROM analysis_backend_routes WHERE job_id=$1",
+      "SELECT id,method,path,file_path,start_line,end_line FROM analysis_backend_routes WHERE job_id=$1 LIMIT 10000",
       [jobId],
     );
     if (beRoutes.rowCount && beRoutes.rowCount > 0) {
@@ -190,9 +237,10 @@ export class DiagramService {
       id: string;
       path: string;
       name: string;
-    }>("SELECT id,path,name FROM analysis_graph_nodes WHERE job_id=$1", [
-      jobId,
-    ]);
+    }>(
+      "SELECT id,path,name FROM analysis_graph_nodes WHERE job_id=$1 LIMIT 10000",
+      [jobId],
+    );
     if (depNodes.rowCount && depNodes.rowCount > 0) {
       snapshot.dependencies = {
         nodes: depNodes.rows.map((r) => ({
