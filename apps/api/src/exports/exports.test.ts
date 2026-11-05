@@ -15,6 +15,17 @@ test("ExportService.scheduleExport enqueues an export job", async () => {
       if (sql.includes("SELECT repository_id FROM analysis_jobs")) {
         return { rowCount: 1, rows: [{ repository_id: "repo_123" }] };
       }
+      if (sql.includes("SELECT j.id,j.commit_sha,r.full_name,j.status"))
+        return {
+          rows: [
+            {
+              id: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+              commit_sha: "a".repeat(40),
+              full_name: "fixture/repo",
+              status: "completed",
+            },
+          ],
+        };
       if (sql.includes("SELECT count(*) FROM export_jobs")) {
         return { rowCount: 1, rows: [{ count: "1" }] };
       }

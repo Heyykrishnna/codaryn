@@ -1,3 +1,5 @@
+import { DiagramService } from "../diagrams/service.js";
+import { captureExport } from "./capture.js";
 import { randomUUID } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
 import {
@@ -53,12 +55,19 @@ export class ExportService {
         );
       }
       const membership = await client.query(
-        "SELECT m.role FROM organization_members m JOIN organizations o ON o.id=m.organization_id WHERE m.user_id=$1 AND o.id=$2 AND o.deleted_at IS NULL FOR SHARE OF m,o",
+        "SELECT m.role,COALESCE(c.allow_member_exports,true) AS allow_exports FROM organization_members m JOIN organizations o ON o.id=m.organization_id LEFT JOIN workspace_controls c ON c.organization_id=o.id WHERE m.user_id=$1 AND o.id=$2 AND o.deleted_at IS NULL FOR SHARE OF m,o",
         [actor, workspaceId],
       );
       if (!membership.rowCount) {
         throw new WorkspaceAccessError();
       }
+      const member = membership.rows[0];
+      if (member.role === "member" && member.allow_exports === false)
+        throw new RequestFailure(
+          403,
+          "EXPORT_FORBIDDEN",
+          "Exports are restricted by workspace controls",
+        );
       const result = await operation(client);
       await client.query("COMMIT");
       return result;
@@ -107,11 +116,18 @@ export class ExportService {
           );
         }
 
+        const binding = await captureExport(
+          client,
+          new DiagramService(this.pool),
+          workspaceId,
+          jobId,
+          input,
+        );
         const id = randomUUID();
         const now = new Date().toISOString();
 
         await client.query(
-          "INSERT INTO export_jobs (id,organization_id,repository_id,job_id,actor_id,export_type,format,target_id,status,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'queued',$9)",
+          "INSERT INTO export_jobs (id,organization_id,repository_id,job_id,actor_id,export_type,format,target_id,status,created_at,artifact_binding) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'queued',$9,$10)",
           [
             id,
             workspaceId,
@@ -122,9 +138,14 @@ export class ExportService {
             input.format,
             input.targetId,
             now,
+            binding,
           ],
         );
 
+        await client.query(
+          "INSERT INTO audit_events(id,organization_id,actor_id,action,target_id) VALUES($1,$2,$3,'team.export.requested',$4)",
+          [randomUUID(), workspaceId, actor, id],
+        );
         return exportJobResponseSchema.parse({
           id,
           jobId,
