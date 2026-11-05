@@ -25,10 +25,13 @@ export async function api(
   }
   return response.json();
 }
+
 export const control =
-  "rounded-md border border-zinc-300 bg-background px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-indigo-500 dark:border-zinc-700";
+  "rounded-lg border border-[#2b2f3d] bg-[#14161f] px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-40 transition-colors";
+
 export const button =
-  "rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:opacity-50";
+  "inline-flex items-center justify-center rounded-lg bg-white px-4 py-2 text-sm font-medium text-zinc-950 border border-zinc-200 shadow-[0_2px_0_0_#d4d4d8] hover:bg-zinc-100 active:translate-y-[1px] active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d0e12] disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer";
+
 export type Repository = {
   id: string;
   fullName: string;
@@ -36,6 +39,7 @@ export type Repository = {
   defaultBranch: string;
   installationId: string;
 };
+
 export type Run = {
   id: string;
   commitSha: string;

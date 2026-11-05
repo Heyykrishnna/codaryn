@@ -1,4 +1,5 @@
 "use client";
+
 import { RepositoryStep, RevisionStep, ProfileStep } from "./source-steps";
 import { useEffect, useState } from "react";
 import { z } from "zod";
@@ -15,14 +16,13 @@ import {
   type WorkspaceSummary,
   type StudioManifestResponse,
 } from "@codaryn/contracts";
-import {
-  api,
-  button,
-  control,
-  type Repository,
-} from "@/src/features/repositories/api";
+import { api, type Repository } from "@/src/features/repositories/api";
 import { studioRequest } from "./api";
 import { ModuleSelection } from "./selections";
+import { CandyButton } from "@/src/components/ui/candy-button";
+import { LoaderOrb } from "@/src/components/ui/loader-orb";
+import { cn } from "@/lib/utils";
+
 const steps = [
   "Repository",
   "Branch and commit",
@@ -37,7 +37,9 @@ const steps = [
   "Documents",
   "Review and start",
 ];
+
 type Profile = z.infer<typeof studioProfileListSchema>["profiles"][number];
+
 export function Studio({
   workspace,
 }: Readonly<{ workspace: WorkspaceSummary }>) {
@@ -64,6 +66,7 @@ export function Studio({
   const [manifest, setManifest] = useState<StudioManifestResponse | null>(null);
   const [history, setHistory] = useState<StudioManifestResponse[]>([]);
   const manage = workspace.role !== "member";
+
   let preview: StudioConfiguration | null = null;
   let validation = "";
   try {
@@ -77,6 +80,7 @@ export function Studio({
     validation =
       error instanceof Error ? error.message : "Invalid configuration";
   }
+
   useEffect(() => {
     let current = true;
     Promise.all([
@@ -109,6 +113,7 @@ export function Studio({
       current = false;
     };
   }, [workspace.id, repoPage, profilePage]);
+
   useEffect(() => {
     if (!repositoryId) return;
     let current = true;
@@ -129,6 +134,7 @@ export function Studio({
       current = false;
     };
   }, [repositoryId, workspace.id, branchPage]);
+
   useEffect(() => {
     if (!repositoryId || !branch) return;
     let current = true;
@@ -152,6 +158,7 @@ export function Studio({
       current = false;
     };
   }, [repositoryId, branch, workspace.id, commitPage]);
+
   async function run(operation: () => Promise<void>) {
     setBusy(true);
     setMessage("");
@@ -165,12 +172,14 @@ export function Studio({
       setBusy(false);
     }
   }
+
   function choosePreset(config: StudioConfiguration) {
     setConfiguration(config);
     setProfile(null);
     setName("");
     setManifest(null);
   }
+
   async function refreshProfiles() {
     setProfiles(
       studioProfileListSchema.parse(
@@ -178,6 +187,7 @@ export function Studio({
       ).profiles,
     );
   }
+
   async function save(update: boolean) {
     const saved = await studioRequest(
       "save",
@@ -195,37 +205,87 @@ export function Studio({
     await refreshProfiles();
     setMessage("Profile saved.");
   }
+
   return (
-    <div className="flex flex-col gap-6">
-      <p>
-        Workspace: {workspace.name}. Configure a static analysis manifest.
-        Analyzer execution and output rendering arrive in the later analysis
-        phases.
-      </p>
-      <output className="block text-sm" aria-live="polite">
-        {busy ? "Working…" : message}
-      </output>
-      <nav aria-label="Analysis steps" className="flex flex-wrap gap-2">
-        {steps.map((label, index) => (
-          <button
-            type="button"
-            key={label}
-            aria-current={step === index ? "step" : undefined}
-            disabled={busy}
-            className={step === index ? button : control}
-            onClick={() => setStep(index)}
+    <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-2 rounded-xl border border-[#232734] bg-[#14161f] p-4 text-xs text-zinc-300">
+        <div className="flex items-center justify-between">
+          <span className="font-semibold text-white">
+            Workspace: {workspace.name} ({workspace.role})
+          </span>
+          {busy && (
+            <LoaderOrb variant="inline" label="Executing studio pipeline…" />
+          )}
+        </div>
+        <p className="text-zinc-400">
+          Configure an immutable static analysis manifest. Analyzers extract evidence, AST topology, and API contracts.
+        </p>
+        {message && (
+          <div
+            role="alert"
+            className="mt-1 rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-xs text-blue-300 font-mono"
           >
-            {index + 1}. {label}
-          </button>
-        ))}
+            {message}
+          </div>
+        )}
+      </div>
+
+      <nav aria-label="Analysis steps" className="flex flex-wrap gap-1.5">
+        {steps.map((label, index) => {
+          const isCurrent = step === index;
+          const isDone = step > index;
+          return (
+            <button
+              type="button"
+              key={label}
+              aria-current={isCurrent ? "step" : undefined}
+              disabled={busy}
+              className={cn(
+                "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition-all select-none cursor-pointer outline-none",
+                isCurrent
+                  ? "bg-white text-zinc-950 shadow-[0_2px_0_0_#d4d4d8]"
+                  : isDone
+                    ? "bg-[#181a23] text-zinc-300 border border-[#262a37] hover:bg-[#202330]"
+                    : "bg-[#12141a] text-zinc-500 border border-[#1d202a] hover:bg-[#181a23] hover:text-zinc-300",
+              )}
+              onClick={() => setStep(index)}
+            >
+              <span
+                className={cn(
+                  "flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-mono",
+                  isCurrent
+                    ? "bg-zinc-900 text-white"
+                    : isDone
+                      ? "bg-emerald-500/20 text-emerald-400"
+                      : "bg-[#202330] text-zinc-500",
+                )}
+              >
+                {isDone ? "✓" : index + 1}
+              </span>
+              <span>{label}</span>
+            </button>
+          );
+        })}
       </nav>
+
       <section
         aria-label={steps[step]}
-        className="flex flex-col gap-5 rounded-xl border border-zinc-300 p-6 dark:border-zinc-700"
+        className="flex flex-col gap-6 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl"
       >
-        <h2 tabIndex={-1} className="text-xl font-semibold">
-          {step + 1}. {steps[step]}
-        </h2>
+        <div className="flex items-center justify-between border-b border-[#222532] pb-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/10 font-mono text-xs font-bold text-blue-400 border border-blue-500/20">
+              {step + 1}
+            </span>
+            <h2 tabIndex={-1} className="text-lg font-bold text-white">
+              {steps[step]}
+            </h2>
+          </div>
+          <span className="text-xs font-mono text-zinc-500">
+            Step {step + 1} of {steps.length}
+          </span>
+        </div>
+
         <fieldset disabled={busy} className="flex min-w-0 flex-col gap-5">
           {step === 0 && (
             <RepositoryStep
@@ -283,16 +343,31 @@ export function Studio({
             change={setConfiguration}
           />
           {step === 11 && (
-            <>
-              <p>Repository: {repositoryId || "Not selected"}</p>
-              <p className="break-all">Commit: {commit || "Not selected"}</p>
-              <p>
-                Review the normalized configuration below. The API verifies the
-                commit and permissions independently.
+            <div className="flex flex-col gap-4 rounded-xl border border-[#2b2f3e] bg-[#161822] p-5">
+              <h3 className="text-sm font-semibold text-white">
+                Ready to generate manifest
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+                <div className="rounded-lg bg-[#11131a] p-3 border border-[#222632]">
+                  <span className="text-zinc-500 block mb-1">Target Repository</span>
+                  <span className="text-white break-all">
+                    {repositoryId || "Not selected"}
+                  </span>
+                </div>
+                <div className="rounded-lg bg-[#11131a] p-3 border border-[#222632]">
+                  <span className="text-zinc-500 block mb-1">Target Commit</span>
+                  <span className="text-white break-all">
+                    {commit || "Not selected"}
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-zinc-400">
+                Review the normalized configuration below. The API verifies the commit and permissions independently before triggering ingestion.
               </p>
-              <button
+              <CandyButton
                 type="button"
-                className={button}
+                variant="pearl"
+                size="default"
                 disabled={
                   !preview || !repositoryId || !/^[a-f0-9]{40}$/.test(commit)
                 }
@@ -309,53 +384,88 @@ export function Studio({
                     setManifest(created);
                     setHistory([created, ...history].slice(0, 50));
                     setMessage(
-                      "Manifest created. Execution is not enabled in this phase.",
+                      "Manifest created. Analyzer extraction queued.",
                     );
                   });
                 }}
               >
                 Create analysis manifest
-              </button>
-            </>
+              </CandyButton>
+            </div>
           )}
         </fieldset>
+
+        <div className="flex items-center justify-between border-t border-[#222532] pt-4">
+          <CandyButton
+            type="button"
+            variant="secondary"
+            size="sm"
+            disabled={busy || step === 0}
+            onClick={() => setStep(step - 1)}
+          >
+            ← Previous step
+          </CandyButton>
+          <CandyButton
+            type="button"
+            variant={step === 11 ? "pearl" : "azure"}
+            size="sm"
+            disabled={busy || step === 11}
+            onClick={() => setStep(step + 1)}
+          >
+            Next step →
+          </CandyButton>
+        </div>
       </section>
+
       <section
         aria-label="Configuration preview"
-        className="flex min-w-0 flex-col gap-4"
+        className="flex min-w-0 flex-col gap-4 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl"
       >
-        <h2 className="text-xl font-semibold">Configuration preview</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-bold text-white">Configuration preview</h2>
+          <span className="rounded bg-[#1c1f2b] px-2 py-0.5 text-[11px] font-mono text-zinc-400">
+            {configuration.analyzers.length} analyzers active
+          </span>
+        </div>
+
         {validation && (
-          <p role="alert" className="text-red-700 dark:text-red-400">
+          <div role="alert" className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300">
             {validation}
-          </p>
+          </div>
         )}
+
         {preview && (
-          <>
-            <p>
-              Required modules are included automatically:{" "}
-              {preview.analyzers
-                .filter((id) => !configuration.analyzers.includes(id))
-                .join(", ") || "none"}
+          <div className="flex flex-col gap-2">
+            <p className="text-xs text-zinc-400">
+              Required dependency modules included automatically:{" "}
+              <span className="text-blue-400 font-mono">
+                {preview.analyzers
+                  .filter((id) => !configuration.analyzers.includes(id))
+                  .join(", ") || "none"}
+              </span>
               .
             </p>
-            <pre className="max-h-96 overflow-auto rounded-lg bg-zinc-100 p-4 text-sm dark:bg-zinc-900">
+            <pre className="max-h-80 overflow-auto rounded-xl border border-[#242735] bg-[#0c0d12] p-4 text-xs font-mono text-zinc-300 leading-relaxed">
               {JSON.stringify(preview, null, 2)}
             </pre>
-          </>
+          </div>
         )}
-        <div className="flex flex-wrap gap-3">
-          <button
+
+        <div className="flex flex-wrap items-center gap-3 pt-2">
+          <CandyButton
             type="button"
-            className={control}
+            variant="outline"
+            size="sm"
             disabled={busy}
             onClick={() => choosePreset(studioDefaults)}
           >
             Reset to defaults
-          </button>
-          <button
+          </CandyButton>
+
+          <CandyButton
             type="button"
-            className={control}
+            variant="secondary"
+            size="sm"
             disabled={busy || !preview}
             onClick={async () => {
               await run(async () => {
@@ -375,44 +485,54 @@ export function Studio({
             }}
           >
             Validate with server
-          </button>
+          </CandyButton>
         </div>
+
         {manage ? (
-          <div className="flex flex-wrap items-end gap-3">
-            <label className="flex flex-col gap-2">
-              <span>Custom profile name</span>
+          <div className="flex flex-wrap items-end gap-3 pt-4 border-t border-[#222532]">
+            <div className="flex flex-col gap-1.5 flex-1 min-w-[16rem]">
+              <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                Custom profile name
+              </label>
               <input
-                className={control}
+                className="h-9 rounded-lg border border-[#2b2f3d] bg-[#14161f] px-3 text-xs text-white placeholder-zinc-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                placeholder="e.g. Full Security & AST Profile"
                 maxLength={100}
                 value={name}
                 onChange={(event) => setName(event.target.value)}
               />
-            </label>
-            <button
+            </div>
+
+            <CandyButton
               type="button"
-              className={button}
+              variant="pearl"
+              size="sm"
               disabled={busy || !name.trim() || !preview}
               onClick={async () => {
                 await run(() => save(false));
               }}
             >
               {profile ? "Duplicate as new profile" : "Save new profile"}
-            </button>
+            </CandyButton>
+
             {profile && (
               <>
-                <button
+                <CandyButton
                   type="button"
-                  className={control}
+                  variant="secondary"
+                  size="sm"
                   disabled={busy || !preview || !name.trim()}
                   onClick={async () => {
                     await run(() => save(true));
                   }}
                 >
                   Update profile
-                </button>
-                <button
+                </CandyButton>
+
+                <CandyButton
                   type="button"
-                  className={control}
+                  variant="ruby"
+                  size="sm"
                   disabled={busy}
                   onClick={async () => {
                     if (
@@ -435,58 +555,69 @@ export function Studio({
                   }}
                 >
                   Delete profile
-                </button>
+                </CandyButton>
               </>
             )}
           </div>
         ) : (
-          <p>Workspace owners and admins can save and manage profiles.</p>
+          <p className="text-xs text-zinc-500 pt-2">
+            Workspace owners and admins can save and manage versioned profiles.
+          </p>
         )}
       </section>
-      <div className="flex justify-between gap-4">
-        <button
-          type="button"
-          className={control}
-          disabled={busy || step === 0}
-          onClick={() => setStep(step - 1)}
-        >
-          Previous step
-        </button>
-        <button
-          type="button"
-          className={button}
-          disabled={busy || step === 11}
-          onClick={() => setStep(step + 1)}
-        >
-          Next step
-        </button>
-      </div>
+
       {manifest && (
-        <section aria-label="Created manifest">
-          <h2 className="text-xl font-semibold">Manifest created</h2>
-          <p className="break-all">SHA-256: {manifest.hash}</p>
-          <pre className="max-h-96 overflow-auto rounded-lg bg-zinc-100 p-4 text-sm dark:bg-zinc-900">
+        <section
+          aria-label="Created manifest"
+          className="flex flex-col gap-3 rounded-2xl border border-emerald-500/20 bg-[#13151d] p-6 shadow-xl"
+        >
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            <h2 className="text-base font-bold text-white">Manifest created</h2>
+          </div>
+          <p className="text-xs font-mono text-zinc-400 break-all">
+            SHA-256: {manifest.hash}
+          </p>
+          <pre className="max-h-80 overflow-auto rounded-xl border border-[#242735] bg-[#0c0d12] p-4 text-xs font-mono text-zinc-300">
             {JSON.stringify(manifest, null, 2)}
           </pre>
         </section>
       )}
-      <section>
-        <h2 className="text-xl font-semibold">Recent manifests</h2>
-        {history.length === 0 && <p>No manifests yet.</p>}
-        <ul className="flex flex-col gap-3">
-          {history.map((item) => (
-            <li key={item.id} className="break-all">
+
+      <section className="flex flex-col gap-4 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-bold text-white">Recent manifests</h2>
+          <span className="text-xs font-mono text-zinc-500">
+            {history.length} manifests recorded
+          </span>
+        </div>
+
+        {history.length === 0 ? (
+          <p className="text-xs text-zinc-500">No manifests generated yet.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {history.map((item) => (
               <button
                 type="button"
-                className={control}
+                key={item.id}
+                className="flex flex-col gap-2 rounded-xl border border-[#262a37] bg-[#161821] p-3 text-left transition-all duration-150 hover:border-[#383e52] hover:bg-[#1b1e2a] cursor-pointer"
                 onClick={() => setManifest(item)}
               >
-                {item.manifest.commitSha.slice(0, 12)} ·{" "}
-                {item.hash.slice(0, 16)} · {item.status}
+                <div className="flex items-center justify-between text-xs font-mono">
+                  <span className="text-white font-semibold">
+                    {item.manifest.commitSha.slice(0, 8)}
+                  </span>
+                  <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] text-emerald-400">
+                    {item.status}
+                  </span>
+                </div>
+                <span className="text-[11px] font-mono text-zinc-500 truncate">
+                  {item.hash}
+                </span>
               </button>
-            </li>
-          ))}
-        </ul>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

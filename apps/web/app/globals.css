@@ -1,16 +1,86 @@
 @import "tailwindcss";
+
 :root {
-  --background: #fafafa;
-  --foreground: #17191f;
+  --background: #0d0e12;
+  --foreground: #f4f5f7;
+  --card: #13151b;
+  --card-hover: #181a22;
+  --card-elevated: #1a1d26;
+  --border: #232631;
+  --border-subtle: #1c1e27;
+  --border-focus: #3b82f6;
+  --muted: #848995;
+  --muted-dark: #585d68;
 }
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: Arial, Helvetica, sans-serif;
+  --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
+  --color-card-elevated: var(--card-elevated);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-focus: var(--border-focus);
+  --color-muted: var(--muted);
+  --color-muted-dark: var(--muted-dark);
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0c0d10;
-    --foreground: #f4f5f7;
-  }
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+.hatch-pattern {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.08) 2px,
+    transparent 2px,
+    transparent 6px
+  );
+}
+
+.hatch-danger {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(239, 68, 68, 0.25),
+    rgba(239, 68, 68, 0.25) 2px,
+    transparent 2px,
+    transparent 6px
+  );
+}
+
+.hatch-purple {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(168, 85, 247, 0.25),
+    rgba(168, 85, 247, 0.25) 2px,
+    transparent 2px,
+    transparent 6px
+  );
+}
+
+.hatch-teal {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(20, 184, 166, 0.25),
+    rgba(20, 184, 166, 0.25) 2px,
+    transparent 2px,
+    transparent 6px
+  );
 }
