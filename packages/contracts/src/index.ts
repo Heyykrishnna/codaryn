@@ -168,3 +168,5 @@ export * from "./analysis.js";
 export * from "./graph.js";
 export * from "./frontend.js";
 export * from "./backend.js";
+
+export * from "./schema-studio.js";

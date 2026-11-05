@@ -43,3 +43,7 @@ jobs:
       - run: pnpm test
       - run: pnpm db:sync
       - run: pnpm test:integration
+      - name: Verify migration idempotency
+        run: pnpm db:migrate && pnpm db:verify
+      - name: Build schema worker image
+        run: docker build -f infrastructure/docker/schema.Dockerfile -t codaryn-schema-worker:ci .

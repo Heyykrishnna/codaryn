@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
     const api = process.env.API_URL ?? "http://127.0.0.1:4000";
     return Promise.resolve([
       {
+        source: "/api/v1/schema/:path*",
+        destination: `${api}/api/v1/schema/:path*`,
+      },
+      {
         source: "/api/v1/:path*",
         destination: `${api}/api/v1/:path*`,
       },

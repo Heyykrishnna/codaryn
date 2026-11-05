@@ -117,10 +117,20 @@ Every connection needs direct or inferred evidence status.
 
 ## Planning and dependencies
 
-**Status:** Planned; none of the acceptance criteria is claimed as complete by this document.
+**Status:** Implemented; validation evidence and limits are recorded in [verification](verification.md).
 
 **Dependencies:** Phases 5 and 7 for graph, source evidence and backend links; frontend lineage also depends on Phase 6.
 
 Implement the scope above with the shared requirements in the [phase index](../README.md). Record design decisions, supported versions, migrations, operational requirements and limitations as implementation progresses. The acceptance criteria above are release obligations; the [acceptance test plan](acceptance-tests.md) turns them into executable scenarios to implement and record.
 
 [Full product specification](../../product-specification.md) · [All phases](../README.md)
+
+## Implementation guides
+
+- [Architecture and snapshot model](architecture.md)
+- [Supported syntax and limits](supported-syntax.md)
+- [API reference](api.md)
+- [Operations and security](operations.md)
+- [Verification](verification.md)
+
+Open `/schema` after configuring the repository connection. Extraction is performed by the dedicated schema worker against the selected analysis job’s pinned commit.
