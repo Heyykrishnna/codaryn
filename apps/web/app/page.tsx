@@ -28,7 +28,13 @@ export default function Home() {
     <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-12 px-6 py-8">
       <header className="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-200 pb-6 dark:border-zinc-800">
         <span className="text-xl font-semibold tracking-tight">codaryn</span>
-        <nav aria-label="Main navigation" className="flex gap-4">
+        <nav aria-label="Main navigation" className="flex flex-wrap gap-4">
+          <a
+            href="/quality"
+            className="text-sm text-indigo-600 underline dark:text-indigo-400"
+          >
+            Engineering Quality
+          </a>
           <a
             href="/execution"
             className="text-sm text-indigo-600 underline dark:text-indigo-400"

@@ -62,6 +62,7 @@ export function WorkspaceExplorer({
         <Link href="/studio">Analysis Studio</Link>
         <Link href="/schema">Schema Studio</Link>
         <Link href="/execution">Execution Explorer</Link>
+        <Link href="/quality">Engineering Quality</Link>
         <Link href="/workspace">Workspace settings</Link>
       </header>
       <h1 className="text-3xl font-semibold">{title}</h1>
