@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
+import { sanitizeFilename } from "@codaryn/export-engine";
 import {
   requireSession,
   requestError,
@@ -76,11 +77,12 @@ export function registerExports(
           params.exportId,
         );
 
+        const safeFilename = sanitizeFilename(artifact.filename);
         return reply
           .header("Content-Type", artifact.content_type)
           .header(
             "Content-Disposition",
-            `attachment; filename="${artifact.filename}"`,
+            `attachment; filename="${safeFilename}"`,
           )
           .header("ETag", `"${artifact.hash}"`)
           .header("Content-Length", String(artifact.size))

@@ -18,7 +18,7 @@ import type { ExportArtifactResult } from "./types.js";
 import { renderSvg } from "./svg.js";
 import { renderDbml } from "./dbml.js";
 import { renderPrintableHtml } from "./html-report.js";
-import { sanitizeExportContent } from "./sanitizer.js";
+import { sanitizeExportContent, sanitizeFilename } from "./sanitizer.js";
 
 const contentTypes: Record<string, string> = {
   svg: "image/svg+xml; charset=utf-8",
@@ -115,7 +115,9 @@ export function exportArtifact(
 
   const content = sanitizeExportContent(rawContent);
   const ext = extensions[request.format] || "txt";
-  const filename = `${repoSlug}_${request.targetId}_${shortSha}.${ext}`;
+  const safeRepo = sanitizeFilename(repoSlug);
+  const safeTarget = sanitizeFilename(request.targetId);
+  const filename = `${safeRepo}_${safeTarget}_${shortSha}.${ext}`;
   const contentType = contentTypes[request.format] || "text/plain; charset=utf-8";
   const size = Buffer.byteLength(content, "utf8");
   const hash = createHash("sha256").update(content, "utf8").digest("hex");
