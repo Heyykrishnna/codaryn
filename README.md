@@ -2,7 +2,7 @@
 
 Every connection, in view. codaryn is an evidence-backed architecture workspace for source repositories. It uses deterministic static analysis and no LLM.
 
-Implemented capabilities include GitHub authentication and workspace management, repository ingestion, Analysis Studio, TypeScript/frontend/backend intelligence, Schema Studio, Execution Explorer and Engineering Quality. Analysis is static with documented boundaries; comparison, diagrams, exports and team administration are implemented; production-launch qualification remains planned. See each phase’s verification record for actual validation and optional-tool requirements.
+Implemented capabilities include GitHub authentication and workspace management, repository ingestion, Analysis Studio, TypeScript/frontend/backend intelligence, Schema Studio, Execution Explorer and Engineering Quality. Analysis is static with documented boundaries; comparison, diagrams, exports and team administration are implemented; production readiness now includes controlled security, load, recovery and packaging qualification. Public deployment remains an operator decision. See each phase’s verification record for actual validation and optional-tool requirements.
 
 ## Start here
 
@@ -18,3 +18,5 @@ The repository uses a pnpm workspace. See the development guide for setup, check
 Architecture Comparison at `/comparisons` adds incremental module/schema versions, commit diffs and potential dependency impact. See the [Phase 12 guide](docs/phases/12-incremental-comparison-impact/README.md) for opt-in push scheduling and supported analysis limits.
 
 Team administration at `/team` adds recipient-bound architecture sharing, signed single-use downloads, usage, audit activity and reviewed retention. See the [Phase 13 guide](docs/phases/13-collaboration-administration/README.md) for access rules and deployment requirements.
+
+Production readiness is documented in the [Phase 14 release guide](docs/phases/14-production-launch/README.md), including measured budgets, real analysis worker operation, backup restoration and deployment gates. Public help is available at `/docs` with a downloadable offline guide.
