@@ -1,6 +1,6 @@
 # Development phases
 
-This roadmap contains phases 0–14 from the [product specification](../product-specification.md). Phases 0–2 retain their recorded in-progress status; phases 3–11 have implemented capabilities and phase-specific verification records. Later phases are planned. Each folder preserves the original deliverables and acceptance criteria and provides a test plan. Acceptance plans alone do not establish execution; consult each implemented phase’s verification record for actual results and limits. Phase numbers express the intended sequence; cross-domain integration may require later phases as noted in each overview.
+This roadmap contains phases 0–14 from the [product specification](../product-specification.md). Phases 0–2 retain their recorded in-progress status; phases 3–12 have implemented capabilities and phase-specific verification records. Later phases are planned. Each folder preserves the original deliverables and acceptance criteria and provides a test plan. Acceptance plans alone do not establish execution; consult each implemented phase’s verification record for actual results and limits. Phase numbers express the intended sequence; cross-domain integration may require later phases as noted in each overview.
 
 | Phase | Scope                                                                                             | Verification                                                               | Status      |
 | ----- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ----------- |
@@ -16,7 +16,7 @@ This roadmap contains phases 0–14 from the [product specification](../product-
 | 9     | [Call graphs, execution and data flow](09-execution-data-flow/README.md)                          | [Acceptance tests](09-execution-data-flow/acceptance-tests.md)             | Implemented |
 | 10    | [Infrastructure, testing and security intelligence](10-infrastructure-testing-security/README.md) | [Acceptance tests](10-infrastructure-testing-security/acceptance-tests.md) | Implemented |
 | 11    | [Diagram and documentation system](11-diagrams-documentation/README.md)                           | [Acceptance tests](11-diagrams-documentation/acceptance-tests.md)          | Implemented |
-| 12    | [Incremental analysis, comparison and impact](12-incremental-comparison-impact/README.md)         | [Acceptance tests](12-incremental-comparison-impact/acceptance-tests.md)   | Planned     |
+| 12    | [Incremental analysis, comparison and impact](12-incremental-comparison-impact/README.md)         | [Acceptance tests](12-incremental-comparison-impact/acceptance-tests.md)   | Implemented |
 | 13    | [Collaboration, administration and exports](13-collaboration-administration/README.md)            | [Acceptance tests](13-collaboration-administration/acceptance-tests.md)    | Planned     |
 | 14    | [Performance, security and production launch](14-production-launch/README.md)                     | [Acceptance tests](14-production-launch/acceptance-tests.md)               | Planned     |
 

@@ -1,25 +1,20 @@
-# Phase 12: acceptance test plan
+# Phase 12 acceptance tests
 
-**Status:** Planned; these scenarios have not been executed. Scope and original acceptance criteria: [phase overview](README.md).
+The original [phase requirements](README.md) remain the scope source. This matrix maps implementation to executed fixtures; [verification](verification.md) records actual outcomes and deployment/visual limits.
 
-Implement these scenarios at the appropriate unit, integration, end-to-end or operational layer. Use controlled fixtures with expected outputs, isolate test data, and record the command, environment, actual result and evidence for each run. A scenario passes only when its expected result is observed.
+| ID       | Scenario                                                                                                                           | Expected result and evidence                                                                                                                                                                                                          |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P12-AT01 | Add, modify and delete source files; compare incremental and full extraction.                                                      | Compatible unchanged file artifacts are reused, changed inputs processed, deleted artifacts removed, semantic projection equal and `matched` recorded. Version-engine fixtures and database-backed worker fixture.                    |
+| P12-AT02 | Change a dependency target, root alias config, analyzer identity or cached artifact checksum.                                      | Aliases/edges reconcile against current files; configuration/version changes invalidate reuse; invalid cache artifacts are reprocessed. Newly added targets replace stale unresolved edges. Engine fixtures.                          |
+| P12-AT03 | Deliver a valid matching signed push, identical delivery, different delivery for the same SHA, wrong branch and invalid signature. | One logical version/job, correct commit and baseline, no wrong-branch scheduling, invalid signature rejected. API integration fixture.                                                                                                |
+| P12-AT04 | Compare versions and inspect architecture/schema changes and transitive impact.                                                    | Added/removed/changed file/symbol/relationship/schema objects have source evidence; potential dependent modules retain depth/predecessor; historical snapshot hash unchanged. Engine and API fixtures.                                |
+| P12-AT05 | Corrupt cached global projection and request independent full verification.                                                        | Mismatch publishes full projection with `fallback-full`; valid incremental output records `matched`. Engine fixture.                                                                                                                  |
+| P12-AT06 | Exercise outsiders, no session/CSRF, strict body validation, invalid pages/refs and different repositories.                        | 401/403/404/400 as appropriate, no cross-workspace or cross-repository reuse/comparison. API integration fixture.                                                                                                                     |
+| P12-AT07 | Downgrade policy owner and disable policy during worker archive download.                                                          | New automatic jobs are denied; outstanding automatic publication fails safely without persisted evidence. API and worker fixtures.                                                                                                    |
+| P12-AT08 | Fill the active queue and submit a signed push through the actual HTTP route.                                                      | 503 capacity response and delivery receipt rollback permit later operator redelivery; existing non-push webhook contract stays intact. API integration and repository regression fixtures.                                            |
+| P12-AT09 | Claim concurrently, revoke installation mid-flight, change resolved SHA and exhaust lease attempts.                                | One claim, immutable pinned-commit evidence, access denied before publication, safe commit/lease failure codes. Worker integration fixture.                                                                                           |
+| P12-AT10 | Reuse an actual stored baseline with full verification, then publish an automatic request.                                         | Stored checksum validated, reused count observed, verification matched and analysis-job completion committed with snapshot publication. Worker fixture.                                                                               |
+| P12-AT11 | Include literal defaults in binding/computed declaration names, malformed syntax and an oversized declaration fixture.             | No raw literal retained, fixed diagnostic placeholders, syntax-boundary code and early resource rejection. Engine fixtures.                                                                                                           |
+| P12-AT12 | View signed-in `/comparisons` at desktop and 390-pixel width.                                                                      | Workspace/selection/empty-state guidance and explicit full-verification policy render; missing-job actions disabled; no horizontal overflow. Manual browser check. Populated visual interaction remains a separately disclosed limit. |
 
-| ID | Scenario and action | Expected result |
-|---|---|---|
-| P12-AT01 | **Incremental equivalence:** Modify, add and delete files in a fixture, then compare incremental output with a full run. | Normalized supported graph and diagnostics agree; discrepancies trigger a safe full analysis. |
-| P12-AT02 | **Invalidation:** Change a dependency, configuration and analyzer version independently. | Affected results are invalidated and only compatible unchanged results are reused. |
-| P12-AT03 | **Webhook scheduling:** Deliver a valid configured event, a duplicate and an invalid signature. | The valid event schedules the intended commit once logically; invalid events are rejected. |
-| P12-AT04 | **History and impact:** Compare snapshots and inspect impact after a change. | Historical snapshots remain immutable and changes and affected modules are traceable to evidence. |
-
-## Cross-cutting checks
-
-- Verify relevant loading, empty, error and permission-denied states, including keyboard access for affected UI.
-- Verify server-side authorization and workspace isolation for affected resources; avoid secrets and private source in logs and errors.
-- Test malformed input, boundary conditions, retries and failures appropriate to the change. Confirm evidence and uncertainty are represented accurately.
-- Run the applicable lint, type checks, tests and production build; record unavailable checks and unresolved failures. Update fixtures, documentation and supported-version information.
-
-## Completion evidence
-
-- Implementation and review links; fixture and version identifiers.
-- Test commands, environment, date, actual outcomes and any defects or limitations.
-- Evidence that every original acceptance criterion in the overview is met; obtain the relevant release owners’ review before marking the phase complete.
+Run the complete existing unit and integration suites after shared artifact, archive and webhook changes. Do not weaken previous tests, bypass hooks or seed production workspaces. Validate migration idempotency, frozen installation, formatting, types, lint, production build, dependency audit and all affected worker images before push. Hosted CI verifies the exact pushed head before delivery.

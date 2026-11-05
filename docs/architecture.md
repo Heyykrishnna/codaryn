@@ -43,3 +43,7 @@ GitHub App ownership is checked separately from application login. Installations
 ## Engineering Quality
 
 [Phase 10 architecture](phases/10-infrastructure-testing-security/architecture.md) describes infrastructure/test/security snapshots, scanner isolation, explicit external OSV consent and administrator-only audited finding reviews. The quality worker shares bounded archive/lease processing with schema and execution workers.
+
+## Incremental versions and comparison
+
+[Phase 12](phases/12-incremental-comparison-impact/architecture.md) adds immutable module/schema versions, checksum-validated per-file reuse, globally reconciled dependencies, saved architecture/schema diffs and conservative impact. Signed pushes schedule only explicit administrator-enabled branch policies. Earlier domain snapshots remain independent and immutable.
