@@ -1,3 +1,4 @@
+import { PerformanceMonitor } from "@/src/components/performance-monitor";
 import type { Metadata } from "next";
 import "./globals.css";
 export const metadata: Metadata = {
@@ -10,6 +11,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-background text-foreground min-h-screen font-sans antialiased">
+        <PerformanceMonitor />
         {children}
       </body>
     </html>

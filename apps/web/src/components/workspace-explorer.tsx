@@ -9,33 +9,6 @@ export function WorkspaceExplorer({
   children,
 }: Readonly<{ title: string; children: (workspaceId: string) => ReactNode }>) {
   const { data: session, isPending, error } = authClient.useSession();
-  const [data, setData] = useState<{
-      items: WorkspaceSummary[];
-      active: string;
-    } | null>(null),
-    [selected, setSelected] = useState(""),
-    [message, setMessage] = useState("");
-  useEffect(() => {
-    if (!session) return;
-    const controller = new AbortController();
-    fetch("/api/v1/workspace/list", {
-      cache: "no-store",
-      signal: controller.signal,
-    })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("Workspace access unavailable");
-        const result = workspaceListSchema.parse(await response.json());
-        setData({
-          items: result.workspaces,
-          active: result.active ?? result.workspaces[0]?.id ?? "",
-        });
-      })
-      .catch(() => {
-        if (!controller.signal.aborted)
-          setMessage("Unable to load workspaces. Reload to retry.");
-      });
-    return () => controller.abort();
-  }, [session]);
   if (isPending) return <output className="block p-8">Loading {title}…</output>;
   if (error)
     return (
@@ -54,6 +27,42 @@ export function WorkspaceExplorer({
         </Link>
       </main>
     );
+  return (
+    <WorkspaceExplorerContent key={session.user.id} title={title}>
+      {children}
+    </WorkspaceExplorerContent>
+  );
+}
+function WorkspaceExplorerContent({
+  title,
+  children,
+}: Readonly<{ title: string; children: (workspaceId: string) => ReactNode }>) {
+  const [data, setData] = useState<{
+      items: WorkspaceSummary[];
+      active: string;
+    } | null>(null),
+    [selected, setSelected] = useState(""),
+    [message, setMessage] = useState("");
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/v1/workspace/list", {
+      cache: "no-store",
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Workspace access unavailable");
+        const result = workspaceListSchema.parse(await response.json());
+        setData({
+          items: result.workspaces,
+          active: result.active ?? result.workspaces[0]?.id ?? "",
+        });
+      })
+      .catch(() => {
+        if (!controller.signal.aborted)
+          setMessage("Unable to load workspaces. Reload to retry.");
+      });
+    return () => controller.abort();
+  }, []);
   const workspace = selected || data?.active || "";
   return (
     <main className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-8">
@@ -64,6 +73,8 @@ export function WorkspaceExplorer({
         <Link href="/execution">Execution Explorer</Link>
         <Link href="/quality">Engineering Quality</Link>
         <Link href="/comparisons">Architecture Comparison</Link>
+        <Link href="/graph">Dependency Graph</Link>
+        <Link href="/docs">Help and offline guide</Link>
         <Link href="/team">Organization dashboard</Link>
         <Link href="/workspace">Workspace settings</Link>
       </header>
