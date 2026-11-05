@@ -1,3 +1,5 @@
+import { registerExports } from "./exports/routes.js";
+import { ExportService } from "./exports/service.js";
 import { registerDiagrams } from "./diagrams/routes.js";
 import { DiagramService } from "./diagrams/service.js";
 import { registerQuality } from "./quality/routes.js";
@@ -116,6 +118,12 @@ registerDiagrams(
   app,
   auth,
   new DiagramService(pool),
+  environment.WEB_ORIGIN,
+);
+registerExports(
+  app,
+  auth,
+  new ExportService(pool),
   environment.WEB_ORIGIN,
 );
 app.addHook("onClose", async () => {
