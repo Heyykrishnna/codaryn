@@ -84,9 +84,7 @@ const sampleSnapshot: AnalysisSnapshotInput = {
     relations: [],
   },
   dependencies: {
-    nodes: [
-      { id: "mod_index", path: "src/index.ts", name: "index.ts" },
-    ],
+    nodes: [{ id: "mod_index", path: "src/index.ts", name: "index.ts" }],
     edges: [],
   },
   execution: {
@@ -137,7 +135,9 @@ test("schema document retains column definitions and source evidence", () => {
   assert.ok(schemaDoc.markdown.includes("Table: users"));
   assert.ok(schemaDoc.markdown.includes("schema.sql:1-20"));
 
-  const userSection = schemaDoc.sections.find((s) => s.id === "schema_table_users");
+  const userSection = schemaDoc.sections.find(
+    (s) => s.id === "schema_table_users",
+  );
   assert.ok(userSection);
   assert.equal(userSection.evidence.length, 1);
   assert.equal(userSection.evidence[0]?.path, "schema.sql");
@@ -145,7 +145,10 @@ test("schema document retains column definitions and source evidence", () => {
 
 test("searchDocuments locates relevant sections with snippets and evidence", () => {
   const docs = generateAllDocuments(sampleSnapshot);
-  const results = searchDocuments(docs, { query: "authenticateUser", limit: 5 });
+  const results = searchDocuments(docs, {
+    query: "authenticateUser",
+    limit: 5,
+  });
 
   assert.ok(results.length > 0);
   const match = results[0];

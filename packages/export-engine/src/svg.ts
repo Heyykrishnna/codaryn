@@ -71,7 +71,8 @@ export function renderSvg(
             ? "#d97706"
             : "#dc2626";
 
-    const strokeDash = edge.status === "INFERRED" ? 'stroke-dasharray="4,4"' : "";
+    const strokeDash =
+      edge.status === "INFERRED" ? 'stroke-dasharray="4,4"' : "";
 
     svgParts.push(
       `  <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${strokeColor}" stroke-width="2" ${strokeDash} marker-end="url(#arrow)"/>`,

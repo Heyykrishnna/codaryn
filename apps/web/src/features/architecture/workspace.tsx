@@ -89,7 +89,10 @@ export function DiagramWorkspace({
         if (!active) return;
 
         const initialPos: Record<string, { x: number; y: number }> = {};
-        const cols = Math.max(1, Math.ceil(Math.sqrt(loadedGraph.nodes.length)));
+        const cols = Math.max(
+          1,
+          Math.ceil(Math.sqrt(loadedGraph.nodes.length)),
+        );
         for (let i = 0; i < loadedGraph.nodes.length; i++) {
           const node = loadedGraph.nodes[i];
           if (node) {
@@ -311,8 +314,10 @@ export function DiagramWorkspace({
       {loading && !error && (
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center text-slate-500">
-            <div className="mb-2 h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent mx-auto" />
-            <p className="text-sm font-medium">Rendering architecture graph...</p>
+            <div className="mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
+            <p className="text-sm font-medium">
+              Rendering architecture graph...
+            </p>
           </div>
         </div>
       )}
@@ -392,7 +397,7 @@ export function DiagramWorkspace({
                         fill="#475569"
                         fontSize="11"
                         textAnchor="middle"
-                        className="select-none bg-white font-sans"
+                        className="bg-white font-sans select-none"
                       >
                         {edge.label} [{edge.status}]
                       </text>
@@ -448,7 +453,7 @@ export function DiagramWorkspace({
                       fontSize="13"
                       fontWeight="bold"
                       fill="#0f172a"
-                      className="select-none font-sans"
+                      className="font-sans select-none"
                     >
                       {node.label.length > 24
                         ? `${node.label.slice(0, 22)}...`
@@ -459,7 +464,7 @@ export function DiagramWorkspace({
                       y="46"
                       fontSize="11"
                       fill="#475569"
-                      className="select-none font-sans"
+                      className="font-sans select-none"
                     >
                       {node.kind} · {node.status}
                     </text>
@@ -491,7 +496,7 @@ export function DiagramWorkspace({
               {selectedNode && (
                 <div className="mt-4 space-y-3 text-sm">
                   <div>
-                    <span className="text-xs font-semibold uppercase text-slate-500">
+                    <span className="text-xs font-semibold text-slate-500 uppercase">
                       Label
                     </span>
                     <p className="font-medium text-slate-900">
@@ -499,7 +504,7 @@ export function DiagramWorkspace({
                     </p>
                   </div>
                   <div>
-                    <span className="text-xs font-semibold uppercase text-slate-500">
+                    <span className="text-xs font-semibold text-slate-500 uppercase">
                       Kind & Group
                     </span>
                     <p className="text-slate-700">
@@ -508,7 +513,7 @@ export function DiagramWorkspace({
                     </p>
                   </div>
                   <div>
-                    <span className="text-xs font-semibold uppercase text-slate-500">
+                    <span className="text-xs font-semibold text-slate-500 uppercase">
                       Resolution Confidence
                     </span>
                     <p className="inline-block rounded px-2 py-0.5 text-xs font-bold uppercase">
@@ -517,7 +522,7 @@ export function DiagramWorkspace({
                   </div>
                   {selectedNode.evidence ? (
                     <div>
-                      <span className="text-xs font-semibold uppercase text-slate-500">
+                      <span className="text-xs font-semibold text-slate-500 uppercase">
                         Source Evidence
                       </span>
                       <p className="font-mono text-xs text-indigo-600">
@@ -537,7 +542,7 @@ export function DiagramWorkspace({
               {selectedEdge && (
                 <div className="mt-4 space-y-3 text-sm">
                   <div>
-                    <span className="text-xs font-semibold uppercase text-slate-500">
+                    <span className="text-xs font-semibold text-slate-500 uppercase">
                       Relationship
                     </span>
                     <p className="font-medium text-slate-900">
@@ -545,13 +550,13 @@ export function DiagramWorkspace({
                     </p>
                   </div>
                   <div>
-                    <span className="text-xs font-semibold uppercase text-slate-500">
+                    <span className="text-xs font-semibold text-slate-500 uppercase">
                       Kind
                     </span>
                     <p className="text-slate-700">{selectedEdge.kind}</p>
                   </div>
                   <div>
-                    <span className="text-xs font-semibold uppercase text-slate-500">
+                    <span className="text-xs font-semibold text-slate-500 uppercase">
                       Status
                     </span>
                     <p className="text-xs font-bold uppercase">
@@ -560,7 +565,7 @@ export function DiagramWorkspace({
                   </div>
                   {selectedEdge.evidence && (
                     <div>
-                      <span className="text-xs font-semibold uppercase text-slate-500">
+                      <span className="text-xs font-semibold text-slate-500 uppercase">
                         Evidence
                       </span>
                       <p className="font-mono text-xs text-indigo-600">
@@ -576,7 +581,7 @@ export function DiagramWorkspace({
           )}
 
           <footer className="absolute bottom-4 left-4 flex flex-wrap gap-4 rounded-lg border border-slate-200 bg-white/95 px-4 py-2.5 shadow-md backdrop-blur">
-            <span className="text-xs font-bold uppercase text-slate-500">
+            <span className="text-xs font-bold text-slate-500 uppercase">
               Legend:
             </span>
             <div className="flex items-center gap-1.5 text-xs">
@@ -649,7 +654,7 @@ export function DiagramWorkspace({
               {(["svg", "mermaid", "json", "dbml"] as const).map((fmt) => (
                 <label
                   key={fmt}
-                  className="flex items-center gap-3 rounded-lg border border-slate-200 p-3 hover:bg-slate-50 cursor-pointer"
+                  className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 p-3 hover:bg-slate-50"
                 >
                   <input
                     type="radio"
@@ -660,7 +665,7 @@ export function DiagramWorkspace({
                     className="accent-indigo-600"
                   />
                   <div>
-                    <p className="text-sm font-semibold uppercase text-slate-900">
+                    <p className="text-sm font-semibold text-slate-900 uppercase">
                       {fmt}
                     </p>
                     <p className="text-xs text-slate-500">

@@ -114,18 +114,8 @@ registerExecution(
   environment.WEB_ORIGIN,
 );
 registerSchema(app, auth, new SchemaService(pool), environment.WEB_ORIGIN);
-registerDiagrams(
-  app,
-  auth,
-  new DiagramService(pool),
-  environment.WEB_ORIGIN,
-);
-registerExports(
-  app,
-  auth,
-  new ExportService(pool),
-  environment.WEB_ORIGIN,
-);
+registerDiagrams(app, auth, new DiagramService(pool), environment.WEB_ORIGIN);
+registerExports(app, auth, new ExportService(pool), environment.WEB_ORIGIN);
 app.addHook("onClose", async () => {
   await pool.end();
 });

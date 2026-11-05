@@ -1355,10 +1355,7 @@ export const exportJobs = pgTable(
       "export_jobs_completion_check",
       sql`CASE WHEN ${t.status}='completed' THEN ${t.artifactSize} IS NOT NULL AND ${t.artifactHash} IS NOT NULL ELSE true END`,
     ),
-    index("export_jobs_workspace_idx").on(
-      t.organizationId,
-      t.createdAt.desc(),
-    ),
+    index("export_jobs_workspace_idx").on(t.organizationId, t.createdAt.desc()),
     index("export_jobs_queue_idx").on(t.status, t.createdAt),
     index("export_jobs_job_idx").on(t.jobId, t.createdAt.desc()),
   ],

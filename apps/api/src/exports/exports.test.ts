@@ -72,17 +72,14 @@ test("ExportService denies unauthorized tenant access on artifact download", asy
   } as unknown as Pool;
 
   const service = new ExportService(mockPool);
-  await assert.rejects(
-    async () => {
-      await service.getArtifactPayload(
-        "usr_attacker",
-        "00000000-0000-0000-0000-000000000001",
-        "00000000-0000-0000-0000-000000000002",
-        "00000000-0000-0000-0000-000000000003",
-      );
-    },
-    WorkspaceAccessError,
-  );
+  await assert.rejects(async () => {
+    await service.getArtifactPayload(
+      "usr_attacker",
+      "00000000-0000-0000-0000-000000000001",
+      "00000000-0000-0000-0000-000000000002",
+      "00000000-0000-0000-0000-000000000003",
+    );
+  }, WorkspaceAccessError);
 });
 
 test("ExportService returns artifact payload when export is completed", async () => {
@@ -97,7 +94,11 @@ test("ExportService returns artifact payload when export is completed", async ()
           rows: [{ id: "export_1", status: "completed", error_message: null }],
         };
       }
-      if (sql.includes("SELECT id,content_type,filename,payload,size,hash FROM export_artifacts")) {
+      if (
+        sql.includes(
+          "SELECT id,content_type,filename,payload,size,hash FROM export_artifacts",
+        )
+      ) {
         return {
           rowCount: 1,
           rows: [

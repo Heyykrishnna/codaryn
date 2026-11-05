@@ -61,10 +61,8 @@ export function DocumentationStudio({
   });
 
   const loading = viewState.key !== requestKey && !viewState.error;
-  const currentDoc =
-    viewState.key === requestKey ? viewState.document : null;
-  const summaries =
-    viewState.key === requestKey ? viewState.summaries : [];
+  const currentDoc = viewState.key === requestKey ? viewState.document : null;
+  const summaries = viewState.key === requestKey ? viewState.summaries : [];
   const error = viewState.key === requestKey ? viewState.error : null;
 
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -102,9 +100,7 @@ export function DocumentationStudio({
           document: null,
           summaries: [],
           error:
-            err instanceof Error
-              ? err.message
-              : "Failed to load documentation",
+            err instanceof Error ? err.message : "Failed to load documentation",
         });
       });
 
@@ -184,7 +180,7 @@ export function DocumentationStudio({
 
   return (
     <div className="flex h-full bg-slate-50 text-slate-900">
-      <aside className="w-80 border-r border-slate-200 bg-white flex flex-col">
+      <aside className="flex w-80 flex-col border-r border-slate-200 bg-white">
         <div className="border-b border-slate-200 p-4">
           <form onSubmit={handleSearch} className="flex gap-2">
             <input
@@ -220,7 +216,7 @@ export function DocumentationStudio({
         <div className="flex-1 overflow-y-auto p-3">
           {searchResults !== null ? (
             <div className="space-y-2">
-              <h4 className="px-2 text-xs font-semibold uppercase text-slate-500">
+              <h4 className="px-2 text-xs font-semibold text-slate-500 uppercase">
                 Search Results ({searchResults.length})
               </h4>
               {searchResults.length === 0 ? (
@@ -238,12 +234,12 @@ export function DocumentationStudio({
                         setSearchResults(null);
                       });
                     }}
-                    className="w-full text-left rounded-lg p-2.5 text-xs hover:bg-slate-100 transition-colors border border-transparent hover:border-slate-200"
+                    className="w-full rounded-lg border border-transparent p-2.5 text-left text-xs transition-colors hover:border-slate-200 hover:bg-slate-100"
                   >
                     <p className="font-semibold text-slate-900">
                       {r.documentTitle} · {r.sectionTitle}
                     </p>
-                    <p className="mt-1 text-slate-600 line-clamp-2">
+                    <p className="mt-1 line-clamp-2 text-slate-600">
                       {r.snippet}
                     </p>
                   </button>
@@ -252,13 +248,11 @@ export function DocumentationStudio({
             </div>
           ) : (
             <div className="space-y-1">
-              <h4 className="px-3 py-1.5 text-xs font-semibold uppercase text-slate-500">
+              <h4 className="px-3 py-1.5 text-xs font-semibold text-slate-500 uppercase">
                 Documentation Catalog
               </h4>
               {templateList.map((tmpl) => {
-                const summary = summaries.find(
-                  (s) => s.templateId === tmpl.id,
-                );
+                const summary = summaries.find((s) => s.templateId === tmpl.id);
                 const isSelected = selectedTemplate === tmpl.id;
 
                 return (
@@ -290,7 +284,7 @@ export function DocumentationStudio({
         </div>
       </aside>
 
-      <main className="flex-1 flex flex-col overflow-hidden bg-white">
+      <main className="flex flex-1 flex-col overflow-hidden bg-white">
         <header className="flex flex-wrap items-center justify-between border-b border-slate-200 px-8 py-4">
           <div>
             <h2 className="text-xl font-bold text-slate-900">
@@ -298,11 +292,14 @@ export function DocumentationStudio({
             </h2>
             {currentDoc && (
               <p className="mt-1 text-xs text-slate-500">
-                Repository: <strong>{currentDoc.metadata.repositoryName}</strong> |
-                Commit: <code className="bg-slate-100 px-1 py-0.5 rounded">{currentDoc.commitSha.slice(0, 7)}</code> |
-                Analyzer: v{currentDoc.metadata.analyzerVersion} |
-                Words: {currentDoc.metadata.wordCount} |
-                Evidence links: {currentDoc.metadata.evidenceCount}
+                Repository:{" "}
+                <strong>{currentDoc.metadata.repositoryName}</strong> | Commit:{" "}
+                <code className="rounded bg-slate-100 px-1 py-0.5">
+                  {currentDoc.commitSha.slice(0, 7)}
+                </code>{" "}
+                | Analyzer: v{currentDoc.metadata.analyzerVersion} | Words:{" "}
+                {currentDoc.metadata.wordCount} | Evidence links:{" "}
+                {currentDoc.metadata.evidenceCount}
               </p>
             )}
           </div>
@@ -337,8 +334,10 @@ export function DocumentationStudio({
         {loading && !error && (
           <div className="flex flex-1 items-center justify-center">
             <div className="text-center text-slate-500">
-              <div className="mb-2 h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent mx-auto" />
-              <p className="text-sm font-medium">Generating documentation from snapshot...</p>
+              <div className="mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
+              <p className="text-sm font-medium">
+                Generating documentation from snapshot...
+              </p>
             </div>
           </div>
         )}
@@ -347,35 +346,38 @@ export function DocumentationStudio({
           <div className="flex-1 overflow-y-auto px-10 py-8">
             <article className="prose prose-slate max-w-4xl space-y-6">
               {currentDoc.sections.map((section) => (
-                <section key={section.id} className="border-b border-slate-100 pb-6">
+                <section
+                  key={section.id}
+                  className="border-b border-slate-100 pb-6"
+                >
                   {section.level === 1 && (
-                    <h2 className="text-xl font-bold text-slate-900 mb-3">
+                    <h2 className="mb-3 text-xl font-bold text-slate-900">
                       {section.title}
                     </h2>
                   )}
                   {section.level === 2 && (
-                    <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                    <h3 className="mb-2 text-lg font-semibold text-slate-800">
                       {section.title}
                     </h3>
                   )}
                   {section.level >= 3 && (
-                    <h4 className="text-base font-semibold text-slate-800 mb-2">
+                    <h4 className="mb-2 text-base font-semibold text-slate-800">
                       {section.title}
                     </h4>
                   )}
 
                   {section.diagramPreview && (
                     <div className="my-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
-                      <p className="mb-2 text-xs font-semibold uppercase text-slate-500">
+                      <p className="mb-2 text-xs font-semibold text-slate-500 uppercase">
                         Diagram Specification (Mermaid)
                       </p>
-                      <pre className="overflow-x-auto rounded bg-slate-900 p-3 text-xs text-slate-100 font-mono">
+                      <pre className="overflow-x-auto rounded bg-slate-900 p-3 font-mono text-xs text-slate-100">
                         {section.diagramPreview}
                       </pre>
                     </div>
                   )}
 
-                  <div className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700">
+                  <div className="text-sm leading-relaxed whitespace-pre-wrap text-slate-700">
                     {section.content}
                   </div>
 
@@ -387,7 +389,7 @@ export function DocumentationStudio({
                       {section.evidence.map((ev, i) => (
                         <span
                           key={`${ev.path}_${ev.startLine}_${i}`}
-                          className="rounded bg-indigo-50 px-2 py-0.5 text-xs font-mono text-indigo-700 border border-indigo-100"
+                          className="rounded border border-indigo-100 bg-indigo-50 px-2 py-0.5 font-mono text-xs text-indigo-700"
                         >
                           {ev.path}:{ev.startLine}-{ev.endLine}
                         </span>
@@ -414,7 +416,7 @@ export function DocumentationStudio({
               {(["markdown", "pdf", "json"] as const).map((fmt) => (
                 <label
                   key={fmt}
-                  className="flex items-center gap-3 rounded-lg border border-slate-200 p-3 hover:bg-slate-50 cursor-pointer"
+                  className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 p-3 hover:bg-slate-50"
                 >
                   <input
                     type="radio"
@@ -425,7 +427,7 @@ export function DocumentationStudio({
                     className="accent-indigo-600"
                   />
                   <div>
-                    <p className="text-sm font-semibold uppercase text-slate-900">
+                    <p className="text-sm font-semibold text-slate-900 uppercase">
                       {fmt === "pdf" ? "HTML / PDF Printable" : fmt}
                     </p>
                     <p className="text-xs text-slate-500">

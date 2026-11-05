@@ -17,8 +17,14 @@ const sensitiveSnapshot: AnalysisSnapshotInput = {
         endLine: 20,
         columns: [
           { name: "id", dataType: "uuid", isPrimaryKey: true },
-          { name: "api_key = \"ghp_abcdefghijklmnopqrstuvwxyz0123456789\"", dataType: "text" },
-          { name: "conn = \"postgres://admin:superSecret123@db.prod.internal:5432/main\"", dataType: "text" },
+          {
+            name: 'api_key = "ghp_abcdefghijklmnopqrstuvwxyz0123456789"',
+            dataType: "text",
+          },
+          {
+            name: 'conn = "postgres://admin:superSecret123@db.prod.internal:5432/main"',
+            dataType: "text",
+          },
         ],
       },
     ],
@@ -28,10 +34,12 @@ const sensitiveSnapshot: AnalysisSnapshotInput = {
 
 test("sanitizeExportContent redacts various token and credential patterns", () => {
   const ghToken = "ghp_123456789012345678901234567890123456";
-  const fineGrained = "github_pat_11AAAAAAA0123456789012345678901234567890123456789012345678901234567890123456789012";
+  const fineGrained =
+    "github_pat_11AAAAAAA0123456789012345678901234567890123456789012345678901234567890123456789012";
   const slackToken = "xoxb-1234567890-1234567890-abcdef";
   const awsKey = "AKIAIOSFODNN7EXAMPLE";
-  const rsaKey = "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA0Y...\n-----END RSA PRIVATE KEY-----";
+  const rsaKey =
+    "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA0Y...\n-----END RSA PRIVATE KEY-----";
   const dbUrl = "postgres://root:password999@10.0.0.5:5432/secrets";
   const bearer = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
 
@@ -55,7 +63,11 @@ test("sanitizeExportContent redacts various token and credential patterns", () =
   assert.equal(sanitized.includes("password999"), false);
   assert.equal(sanitized.includes(bearer), false);
 
-  assert.ok(sanitized.includes("postgres://root:[REDACTED_PASSWORD]@10.0.0.5:5432/secrets"));
+  assert.ok(
+    sanitized.includes(
+      "postgres://root:[REDACTED_PASSWORD]@10.0.0.5:5432/secrets",
+    ),
+  );
   assert.ok(sanitized.includes("[REDACTED_SECRET]"));
 });
 

@@ -71,7 +71,11 @@ const sampleSnapshot: AnalysisSnapshotInput = {
         targetId: "comp_button",
         kind: "renders",
         status: "DIRECT",
-        evidence: { path: "apps/web/pages/index.tsx", startLine: 20, endLine: 20 },
+        evidence: {
+          path: "apps/web/pages/index.tsx",
+          startLine: 20,
+          endLine: 20,
+        },
       },
     ],
   },
@@ -166,14 +170,23 @@ const sampleSnapshot: AnalysisSnapshotInput = {
         targetColumn: "id",
         cardinality: "one_to_many",
         status: "DIRECT",
-        evidence: { path: "packages/database/schema.sql", startLine: 35, endLine: 35 },
+        evidence: {
+          path: "packages/database/schema.sql",
+          startLine: 35,
+          endLine: 35,
+        },
       },
     ],
   },
   dependencies: {
     nodes: [
       { id: "mod_index", path: "src/index.ts", name: "index.ts" },
-      { id: "pkg_express", path: "node_modules/express", name: "express", isExternal: true },
+      {
+        id: "pkg_express",
+        path: "node_modules/express",
+        name: "express",
+        isExternal: true,
+      },
     ],
     edges: [
       {

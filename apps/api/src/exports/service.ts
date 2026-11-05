@@ -88,7 +88,11 @@ export class ExportService {
         );
         const repo = repoRes.rows[0];
         if (!repo) {
-          throw new RequestFailure(404, "JOB_NOT_FOUND", "Analysis job not found in workspace");
+          throw new RequestFailure(
+            404,
+            "JOB_NOT_FOUND",
+            "Analysis job not found in workspace",
+          );
         }
 
         const recent = await client.query<{ count: string }>(
@@ -96,7 +100,11 @@ export class ExportService {
           [workspaceId],
         );
         if (Number(recent.rows[0]?.count ?? 0) >= 10) {
-          throw new RequestFailure(429, "EXPORT_RATE_LIMIT", "Too many export jobs queued, please wait");
+          throw new RequestFailure(
+            429,
+            "EXPORT_RATE_LIMIT",
+            "Too many export jobs queued, please wait",
+          );
         }
 
         const id = randomUUID();
@@ -145,7 +153,11 @@ export class ExportService {
 
       const row = result.rows[0];
       if (!row) {
-        throw new RequestFailure(404, "EXPORT_NOT_FOUND", "Export job not found in workspace");
+        throw new RequestFailure(
+          404,
+          "EXPORT_NOT_FOUND",
+          "Export job not found in workspace",
+        );
       }
 
       return exportJobResponseSchema.parse({
@@ -178,13 +190,25 @@ export class ExportService {
 
       const job = jobResult.rows[0];
       if (!job) {
-        throw new RequestFailure(404, "EXPORT_NOT_FOUND", "Export job not found");
+        throw new RequestFailure(
+          404,
+          "EXPORT_NOT_FOUND",
+          "Export job not found",
+        );
       }
       if (job.status === "failed") {
-        throw new RequestFailure(409, "EXPORT_FAILED", job.error_message || "Export processing failed");
+        throw new RequestFailure(
+          409,
+          "EXPORT_FAILED",
+          job.error_message || "Export processing failed",
+        );
       }
       if (job.status !== "completed") {
-        throw new RequestFailure(409, "EXPORT_PENDING", "Export job is still in progress");
+        throw new RequestFailure(
+          409,
+          "EXPORT_PENDING",
+          "Export job is still in progress",
+        );
       }
 
       const artifactResult = await client.query<ExportArtifactRow>(
@@ -194,7 +218,11 @@ export class ExportService {
 
       const artifact = artifactResult.rows[0];
       if (!artifact) {
-        throw new RequestFailure(404, "ARTIFACT_NOT_FOUND", "Export artifact record missing");
+        throw new RequestFailure(
+          404,
+          "ARTIFACT_NOT_FOUND",
+          "Export artifact record missing",
+        );
       }
 
       return artifact;

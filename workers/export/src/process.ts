@@ -202,7 +202,9 @@ export async function runOneExportJob(pool: Pool): Promise<boolean> {
     };
 
     let layoutConfig: DiagramLayoutConfig | undefined;
-    const layoutRes = await client.query<{ layout_config: DiagramLayoutConfig }>(
+    const layoutRes = await client.query<{
+      layout_config: DiagramLayoutConfig;
+    }>(
       "SELECT layout_config FROM saved_diagram_layouts WHERE job_id=$1 AND organization_id=$2 AND diagram_type=$3 ORDER BY updated_at DESC LIMIT 1",
       [job.job_id, job.organization_id, job.target_id],
     );

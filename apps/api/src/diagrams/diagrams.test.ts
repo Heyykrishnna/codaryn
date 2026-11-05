@@ -68,15 +68,12 @@ test("DiagramService throws WorkspaceAccessError when user is not a member", asy
   } as unknown as Pool;
 
   const service = new DiagramService(mockPool);
-  await assert.rejects(
-    async () => {
-      await service.getDiagram(
-        "usr_outsider",
-        "00000000-0000-0000-0000-000000000001",
-        "00000000-0000-0000-0000-000000000002",
-        "system",
-      );
-    },
-    WorkspaceAccessError,
-  );
+  await assert.rejects(async () => {
+    await service.getDiagram(
+      "usr_outsider",
+      "00000000-0000-0000-0000-000000000001",
+      "00000000-0000-0000-0000-000000000002",
+      "system",
+    );
+  }, WorkspaceAccessError);
 });

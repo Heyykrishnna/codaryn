@@ -1,7 +1,9 @@
 import type { DocumentSection, SourceEvidence } from "@codaryn/contracts";
 import type { AnalysisSnapshotInput } from "@codaryn/diagram-engine";
 
-export function generateExecutionSections(input: AnalysisSnapshotInput): DocumentSection[] {
+export function generateExecutionSections(
+  input: AnalysisSnapshotInput,
+): DocumentSection[] {
   const sections: DocumentSection[] = [];
   const exec = input.execution;
 
@@ -34,7 +36,11 @@ export function generateExecutionSections(input: AnalysisSnapshotInput): Documen
   });
 
   const fnLines = exec.functions.map((f) => {
-    const ev: SourceEvidence = { path: f.filePath, startLine: f.startLine, endLine: f.endLine };
+    const ev: SourceEvidence = {
+      path: f.filePath,
+      startLine: f.startLine,
+      endLine: f.endLine,
+    };
     allEvidence.push(ev);
     const exp = f.isExported ? " [Exported]" : "";
     return `- **\`${f.name}\`**${exp}: [${f.filePath}:${f.startLine}-${f.endLine}](file://${f.filePath}#L${f.startLine}-L${f.endLine})`;

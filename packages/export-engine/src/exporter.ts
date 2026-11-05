@@ -118,7 +118,8 @@ export function exportArtifact(
   const safeRepo = sanitizeFilename(repoSlug);
   const safeTarget = sanitizeFilename(request.targetId);
   const filename = `${safeRepo}_${safeTarget}_${shortSha}.${ext}`;
-  const contentType = contentTypes[request.format] || "text/plain; charset=utf-8";
+  const contentType =
+    contentTypes[request.format] || "text/plain; charset=utf-8";
   const size = Buffer.byteLength(content, "utf8");
   const hash = createHash("sha256").update(content, "utf8").digest("hex");
 

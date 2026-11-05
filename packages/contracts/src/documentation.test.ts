@@ -64,7 +64,10 @@ test("document search query schema validates length limits", () => {
     documentSearchQuerySchema.safeParse({ query: "auth", limit: 10 }).success,
     true,
   );
-  assert.equal(documentSearchQuerySchema.safeParse({ query: "" }).success, false);
+  assert.equal(
+    documentSearchQuerySchema.safeParse({ query: "" }).success,
+    false,
+  );
   assert.equal(
     documentSearchQuerySchema.safeParse({ query: "x".repeat(101) }).success,
     false,
@@ -72,15 +75,7 @@ test("document search query schema validates length limits", () => {
 });
 
 test("export schemas validate export request and job response formats", () => {
-  const formats = [
-    "svg",
-    "png",
-    "pdf",
-    "markdown",
-    "mermaid",
-    "dbml",
-    "json",
-  ];
+  const formats = ["svg", "png", "pdf", "markdown", "mermaid", "dbml", "json"];
   for (const format of formats) {
     assert.equal(exportFormatSchema.safeParse(format).success, true);
   }

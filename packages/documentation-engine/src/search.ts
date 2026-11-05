@@ -12,7 +12,11 @@ function tokenize(text: string): string[] {
     .filter((t) => t.length > 1);
 }
 
-function extractSnippet(content: string, term: string, maxLength = 200): string {
+function extractSnippet(
+  content: string,
+  term: string,
+  maxLength = 200,
+): string {
   const lowerContent = content.toLowerCase();
   const lowerTerm = term.toLowerCase();
   const index = lowerContent.indexOf(lowerTerm);

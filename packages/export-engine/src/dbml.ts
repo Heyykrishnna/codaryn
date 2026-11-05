@@ -19,7 +19,9 @@ export function renderDbml(schema?: SnapshotSchemaInput): string {
 
   for (const rel of schema.relations) {
     const op = rel.cardinality === "one_to_one" ? "-" : ">";
-    lines.push(`Ref: ${rel.sourceTable}.${rel.sourceColumn} ${op} ${rel.targetTable}.${rel.targetColumn}`);
+    lines.push(
+      `Ref: ${rel.sourceTable}.${rel.sourceColumn} ${op} ${rel.targetTable}.${rel.targetColumn}`,
+    );
   }
 
   return lines.join("\n").trim() + "\n";

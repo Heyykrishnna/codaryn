@@ -6,7 +6,9 @@ import type {
 import type { AnalysisSnapshotInput } from "../types.js";
 import { getLegendForDiagram } from "../legend.js";
 
-export function renderSystemDiagram(input: AnalysisSnapshotInput): DiagramGraph {
+export function renderSystemDiagram(
+  input: AnalysisSnapshotInput,
+): DiagramGraph {
   const nodes: DiagramNode[] = [];
   const edges: DiagramEdge[] = [];
 
@@ -115,8 +117,7 @@ export function renderSystemDiagram(input: AnalysisSnapshotInput): DiagramGraph 
   }
 
   if (backendNode && databaseNode) {
-    const hasRepositories =
-      (input.backend?.repositories?.length ?? 0) > 0;
+    const hasRepositories = (input.backend?.repositories?.length ?? 0) > 0;
     edges.push({
       id: "edge_backend_database",
       source: "sys_backend",
@@ -143,8 +144,10 @@ export function renderSystemDiagram(input: AnalysisSnapshotInput): DiagramGraph 
   }
 
   const uncertaintiesCount =
-    nodes.filter((n) => n.status === "INFERRED" || n.status === "UNRESOLVED").length +
-    edges.filter((e) => e.status === "INFERRED" || e.status === "UNRESOLVED").length;
+    nodes.filter((n) => n.status === "INFERRED" || n.status === "UNRESOLVED")
+      .length +
+    edges.filter((e) => e.status === "INFERRED" || e.status === "UNRESOLVED")
+      .length;
 
   return {
     diagramType: "system",

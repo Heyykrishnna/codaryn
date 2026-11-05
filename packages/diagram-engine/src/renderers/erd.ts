@@ -49,8 +49,10 @@ export function renderErdDiagram(input: AnalysisSnapshotInput): DiagramGraph {
   }
 
   const uncertaintiesCount =
-    nodes.filter((n) => n.status === "INFERRED" || n.status === "UNRESOLVED").length +
-    edges.filter((e) => e.status === "INFERRED" || e.status === "UNRESOLVED").length;
+    nodes.filter((n) => n.status === "INFERRED" || n.status === "UNRESOLVED")
+      .length +
+    edges.filter((e) => e.status === "INFERRED" || e.status === "UNRESOLVED")
+      .length;
 
   return {
     diagramType: "erd",

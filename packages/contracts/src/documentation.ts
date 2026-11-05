@@ -116,7 +116,10 @@ export const exportJobResponseSchema = z.strictObject({
   targetId: z.string().min(1).max(128),
   status: exportJobStatusSchema,
   artifactSize: z.number().int().nonnegative().optional(),
-  artifactHash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  artifactHash: z
+    .string()
+    .regex(/^[a-f0-9]{64}$/)
+    .optional(),
   errorMessage: z.string().max(512).optional(),
   createdAt: z.string().datetime(),
   completedAt: z.string().datetime().optional(),

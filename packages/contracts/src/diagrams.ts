@@ -45,8 +45,13 @@ export const diagramLegendItemSchema = z.strictObject({
   key: z.string().min(1).max(64),
   label: z.string().min(1).max(128),
   description: z.string().min(1).max(512),
-  color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
-  shape: z.enum(["rectangle", "rounded", "circle", "diamond", "cylinder"]).optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
+  shape: z
+    .enum(["rectangle", "rounded", "circle", "diamond", "cylinder"])
+    .optional(),
 });
 
 export type DiagramLegendItem = z.infer<typeof diagramLegendItemSchema>;
@@ -61,7 +66,9 @@ export type DiagramLayoutPoint = z.infer<typeof diagramLayoutPointSchema>;
 export const diagramLayoutConfigSchema = z.strictObject({
   zoom: z.number().min(0.05).max(10).default(1),
   pan: diagramLayoutPointSchema.default({ x: 0, y: 0 }),
-  positions: z.record(z.string().min(1).max(256), diagramLayoutPointSchema).default({}),
+  positions: z
+    .record(z.string().min(1).max(256), diagramLayoutPointSchema)
+    .default({}),
   collapsedGroups: z.array(z.string().min(1).max(128)).default([]),
   engine: z.enum(["dagre", "force", "manual", "grid"]).default("dagre"),
 });

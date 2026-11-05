@@ -1,7 +1,9 @@
 import type { DocumentSection, SourceEvidence } from "@codaryn/contracts";
 import type { AnalysisSnapshotInput } from "@codaryn/diagram-engine";
 
-export function generateApiSections(input: AnalysisSnapshotInput): DocumentSection[] {
+export function generateApiSections(
+  input: AnalysisSnapshotInput,
+): DocumentSection[] {
   const sections: DocumentSection[] = [];
   const routes = input.backend?.routes ?? [];
   const clients = input.frontend?.apiClients ?? [];
@@ -25,7 +27,11 @@ export function generateApiSections(input: AnalysisSnapshotInput): DocumentSecti
   ];
 
   const tableRows = routes.map((r) => {
-    const ev: SourceEvidence = { path: r.filePath, startLine: r.startLine, endLine: r.endLine };
+    const ev: SourceEvidence = {
+      path: r.filePath,
+      startLine: r.startLine,
+      endLine: r.endLine,
+    };
     allEvidence.push(ev);
     const matchedClients = clients.filter(
       (c) =>

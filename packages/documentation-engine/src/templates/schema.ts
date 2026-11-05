@@ -1,7 +1,9 @@
 import type { DocumentSection, SourceEvidence } from "@codaryn/contracts";
 import type { AnalysisSnapshotInput } from "@codaryn/diagram-engine";
 
-export function generateSchemaSections(input: AnalysisSnapshotInput): DocumentSection[] {
+export function generateSchemaSections(
+  input: AnalysisSnapshotInput,
+): DocumentSection[] {
   const sections: DocumentSection[] = [];
   const schema = input.schema;
 
@@ -10,7 +12,8 @@ export function generateSchemaSections(input: AnalysisSnapshotInput): DocumentSe
       id: "schema_empty",
       title: "Database Schema Reference",
       level: 1,
-      content: "No database schema models or tables were identified in this snapshot.",
+      content:
+        "No database schema models or tables were identified in this snapshot.",
       evidence: [],
     });
     return sections;
@@ -19,7 +22,11 @@ export function generateSchemaSections(input: AnalysisSnapshotInput): DocumentSe
   const allEvidence: SourceEvidence[] = [];
 
   for (const table of schema.tables) {
-    const ev: SourceEvidence = { path: table.filePath, startLine: table.startLine, endLine: table.endLine };
+    const ev: SourceEvidence = {
+      path: table.filePath,
+      startLine: table.startLine,
+      endLine: table.endLine,
+    };
     allEvidence.push(ev);
 
     const lines = [
@@ -62,7 +69,9 @@ export function generateSchemaSections(input: AnalysisSnapshotInput): DocumentSe
       title: "Foreign Key Relationships",
       level: 2,
       content: relLines.join("\n"),
-      evidence: schema.relations.flatMap((r) => (r.evidence ? [r.evidence] : [])),
+      evidence: schema.relations.flatMap((r) =>
+        r.evidence ? [r.evidence] : [],
+      ),
     });
   }
 

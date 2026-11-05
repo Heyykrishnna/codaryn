@@ -1,7 +1,9 @@
 import type { DocumentSection } from "@codaryn/contracts";
 import type { AnalysisSnapshotInput } from "@codaryn/diagram-engine";
 
-export function generateSecuritySections(input: AnalysisSnapshotInput): DocumentSection[] {
+export function generateSecuritySections(
+  input: AnalysisSnapshotInput,
+): DocumentSection[] {
   const sections: DocumentSection[] = [];
 
   sections.push({

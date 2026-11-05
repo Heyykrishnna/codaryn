@@ -1,7 +1,9 @@
 import type { DocumentSection, SourceEvidence } from "@codaryn/contracts";
 import type { AnalysisSnapshotInput } from "@codaryn/diagram-engine";
 
-export function generateDependenciesSections(input: AnalysisSnapshotInput): DocumentSection[] {
+export function generateDependenciesSections(
+  input: AnalysisSnapshotInput,
+): DocumentSection[] {
   const sections: DocumentSection[] = [];
   const deps = input.dependencies;
 
@@ -35,7 +37,9 @@ export function generateDependenciesSections(input: AnalysisSnapshotInput): Docu
   });
 
   if (deps.cycles && deps.cycles.length > 0) {
-    const cycleLines = deps.cycles.map((c, i) => `- Cycle ${i + 1}: \`${c.nodeIds.join(" -> ")}\``);
+    const cycleLines = deps.cycles.map(
+      (c, i) => `- Cycle ${i + 1}: \`${c.nodeIds.join(" -> ")}\``,
+    );
     sections.push({
       id: "deps_cycles",
       title: "Circular Dependencies",
@@ -50,7 +54,10 @@ export function generateDependenciesSections(input: AnalysisSnapshotInput): Docu
     id: "deps_external",
     title: "External Package Inventory",
     level: 2,
-    content: extLines.length > 0 ? extLines.join("\n") : "No external packages identified.",
+    content:
+      extLines.length > 0
+        ? extLines.join("\n")
+        : "No external packages identified.",
     evidence: allEvidence,
   });
 

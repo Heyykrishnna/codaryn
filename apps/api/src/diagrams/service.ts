@@ -78,10 +78,18 @@ export class DiagramService {
 
     const job = jobResult.rows[0];
     if (!job) {
-      throw new RequestFailure(404, "JOB_NOT_FOUND", "Analysis job not found in workspace");
+      throw new RequestFailure(
+        404,
+        "JOB_NOT_FOUND",
+        "Analysis job not found in workspace",
+      );
     }
     if (job.status === "cancelled") {
-      throw new RequestFailure(409, "JOB_CANCELLED", "Analysis job was cancelled");
+      throw new RequestFailure(
+        409,
+        "JOB_CANCELLED",
+        "Analysis job was cancelled",
+      );
     }
 
     const snapshot: AnalysisSnapshotInput = {
@@ -182,7 +190,9 @@ export class DiagramService {
       id: string;
       path: string;
       name: string;
-    }>("SELECT id,path,name FROM analysis_graph_nodes WHERE job_id=$1", [jobId]);
+    }>("SELECT id,path,name FROM analysis_graph_nodes WHERE job_id=$1", [
+      jobId,
+    ]);
     if (depNodes.rowCount && depNodes.rowCount > 0) {
       snapshot.dependencies = {
         nodes: depNodes.rows.map((r) => ({
@@ -229,7 +239,11 @@ export class DiagramService {
         );
         const repo = repoRes.rows[0];
         if (!repo) {
-          throw new RequestFailure(404, "JOB_NOT_FOUND", "Analysis job not found");
+          throw new RequestFailure(
+            404,
+            "JOB_NOT_FOUND",
+            "Analysis job not found",
+          );
         }
 
         const id = randomUUID();
@@ -322,7 +336,11 @@ export class DiagramService {
 
       const row = result.rows[0];
       if (!row) {
-        throw new RequestFailure(404, "LAYOUT_NOT_FOUND", "Saved layout not found");
+        throw new RequestFailure(
+          404,
+          "LAYOUT_NOT_FOUND",
+          "Saved layout not found",
+        );
       }
 
       return savedDiagramLayoutSchema.parse({

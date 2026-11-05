@@ -6,7 +6,9 @@ import type {
 import type { AnalysisSnapshotInput } from "../types.js";
 import { getLegendForDiagram } from "../legend.js";
 
-export function renderExecutionDiagram(input: AnalysisSnapshotInput): DiagramGraph {
+export function renderExecutionDiagram(
+  input: AnalysisSnapshotInput,
+): DiagramGraph {
   const nodes: DiagramNode[] = [];
   const edges: DiagramEdge[] = [];
   const execution = input.execution;
@@ -48,8 +50,10 @@ export function renderExecutionDiagram(input: AnalysisSnapshotInput): DiagramGra
   }
 
   const uncertaintiesCount =
-    nodes.filter((n) => n.status === "INFERRED" || n.status === "UNRESOLVED").length +
-    edges.filter((e) => e.status === "INFERRED" || e.status === "UNRESOLVED").length;
+    nodes.filter((n) => n.status === "INFERRED" || n.status === "UNRESOLVED")
+      .length +
+    edges.filter((e) => e.status === "INFERRED" || e.status === "UNRESOLVED")
+      .length;
 
   return {
     diagramType: "execution",

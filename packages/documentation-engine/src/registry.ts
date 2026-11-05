@@ -83,7 +83,8 @@ export function generateDocument(
     (acc, curr) => acc + (curr.evidence ? curr.evidence.length : 0),
     0,
   );
-  const uncertaintyCount = (markdown.match(/INFERRED|UNRESOLVED/g) || []).length;
+  const uncertaintyCount = (markdown.match(/INFERRED|UNRESOLVED/g) || [])
+    .length;
 
   return {
     id: randomUUID(),
