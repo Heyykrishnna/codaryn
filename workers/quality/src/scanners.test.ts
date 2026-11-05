@@ -1,0 +1,234 @@
+import { test } from "node:test";
+import { strict as assert } from "node:assert";
+import { mkdtemp, symlink, rm, readdir, readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { extractQuality } from "@codaryn/engineering-analyzer";
+import { runConfiguredScanners } from "./scanners.js";
+import { runScannerCommand } from "./command.js";
+test("configured Semgrep uses bundled local rules, strips repository ignores and removes the scan workspace", async () => {
+  const files = {
+      "a.ts": "eval(input);",
+      ".semgrepignore": "*",
+      ".semgrep.yml": "malicious",
+    },
+    result = extractQuality(files);
+  let directory = "";
+  await runConfiguredScanners(files, result.snapshot, false, {
+    semgrepBinary: "/trusted/semgrep",
+    allowOsv: false,
+    command: async (_binary, args, cwd, home) => {
+      directory = cwd;
+      assert.deepEqual(await readdir(cwd), ["a.ts"]);
+      assert.ok(home.startsWith(join(cwd, "..")));
+      assert.ok(args.includes("--disable-version-check"));
+      assert.ok(args.includes("--disable-nosem"));
+      assert.ok(!args.includes("auto"));
+      assert.ok(args.includes("--metrics"));
+      const config = args[args.indexOf("--config") + 1];
+      assert.ok(
+        (await readFile(config, "utf8")).includes("codaryn.dynamic-eval"),
+      );
+      return JSON.stringify({
+        version: "fixture",
+        results: [
+          {
+            check_id: "codaryn.dynamic-eval",
+            path: join(cwd, "a.ts"),
+            start: { line: 1 },
+            end: { line: 1 },
+            extra: { lines: "redacted fixture source" },
+          },
+        ],
+      });
+    },
+  });
+  assert.equal(
+    result.snapshot.scanners.find((item) => item.tool === "semgrep")?.status,
+    "completed",
+  );
+  assert.ok(
+    !JSON.stringify(result.snapshot).includes("redacted fixture source"),
+  );
+  await assert.rejects(() => readdir(directory));
+});
+test("OSV transmission requires request opt-in and platform policy; declared ranges are not queried", async () => {
+  const files = {
+    "package.json": JSON.stringify({ dependencies: { example: "^1.0.0" } }),
+    "package-lock.json": JSON.stringify({
+      packages: { "node_modules/example": { version: "1.2.3" } },
+    }),
+  };
+  let requests = 0;
+  const options = {
+    allowOsv: false,
+    request: async () => {
+      requests++;
+      return new Response(JSON.stringify({ results: [{}] }), { status: 200 });
+    },
+  };
+  await runConfiguredScanners(
+    files,
+    extractQuality(files).snapshot,
+    true,
+    options,
+  );
+  assert.equal(requests, 0);
+  await runConfiguredScanners(files, extractQuality(files).snapshot, false, {
+    ...options,
+    allowOsv: true,
+  });
+  assert.equal(requests, 0);
+  const result = extractQuality(files);
+  await runConfiguredScanners(files, result.snapshot, true, {
+    ...options,
+    allowOsv: true,
+  });
+  assert.equal(requests, 1);
+  assert.equal(
+    result.snapshot.scanners.find((item) => item.tool === "osv")?.status,
+    "completed",
+  );
+});
+test("scanner failures are redacted and do not become completed clean results", async () => {
+  const files = { "a.ts": "eval(input);" },
+    result = extractQuality(files);
+  await runConfiguredScanners(files, result.snapshot, false, {
+    semgrepBinary: "/trusted/semgrep",
+    allowOsv: false,
+    command: async () => {
+      throw new Error("sensitive tool output fixture");
+    },
+  });
+  assert.equal(
+    result.snapshot.scanners.find((item) => item.tool === "semgrep")?.status,
+    "failed",
+  );
+  assert.ok(
+    !JSON.stringify(result.snapshot).includes("sensitive tool output fixture"),
+  );
+});
+test("trusted scanner subprocess receives no backend secrets and stderr is never returned", async () => {
+  const root = await mkdtemp(join(tmpdir(), "codaryn-scanner-command-")),
+    binary = join(root, "semgrep");
+  try {
+    await symlink(process.execPath, binary);
+    const raw = await runScannerCommand(
+        binary,
+        [
+          "--eval",
+          "process.stderr.write('private stderr fixture');process.stdout.write(JSON.stringify({keys:Object.keys(process.env)}));",
+        ],
+        root,
+        root,
+      ),
+      result: unknown = JSON.parse(raw);
+    assert.ok(
+      typeof result === "object" &&
+        result !== null &&
+        "keys" in result &&
+        Array.isArray(result.keys),
+    );
+    assert.ok(!result.keys.includes("DATABASE_URL"));
+    assert.ok(!result.keys.includes("GITHUB_APP_PRIVATE_KEY"));
+    assert.ok(!raw.includes("private stderr fixture"));
+    await assert.rejects(() =>
+      runScannerCommand(process.execPath, [], root, root),
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("credential signals keep raw lockfiles away from the OSV CLI and query only sanitized dependencies", async () => {
+  const credential = "ghp_" + "s".repeat(24);
+  const files = {
+    "config.ts": "const password='" + credential + "';",
+    "package-lock.json": JSON.stringify({
+      packages: {
+        ["node_modules/" + credential]: { version: "1.2.3" },
+        "node_modules/example": { version: "2.0.0" },
+      },
+    }),
+  };
+  const result = extractQuality(files);
+  let commands = 0,
+    requests = 0;
+  await runConfiguredScanners(files, result.snapshot, true, {
+    allowOsv: true,
+    osvBinary: "/trusted/osv-scanner",
+    command: async () => {
+      commands++;
+      throw new Error("Raw lockfile must not be scanned");
+    },
+    request: async (_url, options) => {
+      requests++;
+      assert.ok(!String(options?.body).includes(credential));
+      assert.ok(String(options?.body).includes('"name":"example"'));
+      return Response.json({ results: [{}] });
+    },
+  });
+  assert.equal(commands, 0);
+  assert.equal(requests, 1);
+  assert.equal(
+    result.snapshot.scanners.find((scanner) => scanner.tool === "osv")?.status,
+    "partial",
+  );
+});
+
+test("OSV CLI receives only curated locks and fixed no-resolution scan arguments", async () => {
+  const files = {
+    "package-lock.json": JSON.stringify({
+      packages: { "node_modules/example": { version: "1.2.3" } },
+    }),
+    "osv-scanner.toml": "untrusted",
+    "package.json": "{}",
+    "install.sh": "exit 1",
+  };
+  const result = extractQuality(files);
+  let calls = 0;
+  await runConfiguredScanners(files, result.snapshot, true, {
+    allowOsv: true,
+    osvBinary: "/trusted/osv-scanner",
+    command: async (binary, args, cwd) => {
+      calls++;
+      assert.equal(binary, "/trusted/osv-scanner");
+      assert.deepEqual(await readdir(cwd), ["package-lock.json"]);
+      assert.ok(args.includes("--no-resolve"));
+      assert.ok(args.includes("--no-call-analysis=go"));
+      assert.ok(args.includes("--all-packages"));
+      assert.ok(args.includes("--lockfile=:" + join(cwd, "package-lock.json")));
+      assert.equal(
+        await readFile(args[args.indexOf("--config") + 1], "utf8"),
+        "",
+      );
+      return JSON.stringify({
+        results: [
+          {
+            source: { path: join(cwd, "package-lock.json") },
+            packages: [
+              {
+                package: {
+                  name: "example",
+                  version: "1.2.3",
+                  ecosystem: "npm",
+                },
+                vulnerabilities: [{ id: "GHSA-fixture-only" }],
+              },
+            ],
+          },
+        ],
+      });
+    },
+  });
+  assert.equal(calls, 1);
+  assert.ok(
+    result.snapshot.findings.some(
+      (finding) => finding.ruleId === "osv:GHSA-fixture-only",
+    ),
+  );
+  assert.equal(
+    result.snapshot.scanners.find((scanner) => scanner.tool === "osv")?.status,
+    "completed",
+  );
+});

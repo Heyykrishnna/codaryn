@@ -61,18 +61,7 @@ export class ExecutionService {
     return { snapshots: rows.map(summary), page, pageSize: 20 };
   }
   jobs(actor: string, workspace: string) {
-    return this.workspace(actor, workspace, async (client) => {
-      const rows = await client.query<{
-        id: string;
-        commit_sha: string;
-        full_name: string;
-        ref: string;
-      }>(
-        "SELECT j.id,j.commit_sha,r.full_name,j.ref FROM analysis_jobs j JOIN connected_repositories r ON r.id=j.repository_id JOIN github_installations i ON i.id=r.installation_id WHERE j.organization_id=$1 AND i.organization_id=$1 AND i.connected=true AND r.active=true AND j.status<>'cancelled' ORDER BY j.created_at DESC,j.id LIMIT 20",
-        [workspace],
-      );
-      return { jobs: rows.rows };
-    });
+    return this.store.jobs(actor, workspace);
   }
   overview(actor: string, workspace: string, id: string) {
     return this.workspace(actor, workspace, async (client) => {

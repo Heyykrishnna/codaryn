@@ -2,7 +2,7 @@
 
 ## Status and decisions
 
-This is a planned modular monorepo. The repository uses the existing Next.js application and has moved to a pnpm/Turborepo workspace. A Fastify health endpoint, shared contracts, a database migration and a foundation worker are present. Product services and secure repository analysis are not yet implemented.
+The modular pnpm/Turborepo monorepo implements authenticated workspace and GitHub access, immutable analysis configuration, bounded ingestion and TypeScript/frontend/backend/schema/execution/engineering-quality analyzers. Later comparison and export services remain planned. Each implemented phase documents its current contracts and analysis boundaries.
 
 ## Target flow
 
@@ -13,7 +13,7 @@ Every snapshot belongs to a workspace, repository and immutable commit SHA, and 
 ## Repository boundaries
 
 - `apps/web`: existing Next.js presentation application; feature areas are reserved under `src/features`.
-- `apps/api`: future control plane, authorization and versioned API.
+- `apps/api`: authenticated control plane, workspace authorization and versioned APIs.
 - `workers`: independently scalable ingestion, analysis, webhook, comparison and export processes.
 - `packages/contracts`: shared Zod schemas and initial analyzer types; the health response uses a validated contract.
 - `packages`: reserved analysis pipeline, graph, adapters, data and output modules. Analyzer directories group adapters by domain, not microservices.
@@ -39,3 +39,7 @@ Migrations use an advisory transaction lock and record checksums. An existing in
 ## GitHub and ingestion boundary
 
 GitHub App ownership is checked separately from application login. Installations are bound to a workspace; session authorization and upstream GitHub permissions gate repository operations. The API resolves immutable commits and persists queue requests, while the ingestion worker downloads and processes bounded archives in a private temporary directory. Installation generations fence queued and running work after revocation. Only inventory metadata survives processing. See [GitHub setup](github.md) for deployment limits and the webhook/synchronization model.
+
+## Engineering Quality
+
+[Phase 10 architecture](phases/10-infrastructure-testing-security/architecture.md) describes infrastructure/test/security snapshots, scanner isolation, explicit external OSV consent and administrator-only audited finding reviews. The quality worker shares bounded archive/lease processing with schema and execution workers.

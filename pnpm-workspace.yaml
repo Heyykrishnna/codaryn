@@ -10,6 +10,7 @@ packages:
   - packages/symbol-resolver
   - packages/dependency-graph
   - packages/frontend-analyzer
+  - packages/engineering-analyzer
   - packages/artifact-worker
   - packages/execution-analyzer
   - packages/schema-engine
@@ -20,3 +21,4 @@ packages:
   - workers/ingestion
   - workers/schema
   - workers/execution
+  - workers/quality

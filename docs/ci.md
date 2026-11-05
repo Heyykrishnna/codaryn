@@ -37,3 +37,7 @@ Passing local checks does not change existing GitHub or SonarCloud statuses. Tho
 ## Validation result
 
 The full eight-step workflow above passed in Linux with Node 22.23.4, using a frozen installation, no local `.env` and disposable PostgreSQL/Redis. The production build, all configured unit tests, 40 application-table verification, authentication schema verification and the complete integration suite passed. The API integration group ran 17 tests with zero failures. Remote GitHub/SonarCloud status remains pending analysis of a commit containing these source changes.
+
+## Phase 10 checks
+
+The workflow includes the quality worker integration chain and builds schema, execution and quality worker images after project checks. The 19 quality analyzer/scanner fixtures also run in its non-root Node 22 image with a read-only root and no network. Production dependency auditing uses `pnpm audit --prod --audit-level=moderate`. Phase 10 SonarCloud verification is omitted at the user’s explicit request; this does not represent a passing SonarCloud result. See [Phase 10 verification](phases/10-infrastructure-testing-security/verification.md).

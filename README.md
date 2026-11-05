@@ -1,8 +1,8 @@
 # codaryn
 
-Every connection, in view. codaryn is a planned, evidence-backed architecture workspace for source repositories. It uses deterministic static analysis and no LLM.
+Every connection, in view. codaryn is an evidence-backed architecture workspace for source repositories. It uses deterministic static analysis and no LLM.
 
-This repository is an initial scaffold, not a working analysis platform. A basic web application, API, database migration and worker foundation are present; GitHub authentication and workspace management are implemented; GitHub repository connections and static ingestion are implemented; analyzers and exports remain future work.
+Implemented capabilities include GitHub authentication and workspace management, repository ingestion, Analysis Studio, TypeScript/frontend/backend intelligence, Schema Studio, Execution Explorer and Engineering Quality. Analysis is static with documented boundaries; later comparison, export and production-launch phases remain planned. See each phase’s verification record for actual validation and optional-tool requirements.
 
 ## Start here
 

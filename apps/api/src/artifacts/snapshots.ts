@@ -17,12 +17,17 @@ export interface ArtifactRow {
 const tables = {
   schema: "analysis_schema_snapshots",
   execution: "analysis_execution_snapshots",
+  quality: "analysis_quality_snapshots",
 } as const;
-const counts = { schema: "table_count", execution: "function_count" } as const;
+const counts = {
+  schema: "table_count",
+  execution: "function_count",
+  quality: "finding_count",
+} as const;
 export class ArtifactSnapshots {
   constructor(
     private readonly pool: Pool,
-    private readonly kind: "schema" | "execution",
+    private readonly kind: "schema" | "execution" | "quality",
   ) {}
   workspace<T>(
     actor: string,
@@ -39,6 +44,20 @@ export class ArtifactSnapshots {
       write,
     );
   }
+  jobs(actor: string, workspace: string) {
+    return this.workspace(actor, workspace, async (client) => {
+      const rows = await client.query<{
+        id: string;
+        commit_sha: string;
+        full_name: string;
+        ref: string;
+      }>(
+        "SELECT j.id,j.commit_sha,r.full_name,j.ref FROM analysis_jobs j JOIN connected_repositories r ON r.id=j.repository_id JOIN github_installations i ON i.id=r.installation_id WHERE j.organization_id=$1 AND i.organization_id=$1 AND i.connected=true AND r.active=true AND j.status<>'cancelled' ORDER BY j.created_at DESC,j.id LIMIT 20",
+        [workspace],
+      );
+      return { jobs: rows.rows };
+    });
+  }
   async load(client: PoolClient, workspace: string, id: string) {
     const result = await client.query<ArtifactRow>(
       `SELECT *,${counts[this.kind]} AS object_count FROM ${tables[this.kind]} WHERE id=$1 AND organization_id=$2`,
@@ -54,6 +73,18 @@ export class ArtifactSnapshots {
       workspace,
       async (client) => {
         const table = tables[this.kind];
+        if (this.kind === "quality" && infer) {
+          const roles = await client.query<{ role: string }>(
+            "SELECT role FROM organization_members WHERE organization_id=$1 AND user_id=$2 FOR SHARE",
+            [workspace, actor],
+          );
+          if (!["owner", "admin"].includes(roles.rows[0]?.role ?? ""))
+            throw new RequestFailure(
+              403,
+              "FORBIDDEN",
+              "An administrator must authorize external dependency scans",
+            );
+        }
         const recent = await client.query<{ count: string }>(
           `SELECT count(*) FROM ${table} WHERE organization_id=$1 AND created_at>now()-interval '1 minute'`,
           [workspace],
@@ -61,7 +92,11 @@ export class ArtifactSnapshots {
         if (Number(recent.rows[0].count) >= 5)
           throw new RequestFailure(
             429,
-            this.kind === "schema" ? "SCHEMA_LIMIT" : "EXECUTION_LIMIT",
+            {
+              schema: "SCHEMA_LIMIT",
+              execution: "EXECUTION_LIMIT",
+              quality: "QUALITY_LIMIT",
+            }[this.kind],
             "Wait before requesting more snapshots",
           );
         const jobs = await client.query<{
@@ -75,8 +110,13 @@ export class ArtifactSnapshots {
         const job = jobs.rows[0];
         if (!job) throw new WorkspaceAccessError();
         const id = randomUUID();
-        const extra = this.kind === "schema" ? ",infer_relations" : "",
-          value = this.kind === "schema" ? ",$8" : "";
+        const extra =
+            this.kind === "schema"
+              ? ",infer_relations"
+              : this.kind === "quality"
+                ? ",external_scans"
+                : "",
+          value = this.kind !== "execution" ? ",$8" : "";
         const parameters: unknown[] = [
           id,
           jobId,
@@ -86,7 +126,7 @@ export class ArtifactSnapshots {
           job.commit_sha,
           job.generation,
         ];
-        if (this.kind === "schema") parameters.push(infer);
+        if (this.kind !== "execution") parameters.push(infer);
         const result = await client.query<ArtifactRow>(
           `INSERT INTO ${table} (id,job_id,organization_id,repository_id,actor_id,commit_sha,installation_generation${extra}) VALUES ($1,$2,$3,$4,$5,$6,$7${value}) RETURNING *,${counts[this.kind]} AS object_count`,
           parameters,

@@ -1,6 +1,6 @@
 # Security and privacy
 
-These are requirements for future implementation, not controls provided by this scaffold.
+These are cross-cutting requirements. Implemented controls and remaining boundaries are recorded in each phase’s architecture and verification documents.
 
 - Authorize every workspace, repository, snapshot and export on the server; test cross-tenant isolation.
 - Use a least-privilege GitHub App, short-lived installation tokens, encrypted secrets and verified webhooks with replay protection.
@@ -10,3 +10,5 @@ These are requirements for future implementation, not controls provided by this 
 - Scope artifacts to authorized snapshots, use short-lived signed links, audit administrative actions and test deletion and recovery.
 
 Threat modeling, isolation enforcement and security review are required before ingesting real repositories. See the full specification for the complete control list.
+
+Engineering Quality applies workspace authorization, versioned administrator review, fixed credential-free finding descriptions and isolated optional scanners. External dependency lookups require explicit administrator consent and deployment policy. See [Phase 10 security boundaries](phases/10-infrastructure-testing-security/architecture.md); supported-pattern scanning does not prove that arbitrary source contains no secrets or vulnerabilities.

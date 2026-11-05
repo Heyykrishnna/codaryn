@@ -58,10 +58,17 @@ Security:
 
 ## Planning and dependencies
 
-**Status:** Planned; none of the acceptance criteria is claimed as complete by this document.
+**Status:** Implemented with bounded static analysis and explicit optional-scanner availability. See [verification](verification.md) for executed checks and limits.
 
 **Dependencies:** Phase 5 graph and evidence, plus repository ingestion and job execution.
 
-Implement the scope above with the shared requirements in the [phase index](../README.md). Record design decisions, supported versions, migrations, operational requirements and limitations as implementation progresses. The acceptance criteria above are release obligations; the [acceptance test plan](acceptance-tests.md) turns them into executable scenarios to implement and record.
+The `/quality` workspace explorer combines infrastructure, test/coverage/dependency inventories, security findings and audited administrator review. A dedicated worker produces immutable commit-bound snapshots. Optional external scans default off.
+
+- [Architecture and security boundaries](architecture.md)
+- [Supported analysis and limitations](supported-analysis.md)
+- [API contracts](api.md)
+- [Operations and deployment](operations.md)
+- [Acceptance tests](acceptance-tests.md)
+- [Verification evidence](verification.md)
 
 [Full product specification](../../product-specification.md) · [All phases](../README.md)
