@@ -38,3 +38,5 @@ The ingestion container receives the canonical `DATABASE_URL`, so it can use Neo
 The connection credential provided in chat should be rotated, then the ignored local configuration and deployment secret store should be updated. Credential rotation was not performed automatically. Existing data in another database was not deleted or copied.
 
 Neon documents compatibility with conventional PostgreSQL clients and the distinction between pooled and direct connections in its [connection guide](https://neon.com/docs/connect/connect-from-any-app) and [pooling guide](https://neon.com/docs/connect/connection-pooling).
+
+Phase 10 adds migration `0013_engineering_quality.sql`: immutable quality snapshots, current finding reviews and review events. Both isolated testing and the configured runtime schema verified 45 application tables after this migration. Test fixtures were confined to a disposable local database. See [Phase 10 architecture](phases/10-infrastructure-testing-security/architecture.md) for review atomicity and retention behavior.

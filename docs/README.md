@@ -24,3 +24,5 @@ When implementation changes a contract or behavior, update the relevant guide an
 - [Schema Studio](phases/08-schema-studio/README.md): static schema adapters, immutable snapshots, ERDs, evidence, exports and structural comparison.
 
 [Execution Explorer](phases/09-execution-data-flow/README.md) documents call resolution, control/data-flow limits and secure worker operation.
+
+[Engineering Quality](phases/10-infrastructure-testing-security/README.md) documents infrastructure, test relationships, coverage provenance, dependency security and audited review.

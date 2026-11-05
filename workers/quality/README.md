@@ -9,3 +9,5 @@ Static built-in rules run without external services. Optional `SEMGREP_BINARY` a
 OSV additionally requires `ALLOW_OSV_NETWORK=true` in both API and worker and an explicit administrator-authorized request. The fallback OSV API queries at most 100 unique resolved npm package versions. Declared ranges are not queried. OSV CLI scans at most 20 lockfiles without dependency resolution or Go call analysis. No repository build is run. Results distinguish disabled, unavailable, failed, partial and completed scans; unavailable tools never imply a clean repository.
 
 Run unit tests with `pnpm --filter @codaryn/quality-worker test`. Integration tests require a disposable migrated PostgreSQL database and explicit `DATABASE_URL` and `DIRECT_DATABASE_URL`; use `pnpm --filter @codaryn/quality-worker test:integration`.
+
+When supported credential signals occur anywhere in the snapshot, external vulnerability lookup uses the sanitized metadata-only OSV API path, even when an OSV CLI is configured. Raw lockfiles from those snapshots are not passed to external scanner commands; redacted identifiers are omitted and scanner status/messages disclose packages that were not queried.

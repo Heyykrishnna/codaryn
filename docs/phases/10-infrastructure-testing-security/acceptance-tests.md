@@ -1,25 +1,18 @@
-# Phase 10: acceptance test plan
+# Phase 10 acceptance tests
 
-**Status:** Planned; these scenarios have not been executed. Scope and original acceptance criteria: [phase overview](README.md).
+The original requirements are preserved in [the phase overview](README.md). Automated scenarios below have passed locally; release/environment limits are recorded in [verification](verification.md).
 
-Implement these scenarios at the appropriate unit, integration, end-to-end or operational layer. Use controlled fixtures with expected outputs, isolate test data, and record the command, environment, actual result and evidence for each run. A scenario passes only when its expected result is observed.
+| ID       | Scenario                                                                                                       | Expected result and test evidence                                                                                                                                                                                                                                                                                     |
+| -------- | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P10-AT01 | Parse Docker, Compose and Actions fixtures, including resource references and malformed/dynamic configuration. | Supported resources, dependencies, mounts and workflow jobs retain evidence; unsupported configuration is diagnostic. `engineering.test.ts`.                                                                                                                                                                          |
+| P10-AT02 | Parse Jest/Vitest aliases, parameterized/mode declarations, source calls, LCOV and Istanbul reports.           | Potential links resolve to actual indexed source definitions; line/statement metrics and report locations remain distinct; repeated LCOV merges; outside source paths are rejected. `engineering.test.ts`, execution analyzer nested-import regression.                                                               |
+| P10-AT03 | Run credential, dynamic-code and configuration positives/negatives and sanitized scanner imports.              | Fixed evidence findings; credential values and raw scanner messages absent, including credentials reused as labels; malformed/unsupported cases disclosed. `engineering.test.ts`, `scanners.test.ts`.                                                                                                                 |
+| P10-AT04 | Compare manifest ranges and resolved npm/pnpm versions; simulate OSV success/failure/policy gates.             | Declared/resolved provenance is explicit, only valid resolved versions are queried, unknown severity stays unknown, failed/unavailable scans never become a clean claim. Analyzer and scanner fixtures.                                                                                                               |
+| P10-AT05 | Exercise authenticated APIs with outsiders, invalid bodies/filters, missing CSRF and downgraded roles.         | 401/403/404/400 as appropriate; no cross-workspace evidence; ordinary members cannot review or authorize external scans. `quality.integration.test.ts`.                                                                                                                                                               |
+| P10-AT06 | Save review, retry stale revision and reach rate limit.                                                        | Atomic current-review/history/workspace audit records; stale revision 409, 60/minute limit 429; immutable snapshot hash unchanged. API integration fixture.                                                                                                                                                           |
+| P10-AT07 | Claim concurrent requests and revoke installation/role before extraction.                                      | One claim/download, publication denied after revocation, no external request after pre-extraction role downgrade; commit mismatch and exhausted lease produce safe failure codes. Quality worker integration fixture.                                                                                                 |
+| P10-AT08 | Invoke a controlled local scanner subprocess.                                                                  | Minimal environment excludes backend secrets; stderr is discarded; only trusted command names and bounded JSON imports accepted; curated source ignores repository scanner configuration; temporary files cleaned. Scanner unit fixtures.                                                                             |
+| P10-AT09 | Navigate signed-in `/quality` on desktop and 390-pixel viewport.                                               | Workspace selector, empty-state guidance, disabled queue action without a job, snapshot pagination and explicit external-lookup disclosure render; mobile document has no horizontal overflow. Manual browser verification. Populated interactions require a real job and remain a disclosed visual-validation limit. |
+| P10-AT10 | Apply/reapply migrations and run project checks plus worker image builds.                                      | 45 application tables and auth schema synchronized; full validation passes; default scanner unavailability remains visible. See verification record.                                                                                                                                                                  |
 
-| ID | Scenario and action | Expected result |
-|---|---|---|
-| P10-AT01 | **Infrastructure extraction:** Analyze Dockerfile, Compose and GitHub Actions fixtures. | Supported resources and workflow dependencies match configuration evidence. |
-| P10-AT02 | **Test relationships:** Analyze Vitest and Jest fixtures and ingest a coverage report. | Supported test-to-symbol links and coverage provenance are displayed accurately. |
-| P10-AT03 | **Security findings:** Run supported rules against positive, negative and unsupported cases. | Findings have evidence and limitations; sensitive matched values are redacted. |
-| P10-AT04 | **Dependency provenance:** Compare vulnerability results for a declared range and a resolved lockfile version. | Results clearly distinguish declared from resolved versions and report unavailable scanner data. |
-
-## Cross-cutting checks
-
-- Verify relevant loading, empty, error and permission-denied states, including keyboard access for affected UI.
-- Verify server-side authorization and workspace isolation for affected resources; avoid secrets and private source in logs and errors.
-- Test malformed input, boundary conditions, retries and failures appropriate to the change. Confirm evidence and uncertainty are represented accurately.
-- Run the applicable lint, type checks, tests and production build; record unavailable checks and unresolved failures. Update fixtures, documentation and supported-version information.
-
-## Completion evidence
-
-- Implementation and review links; fixture and version identifiers.
-- Test commands, environment, date, actual outcomes and any defects or limitations.
-- Evidence that every original acceptance criterion in the overview is met; obtain the relevant release owners’ review before marking the phase complete.
+Fixture tests use disposable PostgreSQL and Redis, not user workspaces. No live external scanner or real repository test execution is required or claimed by these deterministic fixtures. Production enablement of optional tools requires operator installation, policy review and a live smoke test.
