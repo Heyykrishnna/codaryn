@@ -32,9 +32,21 @@ Both database URLs and Redis must explicitly reference disposable services for f
 
 Validation date: November 5, 2026. Host Node 24.11.1, CI/runtime image Node 22 and pnpm 10.19.0.
 
-The initial full production build, lint and type checks passed. The complete integration chain passed with 28 tests, including 21 API tests and the comparison worker lifecycle. The version engine has eleven passing regression fixtures. The full unit chain passed before final resource/identity hardening; it is rerun before push. Additive migration 0015 and matching Drizzle definitions verify 52 application tables plus authentication. The same tested migration was applied to Neon, and its application/authentication schema verification passed without inserting fixtures.
+| Check                                            | Actual result                                                                                                                                                              |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frozen installation and formatting               | Passed. Phase documents formatted explicitly; documentation links validated.                                                                                               |
+| Lint, type checking, production build            | Passed: 22 lint tasks, 51 type/build-dependency tasks and 30 production-build tasks. `/comparisons` is included.                                                           |
+| Full unit chain                                  | Passed: 47 tasks, including eleven version-engine fixtures.                                                                                                                |
+| Integration chain                                | Passed: 28 tests across all configured suites, including 21 API tests and the comparison-worker lifecycle.                                                                 |
+| Migration synchronization/reapplication          | Passed: 52 application tables and authentication schema verified; applied migrations unchanged.                                                                            |
+| Production dependency audit                      | Passed: no known vulnerabilities reported by `pnpm audit --prod --audit-level=moderate`.                                                                                   |
+| Schema/execution/quality/comparison image builds | All four passed against the final production source.                                                                                                                       |
+| Restricted Node 22 fixtures                      | Passed: 19 existing quality fixtures and eleven incremental/comparison fixtures, non-root, no network, read-only root, bounded temporary storage and dropped capabilities. |
+| Runtime Neon synchronization                     | Passed: tested additive migration applied; 52 application tables and authentication schema verified without fixtures.                                                      |
 
-Final formatting, frozen installation, lint/type/build/unit/audit checks, migration reapplication and Docker/isolated Node 22 fixture outcomes are recorded in the release commit/PR after execution. A pending check is not a passing result.
+Initial fixture runs exposed a response compatibility regression, a Drizzle unique-constraint naming mismatch, and test-only UUID type/cast mistakes. These were corrected and the full applicable checks rerun. Final review also added explicit manifest identity validation, safe binding/computed-name handling, stable duplicate declaration identities, long-path preservation and early extraction bounds. No existing test was weakened or quality rule disabled.
+
+Both database URLs and Redis were explicitly directed to disposable services for every fixture run. Historical snapshot hashes were checked after comparison; automatic publication and job completion were verified in one transaction. No credentials or fixture source bodies were committed.
 
 ## Browser and deployment boundaries
 
