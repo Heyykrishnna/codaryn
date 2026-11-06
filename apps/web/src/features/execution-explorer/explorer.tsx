@@ -267,7 +267,9 @@ export function ExecutionExplorer({
         </div>
       )}
       {history.data && !history.data.snapshots.length && (
-        <p className="text-xs text-zinc-500">No execution snapshots on this page.</p>
+        <p className="text-xs text-zinc-500">
+          No execution snapshots on this page.
+        </p>
       )}
       {overview.loading && (
         <div className="py-6">
@@ -433,7 +435,10 @@ export function ExecutionExplorer({
               </label>
               {neighborhood.loading && (
                 <div className="py-2">
-                  <LoaderOrb variant="inline" label="Loading call neighborhood…" />
+                  <LoaderOrb
+                    variant="inline"
+                    label="Loading call neighborhood…"
+                  />
                 </div>
               )}
               {neighborhood.data && (
@@ -462,7 +467,10 @@ export function ExecutionExplorer({
               )}
               {detail.loading && (
                 <div className="py-2">
-                  <LoaderOrb variant="inline" label="Loading function inspector…" />
+                  <LoaderOrb
+                    variant="inline"
+                    label="Loading function inspector…"
+                  />
                 </div>
               )}
               {detail.data && (
@@ -537,7 +545,10 @@ export function ExecutionExplorer({
                 </button>
                 {paths.loading && (
                   <div className="py-2">
-                    <LoaderOrb variant="inline" label="Searching bounded paths…" />
+                    <LoaderOrb
+                      variant="inline"
+                      label="Searching bounded paths…"
+                    />
                   </div>
                 )}
                 {paths.data && (
@@ -558,7 +569,7 @@ export function ExecutionExplorer({
                               {index > 0 && " → "}
                               <button
                                 type="button"
-                                className="text-indigo-600 underline dark:text-indigo-400"
+                                className="text-zinc-300 underline transition-colors hover:text-white"
                                 onClick={() => setFunctionId(id)}
                               >
                                 {paths.data?.functions.find(
