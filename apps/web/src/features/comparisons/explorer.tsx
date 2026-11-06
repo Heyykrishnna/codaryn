@@ -118,7 +118,7 @@ export function ComparisonExplorer({
 
   return (
     <div className="flex min-w-0 flex-col gap-8">
-      <div className="flex flex-col gap-2 rounded-xl border border-[#232734] bg-[#14161f] p-4 text-xs text-zinc-300">
+      <div className="flex flex-col gap-2 rounded-xl border border-dotted border-zinc-800 bg-[#111216] p-4 text-xs text-zinc-300">
         <div className="flex items-center justify-between">
           <span className="font-semibold text-white">
             Architecture Comparisons & Impact Diff
@@ -137,7 +137,7 @@ export function ComparisonExplorer({
         {message && (
           <div
             role="alert"
-            className="mt-1 rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 font-mono text-xs text-blue-300"
+            className="mt-1 rounded-lg border border-dotted border-zinc-700 bg-zinc-900 px-3 py-1.5 font-mono text-xs text-zinc-300"
           >
             {message}
           </div>
@@ -154,7 +154,7 @@ export function ComparisonExplorer({
       )}
 
       <form
-        className="flex flex-col gap-4 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl"
+        className="flex flex-col gap-4 rounded-2xl border border-dotted border-zinc-800 bg-[#111216] p-6 shadow-xl"
         action={() =>
           mutate("request", {
             jobId,
@@ -176,9 +176,9 @@ export function ComparisonExplorer({
           />
         </div>
 
-        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#232734] bg-[#161821] p-3 text-xs text-zinc-300">
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-dotted border-zinc-800 bg-zinc-900/60 p-3 text-xs text-zinc-300">
           <input
-            className="mt-0.5 rounded accent-blue-600"
+            className="mt-0.5 rounded accent-zinc-400"
             type="checkbox"
             checked={verify}
             onChange={(e) => setVerify(e.target.checked)}
@@ -201,7 +201,7 @@ export function ComparisonExplorer({
         </div>
       </form>
 
-      <section className="flex flex-col gap-4 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl">
+      <section className="flex flex-col gap-4 rounded-2xl border border-dotted border-zinc-800 bg-[#111216] p-6 shadow-xl">
         <h2 className="text-sm font-bold tracking-wider text-zinc-300 uppercase">
           Diff Baseline & Target
         </h2>
@@ -240,7 +240,7 @@ export function ComparisonExplorer({
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-t border-[#222532] pt-2">
+        <div className="flex items-center justify-between border-t border-dotted border-zinc-800 pt-2">
           <CandyButton
             type="button"
             variant="pearl"
@@ -276,11 +276,11 @@ export function ComparisonExplorer({
       </section>
 
       {overview.data && (
-        <section className="flex flex-col gap-4 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl">
-          <div className="flex items-center justify-between border-b border-[#222532] pb-4">
+        <section className="flex flex-col gap-4 rounded-2xl border border-dotted border-zinc-800 bg-[#111216] p-6 shadow-xl">
+          <div className="flex items-center justify-between border-b border-dotted border-zinc-800 pb-4">
             <h2 className="text-base font-bold text-white">
               Snapshot metadata ·{" "}
-              <span className="font-mono text-xs text-blue-400">{status}</span>
+              <span className="font-mono text-xs text-zinc-300">{status}</span>
             </h2>
             <span className="font-mono text-xs text-zinc-400">
               SHA: {overview.data.snapshot.commitSha.slice(0, 12)}
@@ -288,25 +288,25 @@ export function ComparisonExplorer({
           </div>
 
           <div className="grid grid-cols-2 gap-3 font-mono text-xs sm:grid-cols-4">
-            <div className="rounded-xl border border-[#252936] bg-[#161821] p-3">
+            <div className="rounded-xl border border-dotted border-zinc-800 bg-zinc-900/60 p-3">
               <span className="mb-1 block text-zinc-500">Indexed Symbols</span>
               <span className="font-semibold text-white">
                 {overview.data.symbols}
               </span>
             </div>
-            <div className="rounded-xl border border-[#252936] bg-[#161821] p-3">
+            <div className="rounded-xl border border-dotted border-zinc-800 bg-zinc-900/60 p-3">
               <span className="mb-1 block text-zinc-500">Relationships</span>
               <span className="font-semibold text-white">
                 {overview.data.relationships}
               </span>
             </div>
-            <div className="rounded-xl border border-[#252936] bg-[#161821] p-3">
+            <div className="rounded-xl border border-dotted border-zinc-800 bg-zinc-900/60 p-3">
               <span className="mb-1 block text-zinc-500">Schema Objects</span>
               <span className="font-semibold text-white">
                 {overview.data.schemaObjects}
               </span>
             </div>
-            <div className="rounded-xl border border-[#252936] bg-[#161821] p-3">
+            <div className="rounded-xl border border-dotted border-zinc-800 bg-zinc-900/60 p-3">
               <span className="mb-1 block text-zinc-500">Diagnostics</span>
               <span className="font-semibold text-white">
                 {overview.data.diagnostics}
@@ -326,13 +326,13 @@ export function ComparisonExplorer({
         />
       )}
 
-      <section className="flex flex-col gap-4 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl">
+      <section className="flex flex-col gap-4 rounded-2xl border border-dotted border-zinc-800 bg-[#111216] p-6 shadow-xl">
         <h2 className="text-sm font-bold tracking-wider text-zinc-300 uppercase">
           Enforce Branch Push Policy
         </h2>
         <div className="flex flex-wrap items-center gap-3">
           <input
-            className="h-9 rounded-lg border border-[#2b2f3d] bg-[#14161f] px-3 font-mono text-xs text-white placeholder-zinc-500 outline-none focus:border-blue-500"
+            className="h-9 rounded-lg border border-dotted border-zinc-700 bg-zinc-900 px-3 font-mono text-xs text-white placeholder-zinc-500 outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400"
             value={ref}
             onChange={(e) => setRef(e.target.value)}
             placeholder="e.g. refs/heads/main"
