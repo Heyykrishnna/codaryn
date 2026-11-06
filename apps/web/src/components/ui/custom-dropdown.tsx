@@ -225,9 +225,7 @@ export function DropdownItem({
 
       <div className="flex shrink-0 items-center gap-1.5">
         {badge && (
-          <span className="font-mono text-[10px] text-zinc-400">
-            {badge}
-          </span>
+          <span className="font-mono text-[10px] text-zinc-400">{badge}</span>
         )}
         {shortcut && (
           <kbd className="rounded border border-dotted border-zinc-700 bg-zinc-900 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">

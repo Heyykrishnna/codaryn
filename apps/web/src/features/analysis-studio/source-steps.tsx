@@ -112,7 +112,10 @@ export function RepositoryStep({
       {repositories.length === 0 && (
         <div className="rounded-xl border border-dotted border-zinc-800 bg-[#121318] p-4 text-xs text-zinc-400">
           No repositories found on page {repoPage}.{" "}
-          <Link className="text-zinc-200 underline hover:text-white" href="/repositories">
+          <Link
+            className="text-zinc-200 underline hover:text-white"
+            href="/repositories"
+          >
             Connect and sync your GitHub installation
           </Link>
           .
@@ -340,9 +343,7 @@ export function ProfileStep({
                   {preset.configuration.depth}
                 </span>
               </div>
-              <span className="font-mono text-[10px] text-zinc-300">
-                Load
-              </span>
+              <span className="font-mono text-[10px] text-zinc-300">Load</span>
             </button>
           ))}
         </div>
