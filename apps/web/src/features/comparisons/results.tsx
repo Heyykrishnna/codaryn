@@ -1,5 +1,6 @@
 import { useDeferredValue, useState } from "react";
 import { control } from "@/src/features/repositories/api";
+import { LoaderOrb } from "@/src/components/ui/loader-orb";
 import {
   comparisonUrl,
   useArtifactResource,
@@ -85,7 +86,11 @@ export function ComparisonResults({
           Next comparisons
         </button>
       </div>
-      {history.loading && <output>Loading comparison history…</output>}
+      {history.loading && (
+        <div className="py-2">
+          <LoaderOrb variant="inline" label="Loading comparison history…" />
+        </div>
+      )}
       {history.data && !history.data.items.length && (
         <p>No comparisons on this page.</p>
       )}
@@ -140,7 +145,14 @@ export function ComparisonResults({
               />
             </label>
           </div>
-          {detail.loading && <output>Loading comparison evidence…</output>}
+          {detail.loading && (
+            <div className="py-6">
+              <LoaderOrb
+                label="Loading comparison evidence…"
+                description="Comparing AST topology and calculating structural drift"
+              />
+            </div>
+          )}
           {detail.data && (
             <>
               <p>

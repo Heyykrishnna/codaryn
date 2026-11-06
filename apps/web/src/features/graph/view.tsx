@@ -147,13 +147,13 @@ export function DependencyGraphView({
                 y1={start.y}
                 x2={end.x}
                 y2={end.y}
-                stroke={isConnected ? "#4f46e5" : "#c7d2fe"}
+                stroke={isConnected ? "#a1a1aa" : "#3f3f46"}
                 strokeWidth={isConnected ? 2.5 : 1.2}
                 strokeDasharray={
                   edge.resolution === "UNRESOLVED" ? "4 4" : undefined
                 }
                 markerEnd={isConnected ? "url(#arrow-selected)" : "url(#arrow)"}
-                className="cursor-pointer transition-all hover:stroke-indigo-600 focus-visible:stroke-amber-500 focus-visible:stroke-3 focus-visible:outline-none"
+                className="cursor-pointer transition-all hover:stroke-zinc-300 focus-visible:stroke-amber-500 focus-visible:stroke-3 focus-visible:outline-none"
                 role="button"
                 tabIndex={0}
                 aria-label={`Inspect relationship ${edge.sourceId} to ${edge.targetId}`}
@@ -196,10 +196,10 @@ export function DependencyGraphView({
                   r={isSelected ? 16 : isExternal ? 10 : 13}
                   className={`transition-all ${
                     isSelected
-                      ? "fill-indigo-600 stroke-indigo-200 stroke-4 dark:stroke-indigo-900"
+                      ? "fill-zinc-200 stroke-zinc-500 stroke-4 dark:stroke-zinc-400"
                       : isExternal
-                        ? "fill-zinc-400 hover:fill-zinc-500"
-                        : "fill-indigo-500 hover:fill-indigo-600"
+                        ? "fill-zinc-500 hover:fill-zinc-400"
+                        : "fill-zinc-400 hover:fill-zinc-300"
                   }`}
                 />
                 <text
@@ -207,7 +207,7 @@ export function DependencyGraphView({
                   textAnchor="middle"
                   className={`text-2xs font-mono font-semibold ${
                     isSelected
-                      ? "fill-indigo-600 font-bold dark:fill-indigo-400"
+                      ? "fill-zinc-100 font-bold dark:fill-white"
                       : "fill-zinc-700 dark:fill-zinc-300"
                   }`}
                 >

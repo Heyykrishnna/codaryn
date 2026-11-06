@@ -3,6 +3,7 @@ import { useEffect, useState, useDeferredValue } from "react";
 import { executionSnapshotSummarySchema } from "@codaryn/contracts";
 import { workspaceRequest } from "@/src/lib/workspace-request";
 import { button, control } from "@/src/features/repositories/api";
+import { LoaderOrb } from "@/src/components/ui/loader-orb";
 import {
   executionUrl,
   useExecutionResource,
@@ -204,7 +205,11 @@ export function ExecutionExplorer({
           Extract execution graph
         </button>
       </form>
-      {jobs.loading && <output>Loading analysis jobs…</output>}
+      {jobs.loading && (
+        <div className="py-2">
+          <LoaderOrb variant="inline" label="Loading analysis jobs…" />
+        </div>
+      )}
       {jobs.data && !jobs.data.jobs.length && (
         <p>
           No eligible jobs. Create an analysis manifest and job in Analysis
@@ -256,13 +261,24 @@ export function ExecutionExplorer({
           Next snapshots
         </button>
       </div>
-      {history.loading && <output>Loading snapshot history…</output>}
-      {history.data && !history.data.snapshots.length && (
-        <p>No execution snapshots on this page.</p>
+      {history.loading && (
+        <div className="py-2">
+          <LoaderOrb variant="inline" label="Loading snapshot history…" />
+        </div>
       )}
-      {overview.loading && <output>Loading execution overview…</output>}
+      {history.data && !history.data.snapshots.length && (
+        <p className="text-xs text-zinc-500">No execution snapshots on this page.</p>
+      )}
+      {overview.loading && (
+        <div className="py-6">
+          <LoaderOrb
+            label="Loading execution overview…"
+            description="Tracing function calls, entry points, and asynchronous dependencies"
+          />
+        </div>
+      )}
       {overview.data && (
-        <section className="rounded-xl border border-zinc-300 p-5 dark:border-zinc-700">
+        <section className="rounded-xl border border-dotted border-zinc-800 bg-[#111216] p-5">
           <h2 className="text-xl font-semibold">Execution overview</h2>
           <p>
             {overview.data.snapshot.status} · {overview.data.functions}{" "}
@@ -322,7 +338,11 @@ export function ExecutionExplorer({
               Next objects
             </button>
           </section>
-          {functions.loading && <output>Loading functions…</output>}
+          {functions.loading && (
+            <div className="py-2">
+              <LoaderOrb variant="inline" label="Loading functions…" />
+            </div>
+          )}
           <section>
             <h2 className="text-xl font-semibold">
               Function browser ({functions.data?.total ?? 0})
@@ -412,7 +432,9 @@ export function ExecutionExplorer({
                 </select>
               </label>
               {neighborhood.loading && (
-                <output>Loading call neighborhood…</output>
+                <div className="py-2">
+                  <LoaderOrb variant="inline" label="Loading call neighborhood…" />
+                </div>
               )}
               {neighborhood.data && (
                 <>
@@ -438,7 +460,11 @@ export function ExecutionExplorer({
                   )}
                 </>
               )}
-              {detail.loading && <output>Loading function inspector…</output>}
+              {detail.loading && (
+                <div className="py-2">
+                  <LoaderOrb variant="inline" label="Loading function inspector…" />
+                </div>
+              )}
               {detail.data && (
                 <FunctionInspector
                   key={detail.data.function.id}
@@ -509,7 +535,11 @@ export function ExecutionExplorer({
                 >
                   Find potential paths
                 </button>
-                {paths.loading && <output>Searching bounded paths…</output>}
+                {paths.loading && (
+                  <div className="py-2">
+                    <LoaderOrb variant="inline" label="Searching bounded paths…" />
+                  </div>
+                )}
                 {paths.data && (
                   <>
                     <p>

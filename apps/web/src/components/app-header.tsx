@@ -20,14 +20,14 @@ export function AppHeader() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[#20232e] bg-[#0d0e12]/90 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-dotted border-zinc-800 bg-[#090a0d]/90 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2.5 sm:px-6">
         <div className="flex items-center gap-6">
           <Link
             href="/"
             className="flex items-center gap-2.5 text-base font-bold tracking-tight text-white transition-opacity hover:opacity-90"
           >
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#2d3240] bg-[#161821] font-mono text-xs font-semibold text-blue-400">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-dotted border-zinc-700 bg-zinc-900 font-mono text-xs font-semibold text-zinc-200">
               CD
             </span>
             <span>codaryn</span>
@@ -49,8 +49,8 @@ export function AppHeader() {
                   className={cn(
                     "rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors select-none",
                     active
-                      ? "border border-[#2f3546] bg-[#1f232f] text-white"
-                      : "text-zinc-400 hover:bg-[#161820] hover:text-zinc-200",
+                      ? "border border-dotted border-zinc-600 bg-zinc-800/80 text-white"
+                      : "text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-200",
                   )}
                 >
                   {item.label}
@@ -61,7 +61,7 @@ export function AppHeader() {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="hidden items-center gap-2 rounded-full border border-[#242733] bg-[#12141a] px-2.5 py-1 font-mono text-[11px] text-zinc-400 sm:flex">
+          <div className="hidden items-center gap-2 rounded-full border border-dotted border-zinc-700 bg-zinc-900/80 px-2.5 py-1 font-mono text-[11px] text-zinc-400 sm:flex">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
             <span>Architecture Live</span>
           </div>

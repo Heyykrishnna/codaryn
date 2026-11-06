@@ -51,7 +51,7 @@ export default function StudioPage() {
   if (error) {
     return (
       <main className="mx-auto flex min-h-[50vh] max-w-md flex-col items-center justify-center gap-4 p-8 text-center">
-        <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-6 text-sm text-red-300">
+        <div className="rounded-2xl border border-dotted border-red-500/30 bg-red-500/10 p-6 text-sm text-red-300">
           <p className="mb-1 font-semibold text-white">
             Session verification failed
           </p>
@@ -71,7 +71,7 @@ export default function StudioPage() {
   if (!session) {
     return (
       <main className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center gap-6 p-8 text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#2b2f3d] bg-[#14161f] text-blue-400">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-dotted border-zinc-700 bg-zinc-900 text-zinc-300">
           <svg
             className="h-6 w-6"
             fill="none"
@@ -111,7 +111,7 @@ export default function StudioPage() {
 
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6">
-      <div className="flex flex-col gap-4 border-b border-[#232733] pb-6 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 border-b border-dotted border-zinc-800 pb-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2 font-mono text-xs text-zinc-500">
             <Link href="/" className="transition-colors hover:text-zinc-300">
@@ -152,7 +152,7 @@ export default function StudioPage() {
       {message && (
         <div
           role="alert"
-          className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-xs text-red-300"
+          className="rounded-xl border border-dotted border-red-500/30 bg-red-500/10 px-4 py-3 text-xs text-red-300"
         >
           {message}
         </div>
@@ -161,7 +161,7 @@ export default function StudioPage() {
       {showConsole && <AIQueryConsole />}
 
       {workspaces.length === 0 && (
-        <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-[#232734] bg-[#14161f] p-12 text-center">
+        <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dotted border-zinc-800 bg-[#121318] p-12 text-center">
           <h2 className="text-lg font-semibold text-white">
             No active workspaces
           </h2>

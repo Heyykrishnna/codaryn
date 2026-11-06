@@ -40,13 +40,13 @@ export function LoaderOrb({
         role="status"
         aria-live="polite"
         className={cn(
-          "animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-[#0d0e12]/85 p-4 backdrop-blur-md duration-200",
+          "animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-[#090a0d]/85 p-4 backdrop-blur-md duration-200",
           className,
         )}
       >
-        <div className="flex max-w-sm flex-col items-center gap-4 rounded-2xl border border-[#232734] bg-[#14161e] p-8 text-center shadow-2xl">
+        <div className="flex max-w-sm flex-col items-center gap-4 rounded-2xl border border-dotted border-zinc-700/80 bg-[#121318] p-8 text-center shadow-2xl">
           <div className="relative flex items-center justify-center">
-            <div className="absolute -inset-4 rounded-full bg-[#1e2230] opacity-50 blur-lg" />
+            <div className="absolute -inset-4 rounded-full bg-zinc-800 opacity-40 blur-lg" />
             <Orb
               state="connecting"
               size={size}
@@ -56,7 +56,7 @@ export function LoaderOrb({
           </div>
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-center gap-2">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+              <span className="h-2 w-2 animate-pulse rounded-full bg-zinc-400" />
               <p className="text-sm font-semibold tracking-tight text-white">
                 {label}
               </p>
@@ -77,12 +77,12 @@ export function LoaderOrb({
       role="status"
       aria-live="polite"
       className={cn(
-        "relative flex flex-col items-center justify-center gap-4 rounded-2xl border border-[#232734] bg-[#13151b]/90 p-10 text-center shadow-lg backdrop-blur-md",
+        "relative flex flex-col items-center justify-center gap-4 rounded-2xl border border-dotted border-zinc-700/80 bg-[#111216]/95 p-10 text-center shadow-lg backdrop-blur-md",
         className,
       )}
     >
       <div className="relative flex items-center justify-center">
-        <div className="absolute -inset-3 rounded-full bg-[#1b1f2b] opacity-40 blur-md" />
+        <div className="absolute -inset-3 rounded-full bg-zinc-800 opacity-30 blur-md" />
         <Orb
           state="connecting"
           size={size}
@@ -92,7 +92,7 @@ export function LoaderOrb({
       </div>
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-center gap-2">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
+          <span className="h-2 w-2 animate-pulse rounded-full bg-zinc-400" />
           <p className="text-sm font-medium text-zinc-200">{label}</p>
         </div>
         {description && (
@@ -101,6 +101,27 @@ export function LoaderOrb({
           </p>
         )}
       </div>
+    </div>
+  );
+}
+
+export function SectionLoader({
+  label = "Fetching data…",
+  description,
+  className,
+}: {
+  label?: string;
+  description?: string;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex min-h-[200px] w-full items-center justify-center p-6",
+        className,
+      )}
+    >
+      <LoaderOrb label={label} description={description} variant="card" />
     </div>
   );
 }

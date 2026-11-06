@@ -18,6 +18,7 @@ import {
 import { SchemaDiagram } from "./erd";
 import { SchemaInspector } from "./inspector";
 import { button, control } from "@/src/features/repositories/api";
+import { LoaderOrb } from "@/src/components/ui/loader-orb";
 type Snapshot = z.infer<typeof schemaSnapshotSummarySchema>;
 export function SchemaStudio({
   workspaceId,
@@ -262,11 +263,16 @@ export function SchemaStudio({
         </p>
       )}
       {selected && !current && failedKey !== key && (
-        <output>Loading schema…</output>
+        <div className="py-8">
+          <LoaderOrb
+            label="Loading schema…"
+            description="Extracting table schemas, column types, and foreign key relations"
+          />
+        </div>
       )}
       {current && (
         <>
-          <section className="flex flex-wrap gap-5 rounded-xl border border-zinc-300 p-5 dark:border-zinc-700">
+          <section className="flex flex-wrap gap-5 rounded-xl border border-dotted border-zinc-800 bg-[#111216] p-5">
             <h2 className="w-full text-xl font-semibold">Schema overview</h2>
             <p>Status: {current.overview.snapshot.status}</p>
             <p>

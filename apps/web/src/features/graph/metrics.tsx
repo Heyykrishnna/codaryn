@@ -91,7 +91,7 @@ export function ModuleMetricsPanel({
                 <td className="px-3 py-2 font-mono font-medium text-emerald-600 dark:text-emerald-400">
                   {m.afferentCoupling}
                 </td>
-                <td className="px-3 py-2 font-mono font-medium text-indigo-600 dark:text-indigo-400">
+                <td className="px-3 py-2 font-mono font-medium text-zinc-600 dark:text-zinc-300">
                   {m.efferentCoupling}
                 </td>
                 <td className="px-3 py-2">

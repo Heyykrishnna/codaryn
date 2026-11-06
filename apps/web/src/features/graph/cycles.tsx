@@ -61,7 +61,7 @@ export function DependencyCyclesPanel({
                   <button
                     type="button"
                     onClick={() => onSelectNode?.(`node:file:${segment}`)}
-                    className="rounded-sm bg-zinc-100 px-2 py-1 text-zinc-800 hover:bg-indigo-100 hover:text-indigo-800 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-indigo-950 dark:hover:text-indigo-300"
+                    className="rounded-sm bg-zinc-100 px-2 py-1 text-zinc-800 hover:bg-zinc-800 hover:text-white dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:hover:text-white"
                   >
                     {segment}
                   </button>

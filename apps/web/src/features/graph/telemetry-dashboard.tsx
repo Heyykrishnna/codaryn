@@ -271,7 +271,7 @@ export function TelemetryDashboard() {
               </span>
               <span className="text-[11px] text-zinc-400">
                 WAU this week{" "}
-                <span className="font-mono font-medium text-blue-400">
+                <span className="font-mono font-medium text-zinc-200">
                   +6.2%
                 </span>
               </span>
@@ -348,19 +348,19 @@ export function TelemetryDashboard() {
               <span className="w-24 text-right">Share</span>
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border border-[#232734] bg-[#161821] px-3 py-2 text-xs">
+            <div className="flex items-center justify-between rounded-lg border border-dotted border-zinc-800 bg-[#121318] px-3 py-2 text-xs">
               <span className="flex items-center gap-2 font-medium text-white">
-                <span className="h-2.5 w-2.5 rounded-sm bg-purple-500" />{" "}
+                <span className="h-2.5 w-2.5 rounded-sm bg-zinc-400" />{" "}
                 Enterprise
               </span>
               <span className="font-mono text-zinc-200">7,840</span>
-              <span className="font-mono font-semibold text-blue-400">
+              <span className="font-mono font-semibold text-zinc-200">
                 +9.1%
               </span>
               <div className="flex w-24 items-center gap-2">
-                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#202432]">
+                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-zinc-800">
                   <div
-                    className="h-full rounded-full bg-purple-500"
+                    className="h-full rounded-full bg-zinc-400"
                     style={{ width: "43%" }}
                   />
                 </div>
@@ -368,18 +368,18 @@ export function TelemetryDashboard() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border border-[#232734] bg-[#161821] px-3 py-2 text-xs">
+            <div className="flex items-center justify-between rounded-lg border border-dotted border-zinc-800 bg-[#121318] px-3 py-2 text-xs">
               <span className="flex items-center gap-2 font-medium text-white">
-                <span className="h-2.5 w-2.5 rounded-sm bg-teal-500" /> Growth
+                <span className="h-2.5 w-2.5 rounded-sm bg-zinc-500" /> Growth
               </span>
               <span className="font-mono text-zinc-200">6,120</span>
-              <span className="font-mono font-semibold text-blue-400">
+              <span className="font-mono font-semibold text-zinc-200">
                 +4.8%
               </span>
               <div className="flex w-24 items-center gap-2">
-                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#202432]">
+                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-zinc-800">
                   <div
-                    className="h-full rounded-full bg-teal-500"
+                    className="h-full rounded-full bg-zinc-500"
                     style={{ width: "33%" }}
                   />
                 </div>
@@ -387,18 +387,18 @@ export function TelemetryDashboard() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border border-[#232734] bg-[#161821] px-3 py-2 text-xs">
+            <div className="flex items-center justify-between rounded-lg border border-dotted border-zinc-800 bg-[#121318] px-3 py-2 text-xs">
               <span className="flex items-center gap-2 font-medium text-white">
-                <span className="h-2.5 w-2.5 rounded-sm bg-amber-500" /> Starter
+                <span className="h-2.5 w-2.5 rounded-sm bg-zinc-600" /> Starter
               </span>
               <span className="font-mono text-zinc-200">4,460</span>
-              <span className="font-mono font-semibold text-blue-400">
+              <span className="font-mono font-semibold text-zinc-200">
                 +3.2%
               </span>
               <div className="flex w-24 items-center gap-2">
-                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#202432]">
+                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-zinc-800">
                   <div
-                    className="h-full rounded-full bg-amber-500"
+                    className="h-full rounded-full bg-zinc-600"
                     style={{ width: "24%" }}
                   />
                 </div>
@@ -457,7 +457,7 @@ export function TelemetryDashboard() {
                   className="flex h-full flex-1 flex-col justify-end"
                 >
                   <div
-                    className="w-full rounded-t bg-blue-500"
+                    className="w-full rounded-t bg-zinc-400"
                     style={{ height: `${h}%` }}
                   />
                 </div>
@@ -545,7 +545,7 @@ export function TelemetryDashboard() {
                     <input
                       type="checkbox"
                       aria-label="Select all"
-                      className="rounded accent-blue-600"
+                      className="rounded accent-zinc-400"
                     />
                   </th>
                   <th className="p-3">Account</th>
@@ -613,23 +613,14 @@ export function TelemetryDashboard() {
                         checked={row.checked}
                         onChange={() => toggleAccount(row.id)}
                         aria-label={`Select ${row.account}`}
-                        className="rounded accent-blue-600"
+                        className="rounded accent-zinc-400"
                       />
                     </td>
                     <td className="p-3 font-semibold text-white">
                       {row.account}
                     </td>
                     <td className="p-3">
-                      <span
-                        className={cn(
-                          "rounded-md px-2 py-0.5 text-[10px] font-semibold",
-                          row.plan === "Enterprise"
-                            ? "border border-purple-500/30 bg-purple-500/15 text-purple-300"
-                            : row.plan === "Growth"
-                              ? "border border-teal-500/30 bg-teal-500/15 text-teal-300"
-                              : "border border-amber-500/30 bg-amber-500/15 text-amber-300",
-                        )}
-                      >
+                      <span className="font-mono text-xs text-zinc-300">
                         {row.plan}
                       </span>
                     </td>
@@ -641,7 +632,7 @@ export function TelemetryDashboard() {
                         className={cn(
                           "font-mono text-xs",
                           row.trend === "up"
-                            ? "text-blue-400"
+                            ? "text-zinc-200"
                             : row.trend === "down"
                               ? "text-red-400"
                               : "text-zinc-500",
@@ -662,7 +653,7 @@ export function TelemetryDashboard() {
                           row.health > 90
                             ? "text-emerald-400"
                             : row.health > 80
-                              ? "text-blue-400"
+                              ? "text-zinc-300"
                               : "text-amber-400",
                         )}
                       >

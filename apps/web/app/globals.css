@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0d0e12;
-  --foreground: #f4f5f7;
-  --card: #13151b;
-  --card-hover: #181a22;
-  --card-elevated: #1a1d26;
-  --border: #232631;
-  --border-subtle: #1c1e27;
-  --border-focus: #3b82f6;
-  --muted: #848995;
-  --muted-dark: #585d68;
+  --background: #090a0d;
+  --foreground: #f4f4f5;
+  --card: #111216;
+  --card-hover: #17181d;
+  --card-elevated: #1b1c22;
+  --border: #27272a;
+  --border-subtle: #1c1d22;
+  --border-focus: #a1a1aa;
+  --muted: #a1a1aa;
+  --muted-dark: #71717a;
 }
 
 @theme inline {
@@ -43,15 +43,20 @@ body {
 }
 
 ::selection {
-  background-color: #2563eb;
+  background-color: #3f3f46;
   color: #ffffff;
+}
+
+.border-dotted-subtle {
+  border-style: dotted;
+  border-color: #27272a;
 }
 
 .hatch-pattern {
   background-image: repeating-linear-gradient(
     -45deg,
-    rgba(255, 255, 255, 0.08),
-    rgba(255, 255, 255, 0.08) 2px,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.05) 2px,
     transparent 2px,
     transparent 6px
   );
@@ -60,28 +65,8 @@ body {
 .hatch-danger {
   background-image: repeating-linear-gradient(
     -45deg,
-    rgba(239, 68, 68, 0.25),
-    rgba(239, 68, 68, 0.25) 2px,
-    transparent 2px,
-    transparent 6px
-  );
-}
-
-.hatch-purple {
-  background-image: repeating-linear-gradient(
-    -45deg,
-    rgba(168, 85, 247, 0.25),
-    rgba(168, 85, 247, 0.25) 2px,
-    transparent 2px,
-    transparent 6px
-  );
-}
-
-.hatch-teal {
-  background-image: repeating-linear-gradient(
-    -45deg,
-    rgba(20, 184, 166, 0.25),
-    rgba(20, 184, 166, 0.25) 2px,
+    rgba(239, 68, 68, 0.2),
+    rgba(239, 68, 68, 0.2) 2px,
     transparent 2px,
     transparent 6px
   );

@@ -120,7 +120,7 @@ export function CustomDropdown({
             role="menu"
             aria-labelledby={triggerId}
             className={cn(
-              "animate-in fade-in zoom-in-95 absolute z-40 mt-1.5 flex flex-col gap-0.5 rounded-xl border border-[#2b2f3d] bg-[#14161f] p-1.5 shadow-2xl backdrop-blur-xl duration-100 ease-out",
+              "animate-in fade-in zoom-in-95 absolute z-40 mt-1.5 flex flex-col gap-0.5 rounded-xl border border-dotted border-zinc-700/80 bg-[#121318] p-1.5 shadow-2xl backdrop-blur-xl duration-100 ease-out",
               alignmentClass,
               widthClass,
             )}
@@ -185,10 +185,10 @@ export function DropdownItem({
     variant === "danger"
       ? "text-red-400 hover:bg-red-500/10 hover:text-red-300"
       : variant === "accent"
-        ? "text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 font-medium"
+        ? "text-zinc-100 hover:bg-zinc-800 hover:text-white font-medium"
         : active
-          ? "bg-[#212431] text-white font-medium"
-          : "text-zinc-300 hover:bg-[#1f222d] hover:text-white";
+          ? "bg-zinc-800 text-white font-medium border border-dotted border-zinc-600"
+          : "text-zinc-300 hover:bg-zinc-800/70 hover:text-white";
 
   return (
     <button
@@ -225,12 +225,12 @@ export function DropdownItem({
 
       <div className="flex shrink-0 items-center gap-1.5">
         {badge && (
-          <span className="rounded bg-[#212431] px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">
+          <span className="font-mono text-[10px] text-zinc-400">
             {badge}
           </span>
         )}
         {shortcut && (
-          <kbd className="rounded border border-[#2e3344] bg-[#1a1d27] px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">
+          <kbd className="rounded border border-dotted border-zinc-700 bg-zinc-900 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">
             {shortcut}
           </kbd>
         )}
@@ -243,7 +243,7 @@ export function DropdownSeparator({ className }: { className?: string }) {
   return (
     <div
       role="separator"
-      className={cn("-mx-1 my-1 h-px bg-[#262a37]", className)}
+      className={cn("-mx-1 my-1 h-px bg-zinc-800/80", className)}
     />
   );
 }
@@ -293,7 +293,7 @@ export function DropdownSelect({
         <button
           type="button"
           disabled={disabled}
-          className="flex h-9 w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-[#2b2f3d] bg-[#14161f] px-3 py-1.5 text-xs text-zinc-200 transition-all duration-150 outline-none hover:border-[#3b4154] hover:bg-[#181b25] focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex h-9 w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-dotted border-zinc-700 bg-[#121318] px-3 py-1.5 text-xs text-zinc-200 transition-all duration-150 outline-none hover:border-zinc-500 hover:bg-[#181920] focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-40"
         >
           <div className="flex items-center gap-2 truncate">
             {selectedOption?.icon && (
@@ -320,13 +320,13 @@ export function DropdownSelect({
       }
     >
       {searchable && (
-        <div className="border-b border-[#262a37] p-1">
+        <div className="border-b border-dotted border-zinc-800 p-1">
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search…"
-            className="w-full rounded bg-[#1c1f2b] px-2 py-1 text-xs text-white placeholder-zinc-500 outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full rounded border border-dotted border-zinc-800 bg-zinc-900 px-2 py-1 text-xs text-white placeholder-zinc-500 outline-none focus:ring-1 focus:ring-zinc-400"
           />
         </div>
       )}

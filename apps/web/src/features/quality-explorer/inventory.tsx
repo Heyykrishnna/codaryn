@@ -9,6 +9,7 @@ import {
   testSchema,
 } from "./api";
 import { CandyButton } from "@/src/components/ui/candy-button";
+import { LoaderOrb } from "@/src/components/ui/loader-orb";
 import { cn } from "@/lib/utils";
 
 const views = [
@@ -123,8 +124,8 @@ export function QualityInventory({
       )}
 
       {list.loading && (
-        <div className="py-4 font-mono text-xs text-zinc-400">
-          Loading {kind} evidence…
+        <div className="py-4">
+          <LoaderOrb variant="inline" label={`Loading ${kind} evidence…`} />
         </div>
       )}
 
@@ -135,8 +136,8 @@ export function QualityInventory({
             className={cn(
               "flex flex-col justify-between gap-3 rounded-xl border p-4 transition-all duration-150",
               selected === item.id
-                ? "border-blue-500/50 bg-[#191d29]"
-                : "border-[#252936] bg-[#161821] hover:border-[#383e52]",
+                ? "border-dotted border-zinc-400 bg-zinc-800"
+                : "border-dotted border-zinc-800 bg-[#121318] hover:border-zinc-600",
             )}
           >
             {item.view === "resource" && (
@@ -145,7 +146,7 @@ export function QualityInventory({
                   <span className="truncate text-sm font-semibold text-white">
                     {item.name}
                   </span>
-                  <span className="rounded border border-blue-500/20 bg-[#202432] px-2 py-0.5 font-mono text-[10px] text-blue-400">
+                  <span className="font-mono text-[10px] text-zinc-300">
                     {item.kind}
                   </span>
                 </div>
@@ -307,7 +308,7 @@ export function QualityInventory({
       </div>
 
       {resource.data && (
-        <aside className="rounded-xl border border-blue-500/30 bg-[#141824] p-5">
+        <aside className="rounded-xl border border-dotted border-zinc-700 bg-[#111216] p-5">
           <h3 className="mb-2 text-sm font-bold text-white">
             Resource topology: {resource.data.resource.name}
           </h3>
@@ -316,7 +317,7 @@ export function QualityInventory({
               <li key={edge.id} className="truncate">
                 {resource.data?.resources.find((r) => r.id === edge.sourceId)
                   ?.name ?? edge.sourceId}{" "}
-                → <span className="text-blue-400">{edge.kind}</span> →{" "}
+                → <span className="text-zinc-200">{edge.kind}</span> →{" "}
                 {resource.data?.resources.find((r) => r.id === edge.targetId)
                   ?.name ?? edge.targetId}{" "}
                 <span className="text-zinc-500">

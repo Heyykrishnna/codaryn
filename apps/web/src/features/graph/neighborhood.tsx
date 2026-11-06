@@ -89,7 +89,7 @@ export function NeighborhoodPanel({
                 key={e.id}
                 type="button"
                 onClick={() => onSelectNode(e.sourceId)}
-                className="flex items-center justify-between rounded-md bg-zinc-50 px-2.5 py-1.5 text-left font-mono text-xs text-zinc-800 hover:bg-indigo-50 hover:text-indigo-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-indigo-950 dark:hover:text-indigo-300"
+                className="flex items-center justify-between rounded-md bg-zinc-50 px-2.5 py-1.5 text-left font-mono text-xs text-zinc-800 hover:bg-zinc-200 hover:text-zinc-950 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:hover:text-white"
               >
                 <span className="truncate">
                   {e.sourceId.replace("node:file:", "")}
@@ -115,7 +115,7 @@ export function NeighborhoodPanel({
                 key={e.id}
                 type="button"
                 onClick={() => onSelectNode(e.targetId)}
-                className="flex items-center justify-between rounded-md bg-zinc-50 px-2.5 py-1.5 text-left font-mono text-xs text-zinc-800 hover:bg-indigo-50 hover:text-indigo-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-indigo-950 dark:hover:text-indigo-300"
+                className="flex items-center justify-between rounded-md bg-zinc-50 px-2.5 py-1.5 text-left font-mono text-xs text-zinc-800 hover:bg-zinc-200 hover:text-zinc-950 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:hover:text-white"
               >
                 <span className="truncate">
                   {e.targetId

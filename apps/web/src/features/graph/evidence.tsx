@@ -89,7 +89,7 @@ export function SourceEvidenceInspector({
                 <span className="text-zinc-800 dark:text-zinc-200">
                   {ev.path}
                 </span>
-                <span className="text-indigo-600 dark:text-indigo-400">
+                <span className="text-zinc-600 dark:text-zinc-300">
                   Lines {ev.startLine}–{ev.endLine}
                 </span>
               </div>

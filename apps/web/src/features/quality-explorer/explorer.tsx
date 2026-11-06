@@ -72,7 +72,7 @@ export function QualityExplorer({
 
   return (
     <div className="flex min-w-0 flex-col gap-8">
-      <div className="flex flex-col gap-2 rounded-xl border border-[#232734] bg-[#14161f] p-4 text-xs text-zinc-300">
+      <div className="flex flex-col gap-2 rounded-xl border border-dotted border-zinc-800 bg-[#111216] p-4 text-xs text-zinc-300">
         <div className="flex items-center justify-between">
           <span className="font-semibold text-white">
             Engineering Quality & Compliance
@@ -89,24 +89,31 @@ export function QualityExplorer({
         {message && (
           <div
             role="alert"
-            className="mt-1 rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 font-mono text-xs text-blue-300"
+            className="mt-1 rounded-lg border border-dotted border-zinc-700 bg-zinc-900 px-3 py-1.5 font-mono text-xs text-zinc-200"
           >
             {message}
           </div>
         )}
       </div>
 
+      {(jobs.loading || history.loading) && (
+        <LoaderOrb
+          label="Loading quality artifacts…"
+          description="Fetching recent analysis jobs and snapshot history"
+        />
+      )}
+
       {error && (
         <div
           role="alert"
-          className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300"
+          className="rounded-xl border border-dotted border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300"
         >
           {error}
         </div>
       )}
 
       <form
-        className="flex flex-col gap-4 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl"
+        className="flex flex-col gap-4 rounded-2xl border border-dotted border-zinc-800 bg-[#111216] p-6 shadow-xl"
         action={async () => {
           setBusy(true);
           setMessage("");
@@ -145,9 +152,9 @@ export function QualityExplorer({
           />
         </div>
 
-        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#232734] bg-[#161821] p-3 text-xs text-zinc-300">
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-dotted border-zinc-800 bg-[#121318] p-3 text-xs text-zinc-300">
           <input
-            className="mt-0.5 rounded accent-blue-600"
+            className="mt-0.5 rounded accent-zinc-400"
             type="checkbox"
             checked={external}
             onChange={(e) => setExternal(e.target.checked)}
@@ -177,7 +184,7 @@ export function QualityExplorer({
         </div>
       </form>
 
-      <div className="flex flex-col gap-4 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl">
+      <div className="flex flex-col gap-4 rounded-2xl border border-dotted border-zinc-800 bg-[#111216] p-6 shadow-xl">
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
             Select quality snapshot
@@ -234,8 +241,8 @@ export function QualityExplorer({
       )}
 
       {overview.data && (
-        <section className="flex flex-col gap-6 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl">
-          <div className="flex items-center justify-between border-b border-[#222532] pb-4">
+        <section className="flex flex-col gap-6 rounded-2xl border border-dotted border-zinc-800 bg-[#111216] p-6 shadow-xl">
+          <div className="flex items-center justify-between border-b border-dotted border-zinc-800 pb-4">
             <div className="flex items-center gap-2">
               <span
                 className={`h-2.5 w-2.5 rounded-full ${
@@ -255,25 +262,25 @@ export function QualityExplorer({
           </div>
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="flex flex-col gap-1 rounded-xl border border-[#252936] bg-[#161821] p-4">
+            <div className="flex flex-col gap-1 rounded-xl border border-dotted border-zinc-800 bg-[#121318] p-4">
               <span className="text-xs text-zinc-400">Resources</span>
               <span className="font-mono text-2xl font-bold text-white">
                 {overview.data.resources}
               </span>
             </div>
-            <div className="flex flex-col gap-1 rounded-xl border border-[#252936] bg-[#161821] p-4">
+            <div className="flex flex-col gap-1 rounded-xl border border-dotted border-zinc-800 bg-[#121318] p-4">
               <span className="text-xs text-zinc-400">Tests</span>
               <span className="font-mono text-2xl font-bold text-white">
                 {overview.data.tests}
               </span>
             </div>
-            <div className="flex flex-col gap-1 rounded-xl border border-[#252936] bg-[#161821] p-4">
+            <div className="flex flex-col gap-1 rounded-xl border border-dotted border-zinc-800 bg-[#121318] p-4">
               <span className="text-xs text-zinc-400">Dependencies</span>
               <span className="font-mono text-2xl font-bold text-white">
                 {overview.data.dependencies}
               </span>
             </div>
-            <div className="flex flex-col gap-1 rounded-xl border border-[#252936] bg-[#161821] p-4">
+            <div className="flex flex-col gap-1 rounded-xl border border-dotted border-zinc-800 bg-[#121318] p-4">
               <span className="text-xs text-zinc-400">Findings</span>
               <span
                 className={`font-mono text-2xl font-bold ${overview.data.findings > 0 ? "text-amber-400" : "text-emerald-400"}`}

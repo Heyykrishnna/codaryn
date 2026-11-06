@@ -30,13 +30,13 @@ export interface CandyButtonProps extends React.ButtonHTMLAttributes<HTMLButtonE
 
 const variantStyles: Record<CandyButtonVariant, string> = {
   pearl:
-    "bg-white text-zinc-950 border border-zinc-200 shadow-[0_2px_0_0_#d4d4d8] hover:bg-zinc-100 active:translate-y-[1px] active:shadow-none focus-visible:ring-zinc-400",
+    "bg-zinc-100 text-zinc-950 border border-zinc-300 shadow-[0_2px_0_0_#a1a1aa] hover:bg-white active:translate-y-[1px] active:shadow-none focus-visible:ring-zinc-400",
   obsidian:
-    "bg-[#16181f] text-zinc-100 border border-[#2b2f3d] shadow-[0_2px_0_0_#0b0c10] hover:bg-[#1e212b] active:translate-y-[1px] active:shadow-none focus-visible:ring-zinc-600",
+    "bg-[#14151a] text-zinc-100 border border-dotted border-zinc-700 shadow-[0_2px_0_0_#090a0d] hover:bg-[#1a1b22] active:translate-y-[1px] active:shadow-none focus-visible:ring-zinc-500",
   secondary:
-    "bg-[#21242d] text-zinc-200 border border-[#2f3442] shadow-[0_2px_0_0_#13151b] hover:bg-[#282c37] active:translate-y-[1px] active:shadow-none focus-visible:ring-zinc-600",
+    "bg-[#1e1f26] text-zinc-200 border border-dotted border-zinc-700 shadow-[0_2px_0_0_#111216] hover:bg-[#262832] active:translate-y-[1px] active:shadow-none focus-visible:ring-zinc-500",
   azure:
-    "bg-[#2563eb] text-white border border-[#1d4ed8] shadow-[0_2px_0_0_#1e40af] hover:bg-[#1d4ed8] active:translate-y-[1px] active:shadow-none focus-visible:ring-blue-400",
+    "bg-[#3f3f46] text-white border border-[#52525b] shadow-[0_2px_0_0_#27272a] hover:bg-[#52525b] active:translate-y-[1px] active:shadow-none focus-visible:ring-zinc-400",
   emerald:
     "bg-[#059669] text-white border border-[#047857] shadow-[0_2px_0_0_#065f46] hover:bg-[#047857] active:translate-y-[1px] active:shadow-none focus-visible:ring-emerald-400",
   violet:
@@ -45,9 +45,9 @@ const variantStyles: Record<CandyButtonVariant, string> = {
     "bg-[#d97706] text-white border border-[#b45309] shadow-[0_2px_0_0_#92400e] hover:bg-[#b45309] active:translate-y-[1px] active:shadow-none focus-visible:ring-amber-400",
   ruby: "bg-[#dc2626] text-white border border-[#b91c1c] shadow-[0_2px_0_0_#991b1b] hover:bg-[#b91c1c] active:translate-y-[1px] active:shadow-none focus-visible:ring-red-400",
   outline:
-    "bg-transparent text-zinc-200 border border-[#2d313e] shadow-[0_1px_0_0_#14161d] hover:bg-[#1a1d26] hover:border-[#3b4152] active:translate-y-[1px] active:shadow-none focus-visible:ring-zinc-500",
+    "bg-transparent text-zinc-200 border border-dotted border-zinc-700 shadow-[0_1px_0_0_#14151a] hover:bg-[#181920] hover:border-zinc-500 active:translate-y-[1px] active:shadow-none focus-visible:ring-zinc-500",
   ghost:
-    "bg-transparent text-zinc-300 border border-transparent hover:bg-[#1f222c] hover:text-white active:bg-[#262a36] focus-visible:ring-zinc-500",
+    "bg-transparent text-zinc-300 border border-transparent hover:bg-[#181920] hover:text-white active:bg-[#20212b] focus-visible:ring-zinc-500",
 };
 
 const sizeStyles: Record<CandyButtonSize, string> = {
@@ -75,7 +75,7 @@ export const CandyButton = React.forwardRef<HTMLElement, CandyButtonProps>(
     ref,
   ) => {
     const commonClass = cn(
-      "relative inline-flex items-center justify-center tracking-tight select-none cursor-pointer transition-all duration-150 ease-out outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d0e12] disabled:pointer-events-none disabled:opacity-40 disabled:cursor-not-allowed",
+      "relative inline-flex items-center justify-center tracking-tight select-none cursor-pointer transition-all duration-150 ease-out outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#090a0d] disabled:pointer-events-none disabled:opacity-40 disabled:cursor-not-allowed",
       variantStyles[variant],
       sizeStyles[size],
       className,

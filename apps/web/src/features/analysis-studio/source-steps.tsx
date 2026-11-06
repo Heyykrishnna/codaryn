@@ -110,9 +110,9 @@ export function RepositoryStep({
       </div>
 
       {repositories.length === 0 && (
-        <div className="rounded-xl border border-[#2b2f3d] bg-[#14161f] p-4 text-xs text-zinc-400">
+        <div className="rounded-xl border border-dotted border-zinc-800 bg-[#121318] p-4 text-xs text-zinc-400">
           No repositories found on page {repoPage}.{" "}
-          <Link className="text-blue-400 hover:underline" href="/repositories">
+          <Link className="text-zinc-200 underline hover:text-white" href="/repositories">
             Connect and sync your GitHub installation
           </Link>
           .
@@ -278,7 +278,7 @@ export function RevisionStep({
           Or manual commit SHA (40 hex characters)
         </label>
         <input
-          className="h-9 w-full rounded-lg border border-[#2b2f3d] bg-[#14161f] px-3 font-mono text-xs text-white placeholder-zinc-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          className="h-9 w-full rounded-lg border border-dotted border-zinc-700 bg-zinc-900 px-3 font-mono text-xs text-white placeholder-zinc-500 outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-400"
           placeholder="e.g. 7ab99ec..."
           value={commit}
           maxLength={40}
@@ -328,7 +328,7 @@ export function ProfileStep({
             <button
               type="button"
               key={preset.name}
-              className="flex cursor-pointer items-center justify-between rounded-xl border border-[#272b39] bg-[#161822] p-3 text-left transition-all duration-150 hover:border-[#383e52] hover:bg-[#1b1e2b]"
+              className="flex cursor-pointer items-center justify-between rounded-xl border border-dotted border-zinc-800 bg-[#121318] p-3 text-left transition-all duration-150 hover:border-zinc-600 hover:bg-[#181920]"
               onClick={() => choosePreset(preset.configuration)}
             >
               <div className="flex flex-col">
@@ -340,7 +340,7 @@ export function ProfileStep({
                   {preset.configuration.depth}
                 </span>
               </div>
-              <span className="rounded bg-[#202330] px-2 py-0.5 font-mono text-[10px] text-blue-400">
+              <span className="font-mono text-[10px] text-zinc-300">
                 Load
               </span>
             </button>

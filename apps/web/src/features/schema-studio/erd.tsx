@@ -71,7 +71,7 @@ export function SchemaDiagram({
                   className={
                     relation.resolution === "INFERRED"
                       ? "fill-none stroke-amber-600 [stroke-dasharray:6_4] dark:stroke-amber-400"
-                      : "fill-none stroke-indigo-600 dark:stroke-indigo-400"
+                      : "fill-none stroke-zinc-400 dark:stroke-zinc-500"
                   }
                 />
                 <text
@@ -93,7 +93,7 @@ export function SchemaDiagram({
               href="#schema-table-inspector"
               onClick={() => onSelect(table.id)}
               aria-label={`Inspect ${table.name}`}
-              className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+              className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400"
             >
               <rect
                 x={x}
@@ -103,8 +103,8 @@ export function SchemaDiagram({
                 rx={8}
                 className={
                   selected === table.id
-                    ? "fill-indigo-50 stroke-indigo-600 dark:fill-indigo-950 dark:stroke-indigo-300"
-                    : "fill-white stroke-zinc-400 dark:fill-zinc-900 dark:stroke-zinc-600"
+                    ? "fill-zinc-800 stroke-zinc-200 stroke-2"
+                    : "fill-[#14151a] stroke-zinc-700"
                 }
               />
               <text
