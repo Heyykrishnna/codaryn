@@ -308,7 +308,7 @@ export function QualityExplorer({
               {overview.data.scanners.map((scanner) => (
                 <div
                   key={scanner.tool}
-                  className="flex items-center justify-between rounded-xl border border-[#252936] bg-[#161821] px-3.5 py-2.5 text-xs"
+                  className="flex items-center justify-between rounded-xl border border-dotted border-zinc-800 bg-[#121318] px-3.5 py-2.5 text-xs"
                 >
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-white">
@@ -318,7 +318,7 @@ export function QualityExplorer({
                       v{scanner.version}
                     </span>
                   </div>
-                  <span className="rounded border border-emerald-500/20 bg-[#202431] px-2 py-0.5 font-mono text-[10px] text-emerald-400">
+                  <span className="font-mono text-[10px] text-emerald-400">
                     {scanner.status}
                   </span>
                 </div>
@@ -342,7 +342,7 @@ export function QualityExplorer({
             overview={overview.data}
             onReview={() => setRefresh((n) => n + 1)}
           />
-          <details className="rounded-2xl border border-[#242835] bg-[#13151d] p-5">
+          <details className="rounded-2xl border border-dotted border-zinc-800 bg-[#111216] p-5">
             <summary className="cursor-pointer text-xs font-semibold tracking-wider text-zinc-300 uppercase select-none">
               Analysis diagnostics ({overview.data.diagnosticCount})
             </summary>
@@ -350,7 +350,7 @@ export function QualityExplorer({
               {overview.data.diagnostics.map((d, i) => (
                 <div
                   key={`${d.code}:${i}`}
-                  className="flex flex-col gap-1 rounded-xl border border-[#222632] bg-[#161821] p-3 font-mono text-xs"
+                  className="flex flex-col gap-1 rounded-xl border border-dotted border-zinc-800 bg-zinc-900/60 p-3 font-mono text-xs"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-semibold text-amber-400">
