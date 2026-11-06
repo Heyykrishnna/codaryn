@@ -6,6 +6,7 @@ import {
   ingestionRunListSchema,
 } from "@codaryn/contracts";
 import { api, button, control, type Repository, type Run } from "./api";
+import { LoaderOrb } from "@/src/components/ui/loader-orb";
 export function RepositoryDetails({
   selected,
   workspaceId,
@@ -66,10 +67,24 @@ export function RepositoryDetails({
   }
   return (
     <>
-      <output aria-live="polite">{busy ? "Working…" : message}</output>
-      <section className="flex flex-col gap-4 rounded-xl border border-zinc-300 p-6 dark:border-zinc-700">
-        <h2 className="text-xl font-semibold break-all">{selected.fullName}</h2>
-        <p className="text-sm">
+      {busy && (
+        <div className="flex items-center justify-center py-2">
+          <LoaderOrb variant="inline" label="Processing ingestion task…" />
+        </div>
+      )}
+      {message && (
+        <div
+          role="alert"
+          className="rounded-lg border border-dotted border-zinc-700 bg-zinc-900 px-3 py-2 font-mono text-xs text-zinc-300"
+        >
+          {message}
+        </div>
+      )}
+      <section className="flex flex-col gap-4 rounded-2xl border border-dotted border-zinc-800 bg-[#111216] p-6 text-xs text-zinc-300">
+        <h2 className="text-xl font-semibold break-all text-white">
+          {selected.fullName}
+        </h2>
+        <p className="text-zinc-400">
           Static ingestion only. No dependencies or repository scripts are
           executed.
         </p>
@@ -236,29 +251,33 @@ export function RepositoryDetails({
         >
           Refresh ingestion status
         </button>
-        <h3 className="font-semibold">Recent ingestions</h3>
-        {runs.length === 0 && <p>No ingestions yet.</p>}
+        <h3 className="font-semibold text-white">Recent ingestions</h3>
+        {runs.length === 0 && (
+          <p className="text-zinc-500">No ingestions yet.</p>
+        )}
         {runs.map((item) => (
           <div
-            className="rounded-lg border border-zinc-300 p-4 text-sm break-all dark:border-zinc-700"
+            className="rounded-xl border border-dotted border-zinc-800 bg-zinc-900/60 p-4 font-mono text-xs break-all text-zinc-300"
             key={item.id}
           >
-            <p>{item.commitSha}</p>
-            <p>
+            <p className="font-bold text-white">{item.commitSha}</p>
+            <p className="text-zinc-400">
               {item.status}
               {item.errorCode ? ` · ${item.errorCode}` : ""}
             </p>
             {item.inventory && (
               <>
-                <p>
+                <p className="mt-1 text-zinc-400">
                   {item.inventory.fileCount} files ·{" "}
                   {item.inventory.monorepo ? "Monorepo" : "Single project"}
                 </p>
-                <p>
+                <p className="text-zinc-400">
                   Package roots:{" "}
                   {item.inventory.packageRoots.join(", ") || "None detected"}
                 </p>
-                <p>Archive SHA-256: {item.inventory.archiveSha256}</p>
+                <p className="text-zinc-500">
+                  Archive SHA-256: {item.inventory.archiveSha256}
+                </p>
               </>
             )}
           </div>
