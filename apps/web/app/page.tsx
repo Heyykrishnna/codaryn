@@ -44,9 +44,7 @@ async function ApiStatus() {
         <span className="font-mono text-[10px] text-zinc-500">
           latency ~4ms
         </span>
-        <span className="font-mono text-[10px] text-emerald-400">
-          healthy
-        </span>
+        <span className="font-mono text-[10px] text-emerald-400">healthy</span>
       </div>
     </div>
   );
@@ -336,9 +334,7 @@ export default function Home() {
             className="flex flex-col gap-3 rounded-xl border border-dotted border-zinc-800 bg-[#15161c] p-5 transition-all duration-150 hover:border-zinc-600 hover:bg-[#1a1b22]"
           >
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-white">
-                Overview
-              </span>
+              <span className="text-sm font-semibold text-white">Overview</span>
               <span className="font-mono text-xs text-zinc-400">/</span>
             </div>
             <p className="text-xs leading-relaxed text-zinc-400">
