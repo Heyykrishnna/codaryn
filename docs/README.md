@@ -28,3 +28,5 @@ When implementation changes a contract or behavior, update the relevant guide an
 [Engineering Quality](phases/10-infrastructure-testing-security/README.md) documents infrastructure, test relationships, coverage provenance, dependency security and audited review.
 
 [Architecture Comparison](phases/12-incremental-comparison-impact/README.md) documents incremental version reuse, commit/schema diffs, potential impact and opt-in push scheduling.
+
+- [Dashboard interface](dashboard-ui.md): shared layouts, workspace selection, loading states, and component attribution.
