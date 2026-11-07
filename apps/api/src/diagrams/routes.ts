@@ -29,6 +29,20 @@ export function registerDiagrams(
   origin: string,
 ) {
   app.get(
+    "/api/v1/workspaces/:workspaceId/analysis/:jobId/atlas",
+    async (request, reply) => {
+      const session = await requireSession(auth, request, reply, origin);
+      if (!session) return reply;
+      try {
+        const { workspaceId, jobId } = paramsSchema.parse(request.params);
+        return await service.getAtlas(session.user.id, workspaceId, jobId);
+      } catch (error) {
+        return requestError(reply, error);
+      }
+    },
+  );
+
+  app.get(
     "/api/v1/workspaces/:workspaceId/analysis/:jobId/diagrams/:type",
     async (request, reply) => {
       const session = await requireSession(auth, request, reply, origin);

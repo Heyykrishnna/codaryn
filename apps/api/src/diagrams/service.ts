@@ -1,7 +1,10 @@
 import {
   schemaSnapshotSchema,
   executionSnapshotSchema,
+  sourceEvidenceSchema,
+  type DependencyEdge,
 } from "@codaryn/contracts";
+import { buildAtlas } from "./atlas.js";
 import { randomUUID } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
 import {
@@ -69,6 +72,7 @@ export class DiagramService {
     client: PoolClient,
     workspaceId: string,
     jobId: string,
+    forAtlas = false,
   ): Promise<AnalysisSnapshotInput> {
     const jobResult = await client.query<{
       id: string;
@@ -76,7 +80,7 @@ export class DiagramService {
       full_name: string;
       status: string;
     }>(
-      "SELECT j.id,j.commit_sha,r.full_name,j.status FROM analysis_jobs j JOIN connected_repositories r ON r.id=j.repository_id WHERE j.id=$1 AND j.organization_id=$2",
+      "SELECT j.id,j.commit_sha,r.full_name,j.status FROM analysis_jobs j JOIN connected_repositories r ON r.id=j.repository_id JOIN github_installations i ON i.id=r.installation_id AND i.organization_id=j.organization_id WHERE j.id=$1 AND j.organization_id=$2 AND r.active=true AND i.connected=true FOR SHARE OF j,r,i",
       [jobId, workspaceId],
     );
 
@@ -93,6 +97,14 @@ export class DiagramService {
         409,
         "JOB_CANCELLED",
         "Analysis job was cancelled",
+      );
+    }
+
+    if (forAtlas && job.status !== "completed") {
+      throw new RequestFailure(
+        409,
+        "ANALYSIS_INCOMPLETE",
+        "Architecture is available after analysis completes.",
       );
     }
 
@@ -152,6 +164,9 @@ export class DiagramService {
     if (execRes.rows[0]?.snapshot) {
       const raw = executionSnapshotSchema.parse(execRes.rows[0].snapshot);
       snapshot.execution = {
+        ...(forAtlas
+          ? { controlNodes: raw.controlNodes, controlEdges: raw.controlEdges }
+          : {}),
         functions: raw.functions.map((fn) => ({
           id: fn.id,
           name: fn.name,
@@ -204,15 +219,35 @@ export class DiagramService {
       };
     }
 
+    if (forAtlas && snapshot.frontend) {
+      const connections = await client.query<{
+        source_component_id: string;
+        target_component_id: string;
+        source_evidence: unknown;
+      }>(
+        "SELECT source_component_id,target_component_id,source_evidence FROM analysis_frontend_jsx_elements WHERE job_id=$1 AND target_component_id IS NOT NULL ORDER BY id LIMIT 20000",
+        [jobId],
+      );
+      snapshot.frontend.connections = connections.rows.map((row) => ({
+        sourceId: row.source_component_id,
+        targetId: row.target_component_id,
+        kind: "renders",
+        status: "RESOLVED",
+        evidence: sourceEvidenceSchema.safeParse(row.source_evidence).data,
+      }));
+    }
+
     const beRoutes = await client.query<{
       id: string;
       method: string;
       path: string;
       file_path: string;
+      handler_name: string;
+      middleware: string[];
       start_line: number;
       end_line: number;
     }>(
-      "SELECT id,method,path,file_path,COALESCE((source_evidence->>'startLine')::int,1) AS start_line,COALESCE((source_evidence->>'endLine')::int,1) AS end_line FROM analysis_backend_routes WHERE job_id=$1 LIMIT 10000",
+      "SELECT id,method,path,file_path,handler_name,middleware,COALESCE((source_evidence->>'startLine')::int,1) AS start_line,COALESCE((source_evidence->>'endLine')::int,1) AS end_line FROM analysis_backend_routes WHERE job_id=$1 ORDER BY path,id LIMIT 10000",
       [jobId],
     );
     if (beRoutes.rowCount && beRoutes.rowCount > 0) {
@@ -220,6 +255,8 @@ export class DiagramService {
         routes: beRoutes.rows.map((r) => ({
           id: r.id,
           method: r.method,
+          handler: r.handler_name,
+          middleware: r.middleware,
           path: r.path,
           filePath: r.file_path,
           startLine: r.start_line,
@@ -237,22 +274,69 @@ export class DiagramService {
       id: string;
       path: string;
       name: string;
+      kind: string;
     }>(
-      "SELECT id,path,name FROM analysis_graph_nodes WHERE job_id=$1 LIMIT 10000",
+      "SELECT id,path,name,kind FROM analysis_graph_nodes WHERE job_id=$1 ORDER BY path,id LIMIT 10000",
       [jobId],
     );
     if (depNodes.rowCount && depNodes.rowCount > 0) {
+      const dependencyEdges = await client.query<{
+        source_id: string;
+        target_id: string;
+        kind: string;
+        resolution: DependencyEdge["resolution"];
+        evidence: DependencyEdge["evidence"];
+        weight: number;
+      }>(
+        `SELECT source_id,target_id,kind,resolution,evidence,weight FROM analysis_graph_edges
+         WHERE job_id=$1 AND source_id=ANY($2::text[]) AND target_id=ANY($2::text[])
+         ORDER BY id LIMIT 20000`,
+        [jobId, depNodes.rows.map((node) => node.id)],
+      );
       snapshot.dependencies = {
-        nodes: depNodes.rows.map((r) => ({
-          id: r.id,
-          path: r.path,
-          name: r.name,
+        nodes: depNodes.rows.map((row) => ({
+          id: row.id,
+          path: row.path,
+          name: row.name,
+          isExternal: row.kind === "external",
         })),
-        edges: [],
+        edges: dependencyEdges.rows.map((row) => ({
+          sourceId: row.source_id,
+          targetId: row.target_id,
+          kind: row.kind,
+          status: row.resolution,
+          weight: Math.min(row.weight, 1000),
+          evidence: sourceEvidenceSchema.safeParse(row.evidence[0]).data,
+        })),
       };
     }
 
     return snapshot;
+  }
+
+  getAtlas(actor: string, workspaceId: string, jobId: string) {
+    return this.workspace(actor, workspaceId, async (client) => {
+      const snapshot = await this.loadSnapshot(
+        client,
+        workspaceId,
+        jobId,
+        true,
+      );
+      const { rows } = await client.query<{
+        files: number;
+        symbols: number;
+        diagnostics: number;
+        cycles: number;
+        unresolved: number;
+      }>(
+        `SELECT file_count AS files,symbol_count AS symbols,diagnostic_count AS diagnostics,
+           (SELECT count(*)::int FROM analysis_graph_cycles WHERE job_id=$1) AS cycles,
+           (SELECT count(*)::int FROM analysis_unresolved_references WHERE job_id=$1 AND status='unresolved') AS unresolved
+         FROM analysis_jobs WHERE id=$1`,
+        [jobId],
+      );
+      return buildAtlas(snapshot, rows[0]);
+    });
   }
 
   async getDiagram(

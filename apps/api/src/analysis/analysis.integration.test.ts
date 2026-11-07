@@ -6,6 +6,12 @@ import { WorkspaceService } from "@codaryn/database";
 import { buildApp } from "../app.js";
 import { registerAnalysis } from "./routes.js";
 import { AnalysisService } from "./service.js";
+import { registerDiagrams } from "../diagrams/routes.js";
+import { DiagramService } from "../diagrams/service.js";
+import {
+  architectureAtlasSchema,
+  atlasJobListSchema,
+} from "@codaryn/contracts";
 
 const origin = "http://localhost:3000";
 
@@ -43,19 +49,16 @@ test("analysis endpoints enforce authorization, job lifecycle, and inventory ins
     },
   });
 
-  registerAnalysis(
-    app,
-    {
-      api: {
-        getSession: async ({ headers }) => {
-          const actor = headers?.get("x-test-user");
-          return actor ? session(actor) : null;
-        },
+  const auth = {
+    api: {
+      getSession: async ({ headers }: { headers: Headers }) => {
+        const actor = headers.get("x-test-user");
+        return actor ? session(actor) : null;
       },
     },
-    service,
-    origin,
-  );
+  };
+  registerAnalysis(app, auth, service, origin);
+  registerDiagrams(app, auth, new DiagramService(pool), origin);
 
   try {
     await pool.query(
@@ -133,6 +136,28 @@ test("analysis endpoints enforce authorization, job lifecycle, and inventory ins
     assert.equal(fetched.statusCode, 200);
     assert.equal(fetched.json().id, job.id);
 
+    const repeated = await service.startJob(
+      owner,
+      workspace,
+      manifestId,
+      repoId,
+      "main",
+      true,
+    );
+    assert.equal(repeated.id, job.id);
+
+    const atlasUrl = `/api/v1/workspaces/${workspace}/analysis/${job.id}/atlas`;
+    const atlasRead = (actor: string) =>
+      app.inject({ url: atlasUrl, headers: headersFor(actor) });
+    assert.equal((await atlasRead(owner)).statusCode, 409);
+    assert.equal((await atlasRead(outsider)).statusCode, 404);
+
+    const jobs = await app.inject({
+      url: `/api/v1/analysis/jobs?workspaceId=${workspace}&repositoryId=${repoId}`,
+      headers: headersFor(owner),
+    });
+    assert.equal(atlasJobListSchema.parse(jobs.json()).jobs[0]?.id, job.id);
+
     const cancelled = await app.inject({
       method: "POST",
       url: "/api/v1/analysis/cancel",
@@ -160,6 +185,74 @@ test("analysis endpoints enforce authorization, job lifecycle, and inventory ins
     });
     assert.equal(symbols.statusCode, 200);
     assert.equal(symbols.json().totalCount, 0);
+    const replacement = await service.startJob(
+      owner,
+      workspace,
+      manifestId,
+      repoId,
+      "main",
+    );
+    const source = `${replacement.id}:node:file:apps/api/index.ts`;
+    const target = `${replacement.id}:node:file:packages/db/client.ts`;
+    await pool.query(
+      "INSERT INTO analysis_graph_nodes(id,job_id,kind,path,name) VALUES ($1,$3,'file','apps/api/index.ts','index.ts'),($2,$3,'file','packages/db/client.ts','client.ts')",
+      [source, target, replacement.id],
+    );
+    await pool.query(
+      "INSERT INTO analysis_graph_edges(id,job_id,source_id,target_id,kind,resolution,evidence) VALUES ($1,$2,$3,$4,'imports','RESOLVED',$5)",
+      [
+        randomUUID(),
+        replacement.id,
+        source,
+        target,
+        JSON.stringify([
+          { path: "apps/api/index.ts", startLine: 2, endLine: 2 },
+        ]),
+      ],
+    );
+    await pool.query(
+      "INSERT INTO analysis_backend_routes(id,job_id,framework,method,path,file_path,handler_name,middleware,source_evidence) VALUES($1,$2,'express','GET','/health','apps/api/index.ts','health',ARRAY['authenticate'],$3)",
+      [
+        randomUUID(),
+        replacement.id,
+        JSON.stringify({ path: "apps/api/index.ts", startLine: 6, endLine: 7 }),
+      ],
+    );
+    await pool.query(
+      "UPDATE analysis_jobs SET status='completed', current_stage='completed', completed_at=now(),file_count=2 WHERE id=$1",
+      [replacement.id],
+    );
+    const finishedUrl = `/api/v1/workspaces/${workspace}/analysis/${replacement.id}/atlas`;
+    const completed = await app.inject({
+      url: finishedUrl,
+      headers: headersFor(owner),
+    });
+    assert.equal(completed.statusCode, 200, completed.body);
+    const atlas = architectureAtlasSchema.parse(completed.json());
+    assert.equal(atlas.layers.files.edges[0]?.evidence?.startLine, 2);
+    assert.deepEqual(
+      atlas.layers.services.nodes.map((node) => node.title),
+      ["apps/api", "packages/db"],
+    );
+    assert.equal(atlas.layers.services.edges.length, 1);
+    assert.equal(
+      atlas.layers.sequences.nodes.find((node) => node.kind === "Middleware")
+        ?.title,
+      "authenticate",
+    );
+    assert.equal(atlas.layers.sequences.edges.length, 2);
+    assert.equal(atlas.health.files, 2);
+    assert.equal(atlas.tour.length, 1);
+
+    await pool.query(
+      "UPDATE github_installations SET connected=false WHERE id=$1",
+      [installation],
+    );
+    assert.equal(
+      (await app.inject({ url: finishedUrl, headers: headersFor(owner) }))
+        .statusCode,
+      404,
+    );
   } finally {
     if (workspace) {
       await pool.query("DELETE FROM audit_events WHERE organization_id=$1", [

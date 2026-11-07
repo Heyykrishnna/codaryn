@@ -183,7 +183,9 @@ export function GraphExplorer({
           )}
           <NeighborhoodPanel
             selectedNode={
-              snapshot.data.nodes.find((node) => node.id === selected) ?? null
+              snapshot.data.nodes.find((node) => node.id === selected) ??
+              neighborhood.data?.nodes.find((node) => node.id === selected) ??
+              null
             }
             neighborhood={neighborhood.data}
             depth={depth}

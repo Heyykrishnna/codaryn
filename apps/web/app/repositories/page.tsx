@@ -5,12 +5,12 @@ import { useSearchParams } from "next/navigation";
 import {
   githubConfigurationSchema,
   githubInstallationListSchema,
-  repositoryListSchema,
   type WorkspaceSummary,
 } from "@codaryn/contracts";
 import { RepositoryDetails } from "@/src/features/repositories/details";
 import {
   api,
+  fetchRepositoryCatalog,
   button,
   control,
   type Repository,
@@ -44,24 +44,26 @@ function RepositoryManager({ workspace }: { workspace: WorkspaceSummary }) {
   const [filter, setFilter] = useState("");
   const [visibility, setVisibility] = useState("all");
   const [view, setView] = useState("grid");
-  const [page, setPage] = useState(1);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
-  const [settledPage, setSettledPage] = useState(0);
+  const [settled, setSettled] = useState(false);
   const [loadError, setLoadError] = useState("");
-  const loading = configuration?.enabled && settledPage !== page;
+  const loading = configuration?.enabled && !settled;
   const refresh = useCallback(
     async (signal?: AbortSignal) => {
       const [repos, links] = await Promise.all([
-        api("repositories", { workspaceId, page: String(page) }, false, signal),
+        fetchRepositoryCatalog(
+          workspaceId,
+          signal ?? AbortSignal.timeout(30000),
+        ),
         api("installations", { workspaceId }, false, signal),
       ]);
       return {
-        repositories: repositoryListSchema.parse(repos).repositories,
+        repositories: repos,
         installations: githubInstallationListSchema.parse(links).installations,
       };
     },
-    [workspaceId, page],
+    [workspaceId],
   );
   useEffect(() => {
     if (!workspaceId || !configuration?.enabled) return;
@@ -72,7 +74,7 @@ function RepositoryManager({ workspace }: { workspace: WorkspaceSummary }) {
         setRepositories(result.repositories);
         setInstallations(result.installations);
         setLoadError("");
-        setSettledPage(page);
+        setSettled(true);
       })
       .catch(() => {
         if (controller.signal.aborted) return;
@@ -81,10 +83,10 @@ function RepositoryManager({ workspace }: { workspace: WorkspaceSummary }) {
         setLoadError(
           "Unable to load repositories. Check access and reload to retry.",
         );
-        setSettledPage(page);
+        setSettled(true);
       });
     return () => controller.abort();
-  }, [configuration?.enabled, page, refresh, workspaceId]);
+  }, [configuration?.enabled, refresh, workspaceId]);
   async function run(operation: () => Promise<unknown>) {
     setBusy(true);
     setMessage("");
@@ -319,7 +321,7 @@ function RepositoryManager({ workspace }: { workspace: WorkspaceSummary }) {
                 id="repository-search"
                 type="search"
                 className={`${control} w-full`}
-                placeholder="Search this page"
+                placeholder="Search all repositories"
                 value={filter}
                 onChange={(event) => setFilter(event.target.value)}
               />
@@ -385,7 +387,7 @@ function RepositoryManager({ workspace }: { workspace: WorkspaceSummary }) {
             <p className="text-xs text-neutral-600">
               {repositories.length > 0
                 ? "No repositories match these filters. Try another search."
-                : "No repositories match this page. Sync a connected installation to discover repositories."}
+                : "No repositories found. Sync a connected installation to discover repositories."}
             </p>
           )}
           {!loading &&
@@ -459,27 +461,11 @@ function RepositoryManager({ workspace }: { workspace: WorkspaceSummary }) {
                 </table>
               </div>
             ))}
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              className={button}
-              disabled={busy || loading || page === 1}
-              onClick={() => setPage(page - 1)}
-            >
-              Previous page
-            </button>
-            <span className="self-center font-mono text-xs text-neutral-600">
-              Page {page}
-            </span>
-            <button
-              type="button"
-              className={button}
-              disabled={busy || loading || repositories.length < 50}
-              onClick={() => setPage(page + 1)}
-            >
-              Next page
-            </button>
-          </div>
+          {!loading && !loadError && (
+            <p className="text-muted text-sm">
+              {visible.length} of {repositories.length} repositories
+            </p>
+          )}
         </>
       )}
     </>

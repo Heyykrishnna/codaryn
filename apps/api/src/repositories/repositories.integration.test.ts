@@ -71,6 +71,36 @@ test("repositories preserve workspace boundaries, immutable selections and webho
       service.branches(other, workspace, repositories[0].id, 1),
       WorkspaceAccessError,
     );
+    await pool.query(
+      `INSERT INTO connected_repositories (id,installation_id,github_id,full_name,private,default_branch)
+       SELECT gen_random_uuid(),$1,2000000000+n,'fixture/catalog-'||n,true,'main' FROM generate_series(1,251) n`,
+      [installation],
+    );
+    try {
+      const first = await service.catalog(owner, workspace);
+      assert.equal(first.repositories.length, 250);
+      assert.ok(first.next);
+      const second = await service.catalog(owner, workspace, first.next);
+      assert.equal(second.repositories.length, 2);
+      assert.equal(second.next, null);
+      assert.equal(
+        new Set(
+          [...first.repositories, ...second.repositories].map(
+            (repository) => repository.id,
+          ),
+        ).size,
+        252,
+      );
+      await assert.rejects(
+        service.catalog(other, workspace),
+        WorkspaceAccessError,
+      );
+    } finally {
+      await pool.query(
+        "DELETE FROM connected_repositories WHERE installation_id=$1 AND full_name LIKE 'fixture/catalog-%'",
+        [installation],
+      );
+    }
     const run = await service.ingest(
       owner,
       workspace,
