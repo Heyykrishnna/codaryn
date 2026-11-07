@@ -47,7 +47,7 @@ export function TeamDashboard({
             {Object.entries(overview.data.counts).map(([name, count]) => (
               <div
                 key={name}
-                className="rounded-lg border border-zinc-300 p-4 dark:border-zinc-700"
+                className="rounded-lg border border-dotted border-neutral-300 p-4"
               >
                 <p className="text-sm">{name}</p>
                 <p className="text-2xl font-semibold">

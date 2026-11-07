@@ -1,5 +1,5 @@
 import { PerformanceMonitor } from "@/src/components/performance-monitor";
-import { AppHeader } from "@/src/components/app-header";
+import { AppShell } from "@/src/components/app-header";
 import type { Metadata } from "next";
 import "./globals.css";
 
@@ -15,8 +15,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="bg-background text-foreground min-h-screen font-sans antialiased">
         <PerformanceMonitor />
-        <AppHeader />
-        {children}
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

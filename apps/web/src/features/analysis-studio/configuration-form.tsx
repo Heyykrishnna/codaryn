@@ -13,11 +13,11 @@ export function ConfigurationForm() {
   return (
     <form
       action={action}
-      className="flex max-w-xl flex-col gap-5 rounded-xl border border-zinc-200 p-6 dark:border-zinc-800"
+      className="flex max-w-xl flex-col gap-5 rounded-xl border border-dotted border-neutral-200 p-6"
     >
       <div>
         <h2 className="text-lg font-semibold">Analysis configuration</h2>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="mt-1 text-sm text-neutral-600">
           Validate a starting configuration. This does not start an analysis.
         </p>
       </div>
@@ -30,7 +30,7 @@ export function ConfigurationForm() {
           id="depth"
           name="depth"
           defaultValue="standard"
-          className="rounded-md border border-zinc-300 bg-transparent px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 dark:border-zinc-700"
+          className="rounded-md border border-dotted border-neutral-300 bg-transparent px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-500"
         >
           <option value="overview">Overview</option>
           <option value="standard">Standard</option>
@@ -41,7 +41,7 @@ export function ConfigurationForm() {
         <input
           type="checkbox"
           name="includeTests"
-          className="accent-indigo-600"
+          className="accent-neutral-500"
         />{" "}
         <span>Include test files</span>
       </label>
@@ -50,14 +50,14 @@ export function ConfigurationForm() {
           type="checkbox"
           name="excludeGenerated"
           defaultChecked
-          className="accent-indigo-600"
+          className="accent-neutral-500"
         />{" "}
         <span>Exclude generated files</span>
       </label>
       <button
         type="submit"
         disabled={pending}
-        className="self-start rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:opacity-50"
+        className="self-start rounded-md bg-neutral-800 px-4 py-2 text-sm font-medium text-neutral-950 hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-500 disabled:opacity-50"
       >
         {pending ? "Validating…" : "Validate configuration"}
       </button>
@@ -65,8 +65,8 @@ export function ConfigurationForm() {
         aria-live="polite"
         className={
           state.status === "error"
-            ? "text-sm text-red-700 dark:text-red-400"
-            : "text-sm text-zinc-600 dark:text-zinc-400"
+            ? "text-sm text-neutral-800"
+            : "text-sm text-neutral-600"
         }
       >
         {state.message}

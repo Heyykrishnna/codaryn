@@ -1,53 +1,54 @@
 "use client";
 
-import React from "react";
+import Link from "next/link";
+import type {
+  AnchorHTMLAttributes,
+  ButtonHTMLAttributes,
+  ReactNode,
+} from "react";
 import { cn } from "@/lib/utils";
 
 export type CandyButtonVariant =
-  | "pearl"
-  | "obsidian"
-  | "secondary"
-  | "azure"
-  | "emerald"
-  | "violet"
-  | "amber"
-  | "ruby"
-  | "outline"
-  | "ghost";
+  "pearl" | "obsidian" | "secondary" | "ruby" | "outline" | "ghost";
 
 export type CandyButtonSize = "xs" | "sm" | "default" | "lg" | "icon";
 
-export interface CandyButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  as?: React.ElementType;
-  href?: string;
-  target?: string;
-  rel?: string;
+type Appearance = {
   variant?: CandyButtonVariant;
   size?: CandyButtonSize;
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
-}
+  leftIcon?: ReactNode;
+  rightIcon?: ReactNode;
+};
+
+type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "style"> & {
+  as?: never;
+};
+
+type LinkProps = Omit<
+  AnchorHTMLAttributes<HTMLAnchorElement>,
+  "style" | "href"
+> & {
+  as: "a";
+  href: string;
+  disabled?: boolean;
+};
+
+export type CandyButtonProps = Appearance & (ButtonProps | LinkProps);
+
+const solid =
+  "border border-dotted border-neutral-700 bg-neutral-900 text-white shadow-[0_2px_0_#525252] hover:bg-neutral-800";
+const subtle =
+  "border border-dotted border-border bg-white text-foreground shadow-[0_2px_0_#e5e5e5] hover:bg-card-hover";
 
 const variantStyles: Record<CandyButtonVariant, string> = {
-  pearl:
-    "bg-zinc-100 text-zinc-950 border border-zinc-300 shadow-[0_2px_0_0_#a1a1aa] hover:bg-white active:translate-y-[1px] active:shadow-none focus-visible:ring-zinc-400",
-  obsidian:
-    "bg-[#14151a] text-zinc-100 border border-dotted border-zinc-700 shadow-[0_2px_0_0_#090a0d] hover:bg-[#1a1b22] active:translate-y-[1px] active:shadow-none focus-visible:ring-zinc-500",
-  secondary:
-    "bg-[#1e1f26] text-zinc-200 border border-dotted border-zinc-700 shadow-[0_2px_0_0_#111216] hover:bg-[#262832] active:translate-y-[1px] active:shadow-none focus-visible:ring-zinc-500",
-  azure:
-    "bg-[#3f3f46] text-white border border-[#52525b] shadow-[0_2px_0_0_#27272a] hover:bg-[#52525b] active:translate-y-[1px] active:shadow-none focus-visible:ring-zinc-400",
-  emerald:
-    "bg-[#059669] text-white border border-[#047857] shadow-[0_2px_0_0_#065f46] hover:bg-[#047857] active:translate-y-[1px] active:shadow-none focus-visible:ring-emerald-400",
-  violet:
-    "bg-[#7c3aed] text-white border border-[#6d28d9] shadow-[0_2px_0_0_#5b21b6] hover:bg-[#6d28d9] active:translate-y-[1px] active:shadow-none focus-visible:ring-violet-400",
-  amber:
-    "bg-[#d97706] text-white border border-[#b45309] shadow-[0_2px_0_0_#92400e] hover:bg-[#b45309] active:translate-y-[1px] active:shadow-none focus-visible:ring-amber-400",
-  ruby: "bg-[#dc2626] text-white border border-[#b91c1c] shadow-[0_2px_0_0_#991b1b] hover:bg-[#b91c1c] active:translate-y-[1px] active:shadow-none focus-visible:ring-red-400",
+  pearl: solid,
+  obsidian: subtle,
+  secondary: subtle,
+  ruby: solid,
   outline:
-    "bg-transparent text-zinc-200 border border-dotted border-zinc-700 shadow-[0_1px_0_0_#14151a] hover:bg-[#181920] hover:border-zinc-500 active:translate-y-[1px] active:shadow-none focus-visible:ring-zinc-500",
+    "border border-dotted border-border text-foreground hover:bg-card-hover",
   ghost:
-    "bg-transparent text-zinc-300 border border-transparent hover:bg-[#181920] hover:text-white active:bg-[#20212b] focus-visible:ring-zinc-500",
+    "border border-transparent text-muted hover:bg-card-hover hover:text-foreground",
 };
 
 const sizeStyles: Record<CandyButtonSize, string> = {
@@ -58,69 +59,58 @@ const sizeStyles: Record<CandyButtonSize, string> = {
   icon: "size-9 p-0 rounded-lg gap-0 [&_svg]:size-4",
 };
 
-export const CandyButton = React.forwardRef<HTMLElement, CandyButtonProps>(
-  (
-    {
-      as,
-      className,
-      children,
-      variant = "obsidian",
-      size = "default",
-      leftIcon,
-      rightIcon,
-      style,
-      disabled,
-      ...props
-    },
-    ref,
-  ) => {
-    const commonClass = cn(
-      "relative inline-flex items-center justify-center tracking-tight select-none cursor-pointer transition-all duration-150 ease-out outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#090a0d] disabled:pointer-events-none disabled:opacity-40 disabled:cursor-not-allowed",
-      variantStyles[variant],
-      sizeStyles[size],
-      className,
-    );
+export function CandyButton({
+  variant = "obsidian",
+  size = "default",
+  leftIcon,
+  rightIcon,
+  className,
+  children,
+  ...props
+}: CandyButtonProps) {
+  const classes = cn(
+    "relative inline-flex min-w-0 items-center justify-center tracking-tight select-none cursor-pointer motion-safe:transition-[background-color,border-color,color,translate,box-shadow] motion-safe:duration-150 motion-safe:ease-control motion-safe:active:translate-y-px active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-600 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50",
+    variantStyles[variant],
+    sizeStyles[size],
+    className,
+  );
+  const content = (
+    <>
+      {leftIcon && (
+        <span className="shrink-0" aria-hidden="true">
+          {leftIcon}
+        </span>
+      )}
+      <span className="truncate">{children}</span>
+      {rightIcon && (
+        <span className="shrink-0" aria-hidden="true">
+          {rightIcon}
+        </span>
+      )}
+    </>
+  );
 
-    const innerContent = (
-      <>
-        {leftIcon && <span className="shrink-0">{leftIcon}</span>}
-        <span className="truncate">{children}</span>
-        {rightIcon && <span className="shrink-0">{rightIcon}</span>}
-      </>
-    );
-
-    if (as === "a" || props.href) {
+  if (props.as === "a") {
+    const { as: Element, href, disabled, ...link } = props;
+    if (disabled) {
       return (
-        <a
-          ref={ref as React.Ref<HTMLAnchorElement>}
-          href={props.href}
-          target={props.target}
-          rel={props.rel}
-          style={style}
-          className={commonClass}
-          aria-disabled={disabled}
-          role="button"
-          {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
-        >
-          {innerContent}
-        </a>
+        <Element className={classes} aria-disabled="true">
+          {content}
+        </Element>
       );
     }
-
     return (
-      <button
-        ref={ref as React.Ref<HTMLButtonElement>}
-        disabled={disabled}
-        style={style}
-        className={commonClass}
-        {...props}
-      >
-        {innerContent}
-      </button>
+      <Link {...link} href={href} className={classes}>
+        {content}
+      </Link>
     );
-  },
-);
+  }
 
-CandyButton.displayName = "CandyButton";
+  return (
+    <button {...props} type={props.type ?? "button"} className={classes}>
+      {content}
+    </button>
+  );
+}
 
 export default CandyButton;

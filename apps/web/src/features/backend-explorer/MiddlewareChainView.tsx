@@ -28,29 +28,29 @@ export function MiddlewareChainView({ middleware }: MiddlewareChainViewProps) {
   const getKindBadge = (kind: string) => {
     switch (kind) {
       case "auth":
-        return "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900";
+        return "bg-neutral-100 text-neutral-800 border-neutral-500   ";
       case "validation":
-        return "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-900";
+        return "bg-neutral-100 text-neutral-800 border-neutral-500   ";
       case "logging":
-        return "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900";
+        return "bg-neutral-100 text-neutral-800 border-neutral-500   ";
       case "rate_limit":
-        return "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900";
+        return "bg-neutral-100 text-neutral-800 border-neutral-500   ";
       case "cors":
-        return "bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-900";
+        return "bg-neutral-100 text-neutral-800 border-neutral-500   ";
       default:
-        return "bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700";
+        return "bg-neutral-100 text-neutral-700 border-neutral-200   ";
     }
   };
 
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
+    <div className="flex flex-col gap-4 rounded-xl border border-dotted border-neutral-200 bg-white p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-sm font-semibold text-neutral-900">
             Middleware &amp; Guards Pipeline ({filtered.length} of{" "}
             {middleware.length})
           </h2>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-neutral-600">
             Authentication guards, validation schemas, rate limiters, and
             request hooks ordered by scope.
           </p>
@@ -63,14 +63,14 @@ export function MiddlewareChainView({ middleware }: MiddlewareChainViewProps) {
             placeholder="Search middleware…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-900 placeholder-zinc-400 focus:border-indigo-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="rounded-lg border border-dotted border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 placeholder-neutral-600 focus:border-neutral-500 focus:outline-none"
           />
 
           <select
             aria-label="Filter by middleware kind"
             value={kindFilter}
             onChange={(e) => setKindFilter(e.target.value)}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="rounded-lg border border-dotted border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-neutral-500 focus:outline-none"
           >
             <option value="all">All Kinds</option>
             <option value="auth">Auth &amp; Guards</option>
@@ -85,7 +85,7 @@ export function MiddlewareChainView({ middleware }: MiddlewareChainViewProps) {
             aria-label="Filter by middleware scope"
             value={scopeFilter}
             onChange={(e) => setScopeFilter(e.target.value)}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="rounded-lg border border-dotted border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-neutral-500 focus:outline-none"
           >
             <option value="all">All Scopes</option>
             <option value="global">Global</option>
@@ -97,18 +97,18 @@ export function MiddlewareChainView({ middleware }: MiddlewareChainViewProps) {
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.length === 0 ? (
-          <div className="col-span-full py-8 text-center text-xs text-zinc-400">
+          <div className="col-span-full py-8 text-center text-xs text-neutral-600">
             No middleware found matching criteria.
           </div>
         ) : (
           filtered.map((m) => (
             <div
               key={m.id}
-              className="flex flex-col justify-between gap-2 rounded-lg border border-zinc-200 bg-white p-3.5 transition-shadow hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
+              className="flex flex-col justify-between gap-2 rounded-lg border border-dotted border-neutral-200 bg-white p-3.5 transition-shadow hover:shadow-sm"
             >
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                  <span className="font-mono text-xs font-bold text-neutral-900">
                     {m.name}
                   </span>
                   <span
@@ -119,15 +119,15 @@ export function MiddlewareChainView({ middleware }: MiddlewareChainViewProps) {
                     {m.kind}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-[11px] text-zinc-500">
+                <div className="flex items-center gap-2 text-[11px] text-neutral-600">
                   <span>Scope:</span>
-                  <span className="py-0.2 rounded bg-zinc-100 px-1.5 text-[10px] font-medium text-zinc-700 capitalize dark:bg-zinc-800 dark:text-zinc-300">
+                  <span className="py-0.2 rounded bg-neutral-100 px-1.5 text-[10px] font-medium text-neutral-700 capitalize">
                     {m.scope}
                   </span>
                 </div>
               </div>
 
-              <div className="border-t border-zinc-100 pt-2 font-mono text-[10px] text-zinc-400 dark:border-zinc-900">
+              <div className="border-t border-dotted border-neutral-100 pt-2 font-mono text-[10px] text-neutral-600">
                 {m.filePath}:{m.sourceEvidence.startLine}
               </div>
             </div>

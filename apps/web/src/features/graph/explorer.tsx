@@ -17,7 +17,7 @@ import { SourceEvidenceInspector } from "./evidence";
 import { DependencyCyclesPanel } from "./cycles";
 import { ModuleMetricsPanel } from "./metrics";
 import { NeighborhoodPanel } from "./neighborhood";
-import { LoaderOrb } from "@/src/components/ui/loader-orb";
+import { LoadingIndicator } from "@/src/components/ui/loading-indicator";
 const neighborhoodSchema = z.object({
   nodes: z.array(dependencyNodeSchema),
   edges: z.array(dependencyEdgeSchema),
@@ -114,21 +114,21 @@ export function GraphExplorer({
         </button>
       </div>
       {jobs.loading && (
-        <LoaderOrb variant="inline" label="Loading analysis jobs…" />
+        <LoadingIndicator variant="inline" label="Loading analysis jobs…" />
       )}
       {jobs.data && !jobs.data.jobs.length && (
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-neutral-600">
           No analysis jobs are available. Create an analysis in Studio first.
         </p>
       )}
       {(jobs.error || snapshot.error || neighborhood.error) && (
-        <p role="alert" className="text-xs text-red-300">
+        <p role="alert" className="text-xs text-neutral-800">
           {jobs.error || snapshot.error || neighborhood.error}
         </p>
       )}
       {snapshot.loading && (
         <div className="flex items-center justify-center py-8">
-          <LoaderOrb
+          <LoadingIndicator
             label="Loading graph page…"
             description="Extracting node topology and edge dependencies"
           />
@@ -136,7 +136,7 @@ export function GraphExplorer({
       )}
       {snapshot.data && (
         <>
-          <div className="rounded-lg border border-dotted border-zinc-800 bg-zinc-900/40 px-3 py-2 font-mono text-xs text-zinc-400">
+          <div className="rounded-lg border border-dotted border-neutral-300 bg-white/40 px-3 py-2 font-mono text-xs text-neutral-600">
             Page {page} · {snapshot.data.nodes.length} of{" "}
             {snapshot.data.totalNodes} matching nodes. Up to 400 relationships
             within this page.{" "}
@@ -175,6 +175,12 @@ export function GraphExplorer({
             onSelectNode={setSelected}
             onSelectEdge={setEdge}
           />
+          {neighborhood.loading && (
+            <LoadingIndicator
+              variant="inline"
+              label="Loading graph neighborhood…"
+            />
+          )}
           <NeighborhoodPanel
             selectedNode={
               snapshot.data.nodes.find((node) => node.id === selected) ?? null
@@ -187,7 +193,7 @@ export function GraphExplorer({
             onSelectNode={setSelected}
           />
           {neighborhood.data?.truncated && (
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-neutral-600">
               Neighborhood display limit reached. Use a smaller depth or a more
               specific node.
             </p>
@@ -200,21 +206,21 @@ export function GraphExplorer({
           <ModuleMetricsPanel metrics={snapshot.data.metrics} />
           <details
             onToggle={(event) => setShowUnresolved(event.currentTarget.open)}
-            className="rounded-2xl border border-dotted border-zinc-800 bg-[#111216] p-4 text-xs text-zinc-300"
+            className="rounded-2xl border border-dotted border-neutral-300 bg-white p-4 text-xs text-neutral-900"
           >
-            <summary className="cursor-pointer font-semibold text-white focus-visible:outline-1 focus-visible:outline-zinc-400">
+            <summary className="cursor-pointer font-semibold text-neutral-950 focus-visible:outline-1 focus-visible:outline-neutral-400">
               Unresolved references
             </summary>
             {unresolved.loading && (
               <div className="py-2">
-                <LoaderOrb
+                <LoadingIndicator
                   variant="inline"
                   label="Loading unresolved evidence…"
                 />
               </div>
             )}
             {unresolved.error && (
-              <p role="alert" className="mt-2 text-xs text-red-300">
+              <p role="alert" className="mt-2 text-xs text-neutral-800">
                 {unresolved.error}
               </p>
             )}

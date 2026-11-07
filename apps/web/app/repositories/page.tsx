@@ -1,13 +1,11 @@
 "use client";
 
-import Link from "next/link";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   githubConfigurationSchema,
   githubInstallationListSchema,
   repositoryListSchema,
-  workspaceListSchema,
   type WorkspaceSummary,
 } from "@codaryn/contracts";
 import { RepositoryDetails } from "@/src/features/repositories/details";
@@ -17,89 +15,76 @@ import {
   control,
   type Repository,
 } from "@/src/features/repositories/api";
-import { authClient } from "@/src/lib/auth-client";
-import { LoaderOrb } from "@/src/components/ui/loader-orb";
+import { WorkspaceExplorer } from "@/src/components/workspace-explorer";
+import { DashboardPage } from "@/src/components/dashboard-page";
+import { DropdownSelect } from "@/src/components/ui/custom-dropdown";
+import { useArtifactResource } from "@/src/lib/artifact-resource";
+import { LoadingIndicator } from "@/src/components/ui/loading-indicator";
 
-function Repositories() {
-  const {
-    data: session,
-    isPending,
-    error: sessionError,
-  } = authClient.useSession();
+function RepositoryManager({ workspace }: { workspace: WorkspaceSummary }) {
+  const workspaceId = workspace.id;
   const searchParams = useSearchParams();
-  const [workspaces, setWorkspaces] = useState<WorkspaceSummary[]>([]);
-  const [workspaceId, setWorkspaceId] = useState("");
-  const [configuration, setConfiguration] = useState<{
-    enabled: boolean;
-    installationUrl: string | null;
-  } | null>(null);
+  const settings = useArtifactResource(
+    "/api/v1/github/configuration",
+    githubConfigurationSchema,
+  );
+  const configuration = settings.data;
   const [installations, setInstallations] = useState<
     { id: string; connected: boolean }[]
   >([]);
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [selected, setSelected] = useState<Repository | null>(null);
+  const inspector = useRef<HTMLElement>(null);
+  const inspectorTrigger = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!selected) return;
+    inspector.current?.focus({ preventScroll: true });
+    inspector.current?.scrollIntoView({ block: "nearest" });
+  }, [selected]);
   const [filter, setFilter] = useState("");
   const [visibility, setVisibility] = useState("all");
   const [view, setView] = useState("grid");
   const [page, setPage] = useState(1);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
-  useEffect(() => {
-    if (!session) return;
-    let current = true;
-    Promise.all([
-      fetch("/api/v1/workspace/list", { cache: "no-store" }).then(
-        (response) => {
-          if (!response.ok) throw new Error("Workspaces unavailable");
-          return response.json();
-        },
-      ),
-      api("configuration", {}),
-    ])
-      .then(([rawWorkspaces, rawConfiguration]) => {
-        const list = workspaceListSchema.parse(rawWorkspaces);
-        if (current) {
-          setWorkspaces(list.workspaces);
-          setWorkspaceId(list.active ?? list.workspaces[0]?.id ?? "");
-          setConfiguration(githubConfigurationSchema.parse(rawConfiguration));
-        }
-      })
-      .catch(() => {
-        if (current)
-          setMessage("Unable to load GitHub settings. Reload to retry.");
-      });
-    return () => {
-      current = false;
-    };
-  }, [session]);
-  const refresh = useCallback(async () => {
-    const [repos, links] = await Promise.all([
-      api("repositories", { workspaceId, page: String(page) }),
-      api("installations", { workspaceId }),
-    ]);
-    return {
-      repositories: repositoryListSchema.parse(repos).repositories,
-      installations: githubInstallationListSchema.parse(links).installations,
-    };
-  }, [workspaceId, page]);
+  const [settledPage, setSettledPage] = useState(0);
+  const [loadError, setLoadError] = useState("");
+  const loading = configuration?.enabled && settledPage !== page;
+  const refresh = useCallback(
+    async (signal?: AbortSignal) => {
+      const [repos, links] = await Promise.all([
+        api("repositories", { workspaceId, page: String(page) }, false, signal),
+        api("installations", { workspaceId }, false, signal),
+      ]);
+      return {
+        repositories: repositoryListSchema.parse(repos).repositories,
+        installations: githubInstallationListSchema.parse(links).installations,
+      };
+    },
+    [workspaceId, page],
+  );
   useEffect(() => {
     if (!workspaceId || !configuration?.enabled) return;
-    let current = true;
-    refresh()
+    const controller = new AbortController();
+    refresh(controller.signal)
       .then((result) => {
-        if (current) {
-          setRepositories(result.repositories);
-          setInstallations(result.installations);
-        }
+        if (controller.signal.aborted) return;
+        setRepositories(result.repositories);
+        setInstallations(result.installations);
+        setLoadError("");
+        setSettledPage(page);
       })
       .catch(() => {
-        if (current)
-          setMessage("Unable to load repositories. Check access and retry.");
+        if (controller.signal.aborted) return;
+        setRepositories([]);
+        setInstallations([]);
+        setLoadError(
+          "Unable to load repositories. Check access and reload to retry.",
+        );
+        setSettledPage(page);
       });
-    return () => {
-      current = false;
-    };
-  }, [workspaceId, configuration, refresh]);
+    return () => controller.abort();
+  }, [configuration?.enabled, page, refresh, workspaceId]);
   async function run(operation: () => Promise<unknown>) {
     setBusy(true);
     setMessage("");
@@ -114,164 +99,60 @@ function Repositories() {
       setBusy(false);
     }
   }
-  function choose(repository: Repository) {
+  function choose(repository: Repository, trigger: HTMLButtonElement) {
+    inspectorTrigger.current = trigger;
     setSelected(repository);
   }
-  const canManage = ["owner", "admin"].includes(
-    workspaces.find((workspace) => workspace.id === workspaceId)?.role ?? "",
-  );
+  const canManage = workspace.role === "owner" || workspace.role === "admin";
   const visible = repositories.filter(
     (repository) =>
       repository.fullName.toLowerCase().includes(filter.toLowerCase()) &&
       (visibility === "all" ||
         (visibility === "private") === repository.private),
   );
-  if (isPending)
+  if (settings.loading)
+    return <LoadingIndicator label="Loading GitHub settings…" />;
+  if (settings.error)
     return (
-      <div className="flex min-h-[50vh] items-center justify-center p-8">
-        <LoaderOrb label="Authenticating session…" />
-      </div>
+      <p role="alert" className="text-muted text-sm">
+        {settings.error}
+      </p>
     );
-  if (sessionError)
-    return (
-      <main className="p-8 text-xs text-red-300" role="alert">
-        Unable to verify your session. Reload to retry.
-      </main>
-    );
-  if (!session)
-    return (
-      <main className="mx-auto max-w-xl rounded-2xl border border-dotted border-zinc-800 bg-[#111216] p-8 text-center">
-        <h1 className="text-xl font-semibold text-white">
-          Connect your repositories
-        </h1>
-        <p className="mt-2 text-xs text-zinc-400">
-          Sign in to your account to inspect, sync, and analyze Git
-          repositories.
-        </p>
-        <Link
-          className="mt-4 inline-flex items-center justify-center rounded-lg border border-dotted border-zinc-700 bg-zinc-800 px-4 py-2 text-xs font-semibold tracking-wider text-white uppercase hover:bg-zinc-700"
-          href="/workspace"
-        >
-          Sign in to continue
-        </Link>
-      </main>
-    );
+
   return (
-    <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8">
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-dotted border-zinc-800 pb-4">
-        <Link href="/" className="font-mono text-lg font-bold text-white">
-          codaryn
-        </Link>
-        <Link
-          href="/workspace"
-          className="text-xs text-zinc-400 transition-colors hover:text-white"
-        >
-          Workspace settings
-        </Link>
-      </header>
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold tracking-tight text-white">
-          Repositories
-        </h1>
-        <p className="text-xs text-zinc-400">
-          Sync GitHub repositories, discover branches, and dispatch static AST
-          analysis runs.
-        </p>
-      </div>
-      <div className="flex flex-wrap gap-2 text-xs">
-        <Link
-          href="/studio"
-          className="rounded-md border border-dotted border-zinc-800 bg-zinc-900/60 px-2.5 py-1 text-zinc-300 hover:border-zinc-600 hover:text-white"
-        >
-          Analysis Studio
-        </Link>
-        <Link
-          href="/analysis"
-          className="rounded-md border border-dotted border-zinc-800 bg-zinc-900/60 px-2.5 py-1 text-zinc-300 hover:border-zinc-600 hover:text-white"
-        >
-          Static Analysis Dashboard
-        </Link>
-        <Link
-          href="/graph"
-          className="rounded-md border border-dotted border-zinc-800 bg-zinc-900/60 px-2.5 py-1 text-zinc-300 hover:border-zinc-600 hover:text-white"
-        >
-          Dependency Graph
-        </Link>
-        <Link
-          href="/frontend"
-          className="rounded-md border border-dotted border-zinc-800 bg-zinc-900/60 px-2.5 py-1 text-zinc-300 hover:border-zinc-600 hover:text-white"
-        >
-          Frontend Explorer
-        </Link>
-        <Link
-          href="/backend"
-          className="rounded-md border border-dotted border-zinc-800 bg-zinc-900/60 px-2.5 py-1 text-zinc-300 hover:border-zinc-600 hover:text-white"
-        >
-          Backend Explorer
-        </Link>
-      </div>
+    <>
       {busy && (
         <div className="flex items-center justify-center py-2">
-          <LoaderOrb
+          <LoadingIndicator
             variant="inline"
-            label="Synchronizing repository telemetry…"
+            label="Updating repository connections…"
           />
         </div>
       )}
       {message && (
         <div
           role="alert"
-          className="rounded-lg border border-dotted border-zinc-700 bg-zinc-900 px-3 py-2 font-mono text-xs text-zinc-300"
+          className="rounded-lg border border-dotted border-neutral-300 bg-white px-3 py-2 font-mono text-xs text-neutral-900"
         >
           {message}
         </div>
       )}
-      {workspaces.length === 0 ? (
-        <Link
-          href="/workspace"
-          className="text-xs text-zinc-400 hover:text-white"
-        >
-          Create a workspace first
-        </Link>
-      ) : (
-        <label className="flex flex-col gap-1.5 text-xs font-semibold tracking-wider text-zinc-400 uppercase">
-          <span>Workspace</span>
-          <select
-            className={control}
-            value={workspaceId}
-            disabled={busy}
-            onChange={(event) => {
-              setWorkspaceId(event.target.value);
-              setSelected(null);
-              setRepositories([]);
-              setInstallations([]);
-              setPage(1);
-            }}
-          >
-            {workspaces.map((workspace) => (
-              <option key={workspace.id} value={workspace.id}>
-                {workspace.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
       {configuration && !configuration.enabled && (
-        <section className="flex flex-col gap-3 rounded-2xl border border-dotted border-zinc-800 bg-[#111216] p-6 text-xs text-zinc-300">
-          <h2 className="text-sm font-semibold text-white">
+        <section className="flex flex-col gap-3 rounded-2xl border border-dotted border-neutral-300 bg-white p-6 text-xs text-neutral-900">
+          <h2 className="text-sm font-semibold text-neutral-950">
             Set up GitHub repository access
           </h2>
-          <p className="text-zinc-400">
+          <p className="text-neutral-600">
             You are signed in. Repository access requires a separate GitHub App
             installation with permission to read the repositories you select.
           </p>
-          <p className="text-zinc-500">
+          <p className="text-neutral-600">
             Configure GITHUB_APP_ID, GITHUB_APP_SLUG, GITHUB_APP_PRIVATE_KEY and
             GITHUB_WEBHOOK_SECRET in the API environment, then restart the API.
             Use the same App ID and private key for the ingestion worker.
           </p>
           <a
-            className="text-zinc-300 underline transition-colors hover:text-white"
+            className="text-neutral-900 underline transition-colors hover:text-neutral-950"
             href="https://github.com/settings/apps/new"
             target="_blank"
             rel="noreferrer"
@@ -287,259 +168,340 @@ function Repositories() {
           </button>
         </section>
       )}
-      {configuration?.enabled && workspaceId && (
+      {configuration?.enabled && (
         <>
-          <section className="flex flex-col gap-4 rounded-2xl border border-dotted border-zinc-800 bg-[#111216] p-6 text-xs text-zinc-300">
-            <h2 className="text-sm font-semibold text-white">
+          <details
+            open={
+              searchParams.has("installation_id") ||
+              (!loading &&
+                !loadError &&
+                !installations.some((item) => item.connected))
+            }
+            className="group border-border bg-card rounded-xl border border-dotted text-sm"
+          >
+            <summary className="hover:bg-card-hover flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-4 py-2 font-medium focus-visible:outline-2 focus-visible:-outline-offset-2 [&::-webkit-details-marker]:hidden">
               GitHub connections
-            </h2>
-            {canManage && (
-              <>
-                <a
-                  className="text-zinc-400 underline transition-colors hover:text-white"
-                  href={configuration.installationUrl ?? undefined}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Install or configure the GitHub App
-                </a>
-                <p className="text-zinc-400">
-                  After installation, enter the installation ID from the
-                  callback URL or GitHub installation settings. Your GitHub
-                  ownership is verified before linking.
-                </p>
-                <form
-                  className="flex flex-wrap gap-3"
-                  action={async (form) => {
-                    await run(() =>
-                      api(
-                        "connect",
-                        {
-                          workspaceId,
-                          installationId: String(form.get("installationId")),
-                        },
-                        true,
-                      ),
-                    );
-                  }}
-                >
-                  <input
-                    aria-label="Installation ID"
-                    name="installationId"
-                    defaultValue={searchParams.get("installation_id") ?? ""}
-                    inputMode="numeric"
-                    required
-                    pattern="[0-9]+"
-                    className={control}
-                  />
-                  <button type="submit" className={button} disabled={busy}>
-                    Connect and sync repositories
-                  </button>
-                </form>
-              </>
-            )}
-            {installations.length === 0 && (
-              <p className="text-zinc-500">No installations connected.</p>
-            )}
-            {installations.map((installation) => (
-              <div
-                key={installation.id}
-                className="flex flex-wrap items-center gap-3 rounded-lg border border-dotted border-zinc-800 bg-zinc-900/40 p-3"
+              <svg
+                aria-hidden="true"
+                className="text-muted size-4 shrink-0 group-open:rotate-180 motion-safe:transition-transform"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
               >
-                <span className="font-mono text-zinc-300">
-                  Installation {installation.id} ·{" "}
-                  {installation.connected ? "Connected" : "Disconnected"}
-                </span>
-                {canManage && (
-                  <>
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </summary>
+            <div className="border-border flex flex-col gap-4 border-t border-dotted px-4 py-4">
+              {canManage && (
+                <>
+                  <a
+                    className="text-neutral-600 underline transition-colors hover:text-neutral-950"
+                    href={configuration.installationUrl ?? undefined}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Install or configure the GitHub App
+                  </a>
+                  <p className="text-neutral-600">
+                    After installation, enter the installation ID from the
+                    callback URL or GitHub installation settings. Your GitHub
+                    ownership is verified before linking.
+                  </p>
+                  <form
+                    className="flex flex-wrap gap-3"
+                    action={async (form) => {
+                      await run(() =>
+                        api(
+                          "connect",
+                          {
+                            workspaceId,
+                            installationId: String(form.get("installationId")),
+                          },
+                          true,
+                        ),
+                      );
+                    }}
+                  >
+                    <input
+                      aria-label="Installation ID"
+                      name="installationId"
+                      defaultValue={searchParams.get("installation_id") ?? ""}
+                      inputMode="numeric"
+                      required
+                      pattern="[0-9]+"
+                      className={control}
+                    />
                     <button
-                      type="button"
+                      type="submit"
                       className={button}
-                      disabled={busy || !installation.connected}
-                      onClick={async () => {
-                        await run(() =>
-                          api(
-                            "sync",
-                            { workspaceId, installationId: installation.id },
-                            true,
-                          ),
-                        );
-                      }}
+                      disabled={busy || loading}
                     >
-                      Sync repositories
+                      Connect and sync repositories
                     </button>
-                    <button
-                      type="button"
-                      className={button}
-                      disabled={busy || !installation.connected}
-                      onClick={async () => {
-                        if (
-                          window.confirm(
-                            "Disconnect this installation from the workspace?",
-                          )
-                        )
-                          await run(async () => {
-                            await api(
-                              "disconnect",
-                              { workspaceId, installationId: installation.id },
-                              true,
-                            );
-                            setSelected(null);
-                          });
-                      }}
-                    >
-                      Disconnect
-                    </button>
-                  </>
-                )}
-              </div>
-            ))}
-          </section>
-          <div className="flex flex-wrap gap-3">
-            <input
-              className={control}
-              aria-label="Search current page"
-              placeholder="Search this page"
-              value={filter}
-              onChange={(event) => setFilter(event.target.value)}
-            />
-            <select
-              aria-label="Repository visibility"
-              className={control}
-              value={visibility}
-              onChange={(event) => setVisibility(event.target.value)}
-            >
-              <option value="all">All visibility</option>
-              <option value="private">Private</option>
-              <option value="public">Public</option>
-            </select>
-            <select
-              aria-label="Repository view"
-              className={control}
-              value={view}
-              onChange={(event) => setView(event.target.value)}
-            >
-              <option value="grid">Grid</option>
-              <option value="table">Table</option>
-            </select>
-          </div>
-          {visible.length === 0 && (
-            <p className="text-xs text-zinc-500">
-              No repositories match this page. Sync a connected installation to
-              discover repositories.
-            </p>
-          )}
-          {view === "grid" ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {visible.map((repository) => (
-                <button
-                  type="button"
-                  className="group rounded-xl border border-dotted border-zinc-800 bg-[#121318] p-5 text-left transition-all duration-200 hover:border-zinc-500 hover:bg-zinc-900/60 focus-visible:ring-1 focus-visible:ring-zinc-400 focus-visible:outline-none disabled:opacity-50"
-                  key={repository.id}
-                  disabled={busy}
-                  onClick={() => {
-                    choose(repository);
-                  }}
-                >
-                  <span className="block font-medium break-all text-white group-hover:text-zinc-200">
-                    {repository.fullName}
-                  </span>
-                  <span className="mt-2 block font-mono text-xs text-zinc-400">
-                    {repository.private ? "Private" : "Public"} ·{" "}
-                    {repository.defaultBranch}
-                  </span>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="overflow-x-auto rounded-xl border border-dotted border-zinc-800 bg-[#121318]">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-dotted border-zinc-800 text-zinc-400">
-                    <th className="p-3 font-semibold tracking-wider uppercase">
-                      Repository
-                    </th>
-                    <th className="p-3 font-semibold tracking-wider uppercase">
-                      Visibility
-                    </th>
-                    <th className="p-3 font-semibold tracking-wider uppercase">
-                      Default branch
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {visible.map((repository) => (
-                    <tr
-                      key={repository.id}
-                      className="border-b border-dotted border-zinc-800/80 hover:bg-zinc-900/40"
-                    >
-                      <td className="p-3">
+                  </form>
+                </>
+              )}
+              {!loading && !loadError && installations.length === 0 && (
+                <p className="text-neutral-600">No installations connected.</p>
+              )}
+              {!loading &&
+                installations.map((installation) => (
+                  <div
+                    key={installation.id}
+                    className="flex flex-wrap items-center gap-3 rounded-lg border border-dotted border-neutral-300 bg-white/40 p-3"
+                  >
+                    <span className="font-mono text-neutral-900">
+                      Installation {installation.id} ·{" "}
+                      {installation.connected ? "Connected" : "Disconnected"}
+                    </span>
+                    {canManage && (
+                      <>
                         <button
                           type="button"
-                          className="font-mono text-zinc-200 transition-colors hover:text-white"
-                          disabled={busy}
-                          onClick={() => {
-                            choose(repository);
+                          className={button}
+                          disabled={busy || !installation.connected}
+                          onClick={async () => {
+                            await run(() =>
+                              api(
+                                "sync",
+                                {
+                                  workspaceId,
+                                  installationId: installation.id,
+                                },
+                                true,
+                              ),
+                            );
                           }}
                         >
-                          {repository.fullName}
+                          Sync repositories
                         </button>
-                      </td>
-                      <td className="p-3 font-mono text-zinc-400">
-                        {repository.private ? "Private" : "Public"}
-                      </td>
-                      <td className="p-3 font-mono text-zinc-400">
-                        {repository.defaultBranch}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        <button
+                          type="button"
+                          className={button}
+                          disabled={busy || !installation.connected}
+                          onClick={async () => {
+                            if (
+                              window.confirm(
+                                "Disconnect this installation from the workspace?",
+                              )
+                            )
+                              await run(async () => {
+                                await api(
+                                  "disconnect",
+                                  {
+                                    workspaceId,
+                                    installationId: installation.id,
+                                  },
+                                  true,
+                                );
+                                setSelected(null);
+                              });
+                          }}
+                        >
+                          Disconnect
+                        </button>
+                      </>
+                    )}
+                  </div>
+                ))}
             </div>
+          </details>
+          <div className="border-border flex flex-wrap items-end gap-3 border-b border-dotted pb-4">
+            <div className="w-full min-w-0 sm:flex-1 sm:basis-48">
+              <label
+                htmlFor="repository-search"
+                className="text-muted mb-1.5 block text-sm"
+              >
+                Find a repository
+              </label>
+              <input
+                id="repository-search"
+                type="search"
+                className={`${control} w-full`}
+                placeholder="Search this page"
+                value={filter}
+                onChange={(event) => setFilter(event.target.value)}
+              />
+            </div>
+            <DropdownSelect
+              label="Repository visibility"
+              className="w-36"
+              value={visibility}
+              onChange={setVisibility}
+              options={[
+                { value: "all", label: "All visibility" },
+                { value: "private", label: "Private" },
+                { value: "public", label: "Public" },
+              ]}
+            />
+            <DropdownSelect
+              label="Repository view"
+              className="w-28"
+              value={view}
+              onChange={setView}
+              options={[
+                { value: "grid", label: "Grid" },
+                { value: "table", label: "Table" },
+              ]}
+            />
+          </div>
+          {selected && (
+            <section
+              ref={inspector}
+              tabIndex={-1}
+              aria-label="Selected repository"
+              className="scroll-mt-44 space-y-3 lg:scroll-mt-6"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-sm font-medium">Repository details</h2>
+                <button
+                  type="button"
+                  className={control}
+                  onClick={() => {
+                    setSelected(null);
+                    inspectorTrigger.current?.focus();
+                  }}
+                >
+                  Close details
+                </button>
+              </div>
+              <RepositoryDetails
+                key={`${workspaceId}:${selected.id}`}
+                selected={selected}
+                workspaceId={workspaceId}
+              />
+            </section>
           )}
-          <div className="flex items-center gap-3">
+          {loading && (
+            <LoadingIndicator label="Loading repositories and connections…" />
+          )}
+          {!loading && loadError && (
+            <p role="alert" className="text-muted text-sm">
+              {loadError}
+            </p>
+          )}
+          {!loading && !loadError && visible.length === 0 && (
+            <p className="text-xs text-neutral-600">
+              {repositories.length > 0
+                ? "No repositories match these filters. Try another search."
+                : "No repositories match this page. Sync a connected installation to discover repositories."}
+            </p>
+          )}
+          {!loading &&
+            !loadError &&
+            visible.length > 0 &&
+            (view === "grid" ? (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {visible.map((repository) => (
+                  <button
+                    type="button"
+                    className="group motion-safe:ease-control hover:bg-card-hover rounded-xl border border-dotted border-neutral-300 bg-white p-5 text-left hover:border-neutral-400 focus-visible:ring-1 focus-visible:ring-neutral-400 focus-visible:outline-none disabled:opacity-50 motion-safe:transition-[background-color,border-color,color,translate,scale,box-shadow] motion-safe:duration-200 motion-safe:active:translate-y-px"
+                    key={repository.id}
+                    disabled={busy}
+                    onClick={(event) => {
+                      choose(repository, event.currentTarget);
+                    }}
+                  >
+                    <span className="block font-medium break-all text-neutral-950 group-hover:text-neutral-900">
+                      {repository.fullName}
+                    </span>
+                    <span className="text-muted mt-2 block text-xs">
+                      {repository.private ? "Private" : "Public"} ·{" "}
+                      {repository.defaultBranch}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="overflow-x-auto rounded-xl border border-dotted border-neutral-300 bg-white">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-dotted border-neutral-300 text-neutral-600">
+                      <th className="p-3 font-semibold tracking-wider uppercase">
+                        Repository
+                      </th>
+                      <th className="p-3 font-semibold tracking-wider uppercase">
+                        Visibility
+                      </th>
+                      <th className="p-3 font-semibold tracking-wider uppercase">
+                        Default branch
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visible.map((repository) => (
+                      <tr
+                        key={repository.id}
+                        className="border-b border-dotted border-neutral-300/80 hover:bg-white/40"
+                      >
+                        <td className="p-3">
+                          <button
+                            type="button"
+                            className="font-mono text-neutral-900 transition-colors hover:text-neutral-950"
+                            disabled={busy}
+                            onClick={(event) => {
+                              choose(repository, event.currentTarget);
+                            }}
+                          >
+                            {repository.fullName}
+                          </button>
+                        </td>
+                        <td className="p-3 font-mono text-neutral-600">
+                          {repository.private ? "Private" : "Public"}
+                        </td>
+                        <td className="p-3 font-mono text-neutral-600">
+                          {repository.defaultBranch}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ))}
+          <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
               className={button}
-              disabled={busy || page === 1}
+              disabled={busy || loading || page === 1}
               onClick={() => setPage(page - 1)}
             >
               Previous page
             </button>
-            <span className="self-center font-mono text-xs text-zinc-400">
+            <span className="self-center font-mono text-xs text-neutral-600">
               Page {page}
             </span>
             <button
               type="button"
               className={button}
-              disabled={busy || repositories.length < 50}
+              disabled={busy || loading || repositories.length < 50}
               onClick={() => setPage(page + 1)}
             >
               Next page
             </button>
           </div>
-          {selected && (
-            <RepositoryDetails
-              key={`${workspaceId}:${selected.id}`}
-              selected={selected}
-              workspaceId={workspaceId}
-            />
-          )}
         </>
       )}
-    </main>
+    </>
   );
 }
 export default function RepositoryPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-[50vh] items-center justify-center p-8">
-          <LoaderOrb label="Loading repositories…" />
-        </div>
+        <DashboardPage>
+          <LoadingIndicator label="Loading repositories…" />
+        </DashboardPage>
       }
     >
-      <Repositories />
+      <WorkspaceExplorer
+        title="Repositories"
+        description="Connect GitHub, browse synced repositories, and select a revision to analyze."
+      >
+        {(workspaceId, workspace) => (
+          <RepositoryManager key={workspaceId} workspace={workspace} />
+        )}
+      </WorkspaceExplorer>
     </Suspense>
   );
 }

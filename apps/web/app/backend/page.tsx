@@ -192,7 +192,7 @@ function BackendDashboard() {
   if (isPending) {
     return (
       <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8">
-        <p className="text-sm text-zinc-500">Checking authentication…</p>
+        <p className="text-sm text-neutral-600">Checking authentication…</p>
       </main>
     );
   }
@@ -201,13 +201,10 @@ function BackendDashboard() {
     return (
       <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8">
         <h1 className="text-2xl font-bold">Backend Architecture Explorer</h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="text-sm text-neutral-600">
           Sign in required to view backend routes, controllers, and services.
         </p>
-        <Link
-          href="/"
-          className="mt-4 inline-block text-indigo-600 underline dark:text-indigo-400"
-        >
+        <Link href="/" className="mt-4 inline-block text-neutral-800 underline">
           Sign in to continue
         </Link>
       </main>
@@ -216,70 +213,49 @@ function BackendDashboard() {
 
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8">
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-200 pb-4 dark:border-zinc-800">
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-dotted border-neutral-200 pb-4">
         <div className="flex items-center gap-6">
           <Link href="/" className="text-xl font-semibold">
             codaryn
           </Link>
-          <nav className="flex items-center gap-4 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-            <Link
-              href="/repositories"
-              className="hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
+          <nav className="flex items-center gap-4 text-sm font-medium text-neutral-600">
+            <Link href="/repositories" className="hover:text-neutral-900">
               Repositories
             </Link>
-            <Link
-              href="/studio"
-              className="hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
+            <Link href="/studio" className="hover:text-neutral-900">
               Studio
             </Link>
-            <Link
-              href="/analysis"
-              className="hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
+            <Link href="/analysis" className="hover:text-neutral-900">
               Analysis
             </Link>
-            <Link
-              href="/graph"
-              className="hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
+            <Link href="/graph" className="hover:text-neutral-900">
               Dependency Graph
             </Link>
-            <Link
-              href="/frontend"
-              className="hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
+            <Link href="/frontend" className="hover:text-neutral-900">
               Frontend Explorer
             </Link>
-            <Link
-              href="/backend"
-              className="font-semibold text-indigo-600 dark:text-indigo-400"
-            >
+            <Link href="/backend" className="font-semibold text-neutral-800">
               Backend Explorer
             </Link>
           </nav>
         </div>
-        <Link
-          href="/workspace"
-          className="text-sm text-indigo-600 dark:text-indigo-400"
-        >
+        <Link href="/workspace" className="text-sm text-neutral-800">
           Workspace settings
         </Link>
       </header>
 
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
           Backend Architecture Intelligence
         </h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="text-sm text-neutral-600">
           Explore Express, Fastify, and NestJS routes,
           controller/service/repository layers, middleware guards, and
           end-to-end request flows.
         </p>
       </div>
 
-      <div className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+      <div className="flex flex-col gap-4 rounded-xl border border-dotted border-neutral-200 bg-white p-5 shadow-sm">
         <form
           onSubmit={handleLookup}
           className="flex flex-wrap items-end gap-3"
@@ -287,7 +263,7 @@ function BackendDashboard() {
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="be-workspace-select"
-              className="text-xs font-medium text-zinc-700 dark:text-zinc-300"
+              className="text-xs font-medium text-neutral-700"
             >
               Workspace
             </label>
@@ -311,7 +287,7 @@ function BackendDashboard() {
           <div className="flex min-w-[240px] flex-1 flex-col gap-1.5">
             <label
               htmlFor="be-job-input"
-              className="text-xs font-medium text-zinc-700 dark:text-zinc-300"
+              className="text-xs font-medium text-neutral-700"
             >
               Analysis Job ID
             </label>
@@ -335,7 +311,7 @@ function BackendDashboard() {
         </form>
 
         {message && (
-          <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300">
+          <div className="rounded-lg border border-neutral-500 bg-neutral-100 p-3 text-xs text-neutral-800">
             {message}
           </div>
         )}
@@ -343,70 +319,72 @@ function BackendDashboard() {
 
       {overview && !busy && (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-          <div className="flex flex-col gap-1 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-            <span className="text-[11px] font-medium tracking-wider text-zinc-500 uppercase">
+          <div className="flex flex-col gap-1 rounded-xl border border-dotted border-neutral-200 bg-white p-4 shadow-sm">
+            <span className="text-[11px] font-medium tracking-wider text-neutral-600 uppercase">
               HTTP Routes
             </span>
-            <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            <span className="text-2xl font-bold text-neutral-900">
               {overview.totalRoutes}
             </span>
-            <span className="text-[10px] text-zinc-400 capitalize">
+            <span className="text-[10px] text-neutral-600 capitalize">
               {overview.detectedFrameworks.length > 0
                 ? overview.detectedFrameworks.join(", ")
                 : "None"}
             </span>
           </div>
 
-          <div className="flex flex-col gap-1 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-            <span className="text-[11px] font-medium tracking-wider text-zinc-500 uppercase">
+          <div className="flex flex-col gap-1 rounded-xl border border-dotted border-neutral-200 bg-white p-4 shadow-sm">
+            <span className="text-[11px] font-medium tracking-wider text-neutral-600 uppercase">
               Controllers
             </span>
-            <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            <span className="text-2xl font-bold text-neutral-900">
               {overview.totalControllers}
             </span>
-            <span className="text-[10px] text-zinc-400">Presentation</span>
+            <span className="text-[10px] text-neutral-600">Presentation</span>
           </div>
 
-          <div className="flex flex-col gap-1 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-            <span className="text-[11px] font-medium tracking-wider text-zinc-500 uppercase">
+          <div className="flex flex-col gap-1 rounded-xl border border-dotted border-neutral-200 bg-white p-4 shadow-sm">
+            <span className="text-[11px] font-medium tracking-wider text-neutral-600 uppercase">
               Services
             </span>
-            <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            <span className="text-2xl font-bold text-neutral-900">
               {overview.totalServices}
             </span>
-            <span className="text-[10px] text-zinc-400">Business Logic</span>
+            <span className="text-[10px] text-neutral-600">Business Logic</span>
           </div>
 
-          <div className="flex flex-col gap-1 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-            <span className="text-[11px] font-medium tracking-wider text-zinc-500 uppercase">
+          <div className="flex flex-col gap-1 rounded-xl border border-dotted border-neutral-200 bg-white p-4 shadow-sm">
+            <span className="text-[11px] font-medium tracking-wider text-neutral-600 uppercase">
               Repositories
             </span>
-            <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            <span className="text-2xl font-bold text-neutral-900">
               {overview.totalRepositories}
             </span>
-            <span className="text-[10px] text-zinc-400">Persistence / ORM</span>
+            <span className="text-[10px] text-neutral-600">
+              Persistence / ORM
+            </span>
           </div>
 
-          <div className="flex flex-col gap-1 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-            <span className="text-[11px] font-medium tracking-wider text-zinc-500 uppercase">
+          <div className="flex flex-col gap-1 rounded-xl border border-dotted border-neutral-200 bg-white p-4 shadow-sm">
+            <span className="text-[11px] font-medium tracking-wider text-neutral-600 uppercase">
               Middleware
             </span>
-            <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            <span className="text-2xl font-bold text-neutral-900">
               {overview.totalMiddleware}
             </span>
-            <span className="text-[10px] text-zinc-400">
+            <span className="text-[10px] text-neutral-600">
               Guards &amp; Validation
             </span>
           </div>
 
-          <div className="flex flex-col gap-1 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-            <span className="text-[11px] font-medium tracking-wider text-zinc-500 uppercase">
+          <div className="flex flex-col gap-1 rounded-xl border border-dotted border-neutral-200 bg-white p-4 shadow-sm">
+            <span className="text-[11px] font-medium tracking-wider text-neutral-600 uppercase">
               Request Flows
             </span>
-            <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            <span className="text-2xl font-bold text-neutral-900">
               {overview.totalRequestFlows}
             </span>
-            <span className="text-[10px] text-zinc-400">E2E Traces</span>
+            <span className="text-[10px] text-neutral-600">E2E Traces</span>
           </div>
         </div>
       )}
@@ -421,14 +399,14 @@ function BackendDashboard() {
 
       {jobId && !busy && (
         <div className="flex flex-col gap-4">
-          <div className="flex border-b border-zinc-200 dark:border-zinc-800">
+          <div className="flex border-b border-dotted border-neutral-200">
             <button
               type="button"
               onClick={() => setActiveTab("endpoints")}
               className={`border-b-2 px-4 py-2.5 text-xs font-semibold transition-colors ${
                 activeTab === "endpoints"
-                  ? "border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
-                  : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                  ? "border-neutral-500 text-neutral-800"
+                  : "border-transparent text-neutral-600 hover:text-neutral-900"
               }`}
             >
               Endpoint Inventory ({routes.length})
@@ -438,8 +416,8 @@ function BackendDashboard() {
               onClick={() => setActiveTab("architecture")}
               className={`border-b-2 px-4 py-2.5 text-xs font-semibold transition-colors ${
                 activeTab === "architecture"
-                  ? "border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
-                  : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                  ? "border-neutral-500 text-neutral-800"
+                  : "border-transparent text-neutral-600 hover:text-neutral-900"
               }`}
             >
               Layers &amp; DI (
@@ -450,8 +428,8 @@ function BackendDashboard() {
               onClick={() => setActiveTab("middleware")}
               className={`border-b-2 px-4 py-2.5 text-xs font-semibold transition-colors ${
                 activeTab === "middleware"
-                  ? "border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
-                  : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                  ? "border-neutral-500 text-neutral-800"
+                  : "border-transparent text-neutral-600 hover:text-neutral-900"
               }`}
             >
               Middleware &amp; Guards ({middleware.length})
@@ -461,8 +439,8 @@ function BackendDashboard() {
               onClick={() => setActiveTab("flows")}
               className={`border-b-2 px-4 py-2.5 text-xs font-semibold transition-colors ${
                 activeTab === "flows"
-                  ? "border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
-                  : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                  ? "border-neutral-500 text-neutral-800"
+                  : "border-transparent text-neutral-600 hover:text-neutral-900"
               }`}
             >
               Request Lifecycles ({requestFlows.length})
@@ -506,7 +484,7 @@ export default function BackendPage() {
     <Suspense
       fallback={
         <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8">
-          <p className="text-sm text-zinc-500">Loading backend explorer…</p>
+          <p className="text-sm text-neutral-600">Loading backend explorer…</p>
         </main>
       }
     >

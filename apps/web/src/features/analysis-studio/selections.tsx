@@ -33,7 +33,7 @@ export function ModuleSelection({
               key={item.id}
               htmlFor={`analyzer-${item.id}`}
               aria-label={item.id}
-              className="flex items-start gap-3 rounded-lg border border-zinc-300 p-4 dark:border-zinc-700"
+              className="flex items-start gap-3 rounded-lg border border-dotted border-neutral-300 p-4"
             >
               <input
                 id={`analyzer-${item.id}`}
@@ -47,12 +47,12 @@ export function ModuleSelection({
                       : configuration.analyzers.filter((id) => id !== item.id),
                   })
                 }
-                className="mt-1 accent-indigo-600"
+                className="mt-1 accent-neutral-500"
               />
               <span>
                 <strong>{item.id}</strong>
                 <span className="block text-sm">{item.description}</span>
-                <span className="block text-sm text-zinc-600 dark:text-zinc-400">
+                <span className="block text-sm text-neutral-600">
                   Requires: {item.dependencies.join(", ") || "none"} · Resource
                   estimate: {item.resource} · Frameworks:{" "}
                   {item.frameworks.join(", ") || "any"}

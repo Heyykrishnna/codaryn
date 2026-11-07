@@ -23,13 +23,13 @@ export function ApiClientsView({
   });
 
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
+    <div className="flex flex-col gap-4 rounded-xl border border-dotted border-neutral-200 bg-white p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-sm font-semibold text-neutral-900">
             Frontend API Client Calls ({filtered.length} of {apiCalls.length})
           </h2>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-neutral-600">
             Discovered network requests from fetch, axios, and custom clients
             distinguishing static literal endpoints from dynamic templates.
           </p>
@@ -40,7 +40,7 @@ export function ApiClientsView({
             aria-label="Filter by HTTP method"
             value={methodFilter}
             onChange={(e) => setMethodFilter(e.target.value)}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="rounded-lg border border-dotted border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-neutral-500 focus:outline-none"
           >
             <option value="all">All Methods</option>
             <option value="GET">GET</option>
@@ -54,7 +54,7 @@ export function ApiClientsView({
             aria-label="Filter by client library"
             value={clientTypeFilter}
             onChange={(e) => setClientTypeFilter(e.target.value)}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="rounded-lg border border-dotted border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-neutral-500 focus:outline-none"
           >
             <option value="all">All Clients</option>
             <option value="fetch">Fetch API</option>
@@ -67,7 +67,7 @@ export function ApiClientsView({
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs">
           <thead>
-            <tr className="border-b border-zinc-200 text-zinc-500 dark:border-zinc-800">
+            <tr className="border-b border-dotted border-neutral-200 text-neutral-600">
               <th className="pb-2 font-medium">Method</th>
               <th className="pb-2 font-medium">Endpoint</th>
               <th className="pb-2 font-medium">Target Type</th>
@@ -76,45 +76,42 @@ export function ApiClientsView({
               <th className="pb-2 font-medium">Source Evidence</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-900">
+          <tbody className="divide-y divide-dotted divide-neutral-100">
             {filtered.map((call) => {
               const shortComp =
                 call.componentId.split(":")[4] ?? call.componentId;
               return (
-                <tr
-                  key={call.id}
-                  className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50"
-                >
+                <tr key={call.id} className="hover:bg-neutral-50/50">
                   <td className="py-2.5 pr-3 font-mono text-[11px] font-bold">
                     <span
                       className={`rounded px-1.5 py-0.5 text-[10px] ${
                         call.method === "GET"
-                          ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                          ? "bg-neutral-100 text-neutral-800"
                           : call.method === "POST"
-                            ? "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
+                            ? "bg-neutral-100 text-neutral-800"
                             : call.method === "DELETE"
-                              ? "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
-                              : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+                              ? "bg-neutral-100 text-neutral-800"
+                              : "bg-neutral-100 text-neutral-800"
                       }`}
                     >
                       {call.method}
                     </span>
                   </td>
-                  <td className="py-2.5 pr-3 font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                  <td className="py-2.5 pr-3 font-mono text-xs font-semibold text-neutral-900">
                     {call.endpoint}
                   </td>
                   <td className="py-2.5 pr-3 font-mono text-[11px]">
                     {call.isDynamic ? (
-                      <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                      <span className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] text-neutral-800">
                         Dynamic Template
                       </span>
                     ) : (
-                      <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                      <span className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] text-neutral-700">
                         Static Literal
                       </span>
                     )}
                   </td>
-                  <td className="py-2.5 pr-3 font-mono text-[11px] text-zinc-600 dark:text-zinc-400">
+                  <td className="py-2.5 pr-3 font-mono text-[11px] text-neutral-600">
                     {call.clientType}
                   </td>
                   <td className="py-2.5 pr-3 font-mono text-[11px]">
@@ -122,17 +119,15 @@ export function ApiClientsView({
                       <button
                         type="button"
                         onClick={() => onSelectComponent(call.componentId)}
-                        className="text-indigo-600 hover:underline dark:text-indigo-400"
+                        className="text-neutral-800 hover:underline"
                       >
                         {shortComp}
                       </button>
                     ) : (
-                      <span className="text-zinc-700 dark:text-zinc-300">
-                        {shortComp}
-                      </span>
+                      <span className="text-neutral-700">{shortComp}</span>
                     )}
                   </td>
-                  <td className="py-2.5 font-mono text-[11px] text-zinc-500">
+                  <td className="py-2.5 font-mono text-[11px] text-neutral-600">
                     {call.filePath}:{call.sourceEvidence.startLine}
                   </td>
                 </tr>
@@ -143,7 +138,7 @@ export function ApiClientsView({
               <tr>
                 <td
                   colSpan={6}
-                  className="py-8 text-center text-xs text-zinc-500"
+                  className="py-8 text-center text-xs text-neutral-600"
                 >
                   No API client calls match the specified filter criteria.
                 </td>

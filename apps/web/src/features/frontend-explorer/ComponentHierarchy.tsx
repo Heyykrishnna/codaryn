@@ -30,13 +30,13 @@ export function ComponentHierarchy({
   });
 
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
+    <div className="flex flex-col gap-4 rounded-xl border border-dotted border-neutral-200 bg-white p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-sm font-semibold text-neutral-900">
             React Components ({filtered.length} of {components.length})
           </h2>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-neutral-600">
             Discovered components, functional/class definitions, props, and
             render links.
           </p>
@@ -49,14 +49,14 @@ export function ComponentHierarchy({
             placeholder="Search components or paths…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-900 placeholder-zinc-400 focus:border-indigo-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="rounded-lg border border-dotted border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 placeholder-neutral-600 focus:border-neutral-500 focus:outline-none"
           />
 
           <select
             aria-label="Filter by component kind"
             value={kindFilter}
             onChange={(e) => setKindFilter(e.target.value)}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="rounded-lg border border-dotted border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-neutral-500 focus:outline-none"
           >
             <option value="all">All Kinds</option>
             <option value="function">Function</option>
@@ -79,34 +79,34 @@ export function ComponentHierarchy({
               onClick={() => onSelectComponent(comp.id)}
               className={`flex flex-col items-start gap-1.5 rounded-lg border p-3 text-left transition ${
                 isSelected
-                  ? "border-indigo-600 bg-indigo-50/60 shadow-sm dark:border-indigo-400 dark:bg-indigo-950/30"
-                  : "border-zinc-200 bg-zinc-50/50 hover:border-zinc-300 hover:bg-zinc-100/50 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:border-zinc-700"
+                  ? "border-neutral-500 bg-neutral-100/60 shadow-sm"
+                  : "border-neutral-200 bg-neutral-50/50 hover:border-neutral-300 hover:bg-neutral-100/50"
               }`}
             >
               <div className="flex w-full items-center justify-between gap-2">
-                <span className="truncate font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                <span className="truncate font-mono text-xs font-semibold text-neutral-900">
                   {comp.name}
                 </span>
-                <span className="rounded bg-zinc-200 px-1.5 py-0.5 text-[10px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                <span className="rounded bg-neutral-200 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700">
                   {comp.kind}
                 </span>
               </div>
 
-              <span className="truncate font-mono text-[11px] text-zinc-500 dark:text-zinc-400">
+              <span className="truncate font-mono text-[11px] text-neutral-600">
                 {comp.filePath}:{comp.sourceEvidence.startLine}
               </span>
 
-              <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] text-zinc-600 dark:text-zinc-400">
-                <span className="rounded bg-zinc-100 px-1.5 py-0.5 dark:bg-zinc-800">
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] text-neutral-600">
+                <span className="rounded bg-neutral-100 px-1.5 py-0.5">
                   Export: {comp.exportType}
                 </span>
-                <span className="rounded bg-zinc-100 px-1.5 py-0.5 dark:bg-zinc-800">
+                <span className="rounded bg-neutral-100 px-1.5 py-0.5">
                   Props: {comp.props.length}
                 </span>
-                <span className="rounded bg-zinc-100 px-1.5 py-0.5 dark:bg-zinc-800">
+                <span className="rounded bg-neutral-100 px-1.5 py-0.5">
                   Hooks: {comp.hooksCount}
                 </span>
-                <span className="rounded bg-zinc-100 px-1.5 py-0.5 dark:bg-zinc-800">
+                <span className="rounded bg-neutral-100 px-1.5 py-0.5">
                   Renders: {comp.renderedComponentsCount}
                 </span>
               </div>
@@ -115,7 +115,7 @@ export function ComponentHierarchy({
         })}
 
         {filtered.length === 0 && (
-          <div className="col-span-full rounded-lg border border-dashed border-zinc-200 p-8 text-center text-xs text-zinc-500 dark:border-zinc-800">
+          <div className="col-span-full rounded-lg border border-dotted border-neutral-200 p-8 text-center text-xs text-neutral-600">
             No components match the specified filter criteria.
           </div>
         )}

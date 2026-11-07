@@ -60,7 +60,7 @@ export function TeamMembers({
         {list.data?.items.map((member) => (
           <li
             key={member.userId}
-            className="flex flex-wrap items-center gap-3 rounded-lg border border-zinc-300 p-3 dark:border-zinc-700"
+            className="flex flex-wrap items-center gap-3 rounded-lg border border-dotted border-neutral-300 p-3"
           >
             <span className="min-w-0 flex-1 text-sm break-all">
               {member.userId} · {member.role}
@@ -141,10 +141,7 @@ export function TeamMembers({
         >
           Next members
         </button>
-        <a
-          href="/workspace"
-          className="text-indigo-600 underline dark:text-indigo-400"
-        >
+        <a href="/workspace" className="text-neutral-800 underline">
           Workspace settings and invitations
         </a>
       </div>

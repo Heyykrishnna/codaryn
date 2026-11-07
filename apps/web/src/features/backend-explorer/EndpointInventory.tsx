@@ -39,13 +39,13 @@ export function EndpointInventory({
   });
 
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
+    <div className="flex flex-col gap-4 rounded-xl border border-dotted border-neutral-200 bg-white p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-sm font-semibold text-neutral-900">
             API Route Inventory ({filtered.length} of {routes.length})
           </h2>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-neutral-600">
             Statically discovered HTTP routes across Express, Fastify, and
             NestJS controllers.
           </p>
@@ -58,14 +58,14 @@ export function EndpointInventory({
             placeholder="Search path, handler, file…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-900 placeholder-zinc-400 focus:border-indigo-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="rounded-lg border border-dotted border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 placeholder-neutral-600 focus:border-neutral-500 focus:outline-none"
           />
 
           <select
             aria-label="Filter by method"
             value={methodFilter}
             onChange={(e) => setMethodFilter(e.target.value)}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="rounded-lg border border-dotted border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-neutral-500 focus:outline-none"
           >
             <option value="all">All Methods</option>
             <option value="GET">GET</option>
@@ -79,7 +79,7 @@ export function EndpointInventory({
             aria-label="Filter by framework"
             value={frameworkFilter}
             onChange={(e) => setFrameworkFilter(e.target.value)}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="rounded-lg border border-dotted border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-neutral-500 focus:outline-none"
           >
             <option value="all">All Frameworks</option>
             <option value="express">Express</option>
@@ -92,7 +92,7 @@ export function EndpointInventory({
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs">
           <thead>
-            <tr className="border-b border-zinc-200 text-zinc-500 dark:border-zinc-800">
+            <tr className="border-b border-dotted border-neutral-200 text-neutral-600">
               <th className="pb-2 font-medium">Method</th>
               <th className="pb-2 font-medium">Path</th>
               <th className="pb-2 font-medium">Framework</th>
@@ -102,10 +102,10 @@ export function EndpointInventory({
               <th className="pb-2 text-right font-medium">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-900">
+          <tbody className="divide-y divide-dotted divide-neutral-100">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-8 text-center text-zinc-400">
+                <td colSpan={7} className="py-8 text-center text-neutral-600">
                   No matching endpoints found.
                 </td>
               </tr>
@@ -116,8 +116,8 @@ export function EndpointInventory({
                   <tr
                     key={r.id}
                     onClick={() => onSelectRoute(r.id)}
-                    className={`cursor-pointer transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/60 ${
-                      isSelected ? "bg-indigo-50/50 dark:bg-indigo-950/20" : ""
+                    className={`cursor-pointer transition-colors hover:bg-neutral-50 ${
+                      isSelected ? "bg-neutral-100/50" : ""
                     }`}
                   >
                     <td className="py-2.5 pr-3 font-mono font-bold">
@@ -129,25 +129,25 @@ export function EndpointInventory({
                         {r.method}
                       </span>
                     </td>
-                    <td className="py-2.5 pr-3 font-mono text-zinc-900 dark:text-zinc-100">
+                    <td className="py-2.5 pr-3 font-mono text-neutral-900">
                       <span>{r.path}</span>
                       {r.isDynamic && (
-                        <span className="ml-1.5 rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                        <span className="ml-1.5 rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] text-neutral-600">
                           dynamic
                         </span>
                       )}
                     </td>
-                    <td className="py-2.5 pr-3 text-zinc-600 capitalize dark:text-zinc-400">
-                      <span className="rounded bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                    <td className="py-2.5 pr-3 text-neutral-600 capitalize">
+                      <span className="rounded bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-700">
                         {r.framework}
                       </span>
                     </td>
-                    <td className="py-2.5 pr-3 text-zinc-800 dark:text-zinc-200">
+                    <td className="py-2.5 pr-3 text-neutral-800">
                       <span className="font-mono font-medium">
                         {r.handlerName}
                       </span>
                       {r.controllerName && (
-                        <span className="ml-1.5 text-zinc-400">
+                        <span className="ml-1.5 text-neutral-600">
                           ({r.controllerName})
                         </span>
                       )}
@@ -158,17 +158,17 @@ export function EndpointInventory({
                           {r.middleware.map((m) => (
                             <span
                               key={m}
-                              className="rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+                              className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] text-neutral-600"
                             >
                               {m}
                             </span>
                           ))}
                         </div>
                       ) : (
-                        <span className="text-zinc-400">—</span>
+                        <span className="text-neutral-600">—</span>
                       )}
                     </td>
-                    <td className="py-2.5 pr-3 font-mono text-[11px] text-zinc-500">
+                    <td className="py-2.5 pr-3 font-mono text-[11px] text-neutral-600">
                       {r.filePath}:{r.sourceEvidence.startLine}
                     </td>
                     <td className="py-2.5 text-right">
@@ -178,7 +178,7 @@ export function EndpointInventory({
                           e.stopPropagation();
                           onSelectRoute(r.id);
                         }}
-                        className="rounded border border-zinc-200 px-2 py-1 text-[11px] font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                        className="rounded border border-dotted border-neutral-200 px-2 py-1 text-[11px] font-medium text-neutral-700 hover:bg-neutral-100"
                       >
                         Inspect
                       </button>

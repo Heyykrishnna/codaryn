@@ -180,13 +180,13 @@ function AnalysisDashboard() {
         <h1 className="text-2xl font-semibold">
           TypeScript Analysis Foundation
         </h1>
-        <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+        <p className="mt-2 text-neutral-600">
           Sign in to inspect static analysis jobs, symbols, AST structures, and
           diagnostics.
         </p>
         <Link
           href="/workspace"
-          className="mt-4 inline-block text-indigo-600 underline dark:text-indigo-400"
+          className="mt-4 inline-block text-neutral-800 underline"
         >
           Sign in to continue
         </Link>
@@ -196,54 +196,33 @@ function AnalysisDashboard() {
 
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8">
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-200 pb-4 dark:border-zinc-800">
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-dotted border-neutral-200 pb-4">
         <div className="flex items-center gap-6">
           <Link href="/" className="text-xl font-semibold">
             codaryn
           </Link>
-          <nav className="flex items-center gap-4 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-            <Link
-              href="/repositories"
-              className="hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
+          <nav className="flex items-center gap-4 text-sm font-medium text-neutral-600">
+            <Link href="/repositories" className="hover:text-neutral-900">
               Repositories
             </Link>
-            <Link
-              href="/studio"
-              className="hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
+            <Link href="/studio" className="hover:text-neutral-900">
               Studio
             </Link>
-            <Link
-              href="/analysis"
-              className="font-semibold text-indigo-600 dark:text-indigo-400"
-            >
+            <Link href="/analysis" className="font-semibold text-neutral-800">
               Analysis
             </Link>
-            <Link
-              href="/graph"
-              className="hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
+            <Link href="/graph" className="hover:text-neutral-900">
               Graph
             </Link>
-            <Link
-              href="/frontend"
-              className="hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
+            <Link href="/frontend" className="hover:text-neutral-900">
               Frontend Explorer
             </Link>
-            <Link
-              href="/backend"
-              className="hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
+            <Link href="/backend" className="hover:text-neutral-900">
               Backend Explorer
             </Link>
           </nav>
         </div>
-        <Link
-          href="/workspace"
-          className="text-sm text-indigo-600 dark:text-indigo-400"
-        >
+        <Link href="/workspace" className="text-sm text-neutral-800">
           Workspace settings
         </Link>
       </header>
@@ -252,22 +231,19 @@ function AnalysisDashboard() {
         <h1 className="text-3xl font-semibold tracking-tight">
           TypeScript Static Analysis
         </h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="text-sm text-neutral-600">
           Deep AST symbol extraction, multi-project tsconfig discovery, and
           syntax diagnostic collection.
         </p>
       </div>
 
-      <output
-        aria-live="polite"
-        className="text-sm text-zinc-600 dark:text-zinc-300"
-      >
+      <output aria-live="polite" className="text-sm text-neutral-600">
         {busy ? "Working…" : message}
       </output>
 
-      <div className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-xs sm:flex-row sm:items-end sm:justify-between dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="flex flex-col gap-4 rounded-xl border border-dotted border-neutral-200 bg-white p-5 shadow-xs sm:flex-row sm:items-end sm:justify-between">
         <div className="flex flex-1 flex-col gap-4 sm:flex-row sm:items-center">
-          <label className="flex flex-col gap-1.5 text-xs font-medium text-zinc-700 dark:text-zinc-300">
+          <label className="flex flex-col gap-1.5 text-xs font-medium text-neutral-700">
             <span>Workspace</span>
             <select
               className={control}
@@ -289,7 +265,7 @@ function AnalysisDashboard() {
           </label>
 
           <form onSubmit={handleLookup} className="flex flex-1 items-end gap-2">
-            <label className="flex flex-1 flex-col gap-1.5 text-xs font-medium text-zinc-700 dark:text-zinc-300">
+            <label className="flex flex-1 flex-col gap-1.5 text-xs font-medium text-neutral-700">
               <span>Job ID</span>
               <input
                 type="text"
@@ -314,7 +290,7 @@ function AnalysisDashboard() {
             {job.status === "running" && (
               <button
                 type="button"
-                className="rounded-md border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 dark:border-red-800 dark:bg-red-950 dark:text-red-300"
+                className="rounded-md border border-neutral-500 bg-neutral-100 px-3 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-100"
                 disabled={busy}
                 onClick={handleCancel}
               >
@@ -337,48 +313,48 @@ function AnalysisDashboard() {
 
       {job && (
         <div className="flex flex-col gap-6">
-          <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-800/50">
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-dotted border-neutral-200 bg-neutral-50 p-4">
             <div className="flex items-center gap-3">
-              <span className="font-mono text-xs font-bold text-zinc-700 dark:text-zinc-300">
+              <span className="font-mono text-xs font-bold text-neutral-700">
                 Job: {job.id}
               </span>
               <span
                 className={`rounded-full px-2.5 py-0.5 text-xs font-bold uppercase ${
                   job.status === "completed"
-                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                    ? "bg-neutral-100 text-neutral-800"
                     : job.status === "running"
-                      ? "animate-pulse bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300"
+                      ? "bg-neutral-100 text-neutral-800 motion-safe:animate-pulse"
                       : job.status === "failed"
-                        ? "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300"
-                        : "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300"
+                        ? "bg-neutral-100 text-neutral-800"
+                        : "bg-neutral-200 text-neutral-700"
                 }`}
               >
                 {job.status}
               </span>
             </div>
-            <div className="flex items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400">
+            <div className="flex items-center gap-4 text-xs text-neutral-600">
               <span>
                 Current Stage:{" "}
-                <strong className="text-zinc-900 capitalize dark:text-zinc-100">
+                <strong className="text-neutral-900 capitalize">
                   {job.currentStage}
                 </strong>
               </span>
               <span>Retries: {job.retries}</span>
               <Link
                 href={`/graph?workspaceId=${workspaceId}&jobId=${job.id}`}
-                className="font-medium text-indigo-600 underline dark:text-indigo-400"
+                className="font-medium text-neutral-800 underline"
               >
                 Dependency Graph →
               </Link>
               <Link
                 href={`/frontend?workspaceId=${workspaceId}&jobId=${job.id}`}
-                className="font-medium text-indigo-600 underline dark:text-indigo-400"
+                className="font-medium text-neutral-800 underline"
               >
                 Frontend Explorer →
               </Link>
               <Link
                 href={`/backend?workspaceId=${workspaceId}&jobId=${job.id}`}
-                className="font-medium text-indigo-600 underline dark:text-indigo-400"
+                className="font-medium text-neutral-800 underline"
               >
                 Backend Explorer →
               </Link>
@@ -406,15 +382,15 @@ function AnalysisDashboard() {
           />
 
           <div className="flex flex-col gap-4">
-            <div className="border-b border-zinc-200 dark:border-zinc-800">
+            <div className="border-b border-dotted border-neutral-200">
               <nav className="flex space-x-6">
                 <button
                   type="button"
                   onClick={() => setActiveTab("files")}
                   className={`border-b-2 pb-3 text-sm font-medium ${
                     activeTab === "files"
-                      ? "border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
-                      : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:text-zinc-400"
+                      ? "border-neutral-500 text-neutral-800"
+                      : "border-transparent text-neutral-600 hover:border-neutral-300 hover:text-neutral-700"
                   }`}
                 >
                   Files ({inventory?.summary.totalFiles ?? job.fileCount})
@@ -424,8 +400,8 @@ function AnalysisDashboard() {
                   onClick={() => setActiveTab("symbols")}
                   className={`border-b-2 pb-3 text-sm font-medium ${
                     activeTab === "symbols"
-                      ? "border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
-                      : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:text-zinc-400"
+                      ? "border-neutral-500 text-neutral-800"
+                      : "border-transparent text-neutral-600 hover:border-neutral-300 hover:text-neutral-700"
                   }`}
                 >
                   Symbols ({symbols?.totalCount ?? job.symbolCount})
@@ -435,8 +411,8 @@ function AnalysisDashboard() {
                   onClick={() => setActiveTab("diagnostics")}
                   className={`border-b-2 pb-3 text-sm font-medium ${
                     activeTab === "diagnostics"
-                      ? "border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
-                      : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:text-zinc-400"
+                      ? "border-neutral-500 text-neutral-800"
+                      : "border-transparent text-neutral-600 hover:border-neutral-300 hover:text-neutral-700"
                   }`}
                 >
                   Diagnostics (
@@ -464,11 +440,11 @@ function AnalysisDashboard() {
       )}
 
       {!job && (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-800">
-          <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dotted border-neutral-300 p-12 text-center">
+          <p className="text-sm font-medium text-neutral-700">
             No active analysis job selected
           </p>
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-neutral-600">
             Enter a Job ID above to inspect stage progress, symbol inventory,
             and syntax diagnostics.
           </p>

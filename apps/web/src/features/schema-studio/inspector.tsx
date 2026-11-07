@@ -15,7 +15,7 @@ export function SchemaInspector({
     <section
       id="schema-table-inspector"
       aria-label="Schema inspector"
-      className="flex min-w-0 flex-col gap-5 rounded-xl border border-zinc-300 p-5 dark:border-zinc-700"
+      className="flex min-w-0 flex-col gap-5 rounded-xl border border-dotted border-neutral-300 p-5"
     >
       <h2 className="text-xl font-semibold">
         {table.namespace}.{table.name}
@@ -74,7 +74,7 @@ export function SchemaInspector({
             {table.constraints.map((item) => (
               <tr
                 key={item.id}
-                className="border-t border-zinc-300 dark:border-zinc-700"
+                className="border-t border-dotted border-neutral-300"
               >
                 <td className="p-2">{item.name}</td>
                 <td className="p-2">{item.kind}</td>
@@ -128,7 +128,7 @@ export function SchemaInspector({
         <summary className="cursor-pointer font-semibold">
           Schema source panel
         </summary>
-        <pre className="mt-3 max-h-96 overflow-auto rounded-lg bg-zinc-100 p-4 text-xs dark:bg-zinc-950">
+        <pre className="mt-3 max-h-96 overflow-auto rounded-lg bg-neutral-100 p-4 text-xs">
           {table.source}
         </pre>
       </details>
@@ -145,10 +145,7 @@ export function SchemaInspector({
           ))}
         </ul>
         {detail.gaps.map((gap) => (
-          <p
-            key={gap}
-            className="mt-2 text-sm text-amber-800 dark:text-amber-300"
-          >
+          <p key={gap} className="mt-2 text-sm text-neutral-800">
             UNRESOLVED: {gap}
           </p>
         ))}

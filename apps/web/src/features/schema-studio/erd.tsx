@@ -36,11 +36,11 @@ export function SchemaDiagram({
       className="flex min-w-0 flex-col gap-3"
     >
       <p className="text-sm">
-        Solid: declared or resolved. Dashed amber: inferred. One-to-many
-        connects a child foreign key to its parent. Full columns and constraints
-        are available in the inspector.
+        Solid: declared or resolved. Dashed: inferred. One-to-many connects a
+        child foreign key to its parent. Full columns and constraints are
+        available in the inspector.
       </p>
-      <div className="max-h-[700px] overflow-auto rounded-xl border border-zinc-300 bg-zinc-50 p-2 dark:border-zinc-700 dark:bg-zinc-950">
+      <div className="max-h-[700px] overflow-auto rounded-xl border border-dotted border-neutral-300 bg-neutral-50 p-2">
         <svg
           role="img"
           aria-labelledby="schema-erd-title"
@@ -70,14 +70,14 @@ export function SchemaDiagram({
                   d={path}
                   className={
                     relation.resolution === "INFERRED"
-                      ? "fill-none stroke-amber-600 [stroke-dasharray:6_4] dark:stroke-amber-400"
-                      : "fill-none stroke-zinc-400 dark:stroke-zinc-500"
+                      ? "fill-none stroke-neutral-500 [stroke-dasharray:6_4]"
+                      : "fill-none stroke-neutral-400"
                   }
                 />
                 <text
                   x={(from.x + 300 + to.x) / 2}
                   y={(from.y + to.y) / 2 + 55}
-                  className="fill-zinc-900 text-[10px] dark:fill-zinc-100"
+                  className="fill-neutral-900 text-[10px]"
                 >
                   {relation.cardinality}
                 </text>
@@ -93,7 +93,7 @@ export function SchemaDiagram({
               href="#schema-table-inspector"
               onClick={() => onSelect(table.id)}
               aria-label={`Inspect ${table.name}`}
-              className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400"
+              className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-400"
             >
               <rect
                 x={x}
@@ -103,14 +103,14 @@ export function SchemaDiagram({
                 rx={8}
                 className={
                   selected === table.id
-                    ? "fill-zinc-800 stroke-zinc-200 stroke-2"
-                    : "fill-[#14151a] stroke-zinc-700"
+                    ? "fill-neutral-100 stroke-neutral-700 stroke-2"
+                    : "fill-white stroke-neutral-300"
                 }
               />
               <text
                 x={x + 12}
                 y={y + 24}
-                className="fill-zinc-950 text-sm font-semibold dark:fill-zinc-50"
+                className="fill-neutral-950 text-sm font-semibold"
               >
                 {table.name.slice(0, 32)}
                 {table.joinTable ? " (join)" : ""}
@@ -118,7 +118,7 @@ export function SchemaDiagram({
               <text
                 x={x + 12}
                 y={y + 43}
-                className="fill-zinc-600 text-[10px] dark:fill-zinc-400"
+                className="fill-neutral-600 text-[10px]"
               >
                 {table.domain.slice(0, 45)}
               </text>
@@ -128,7 +128,7 @@ export function SchemaDiagram({
                     key={column.id}
                     x={x + 12}
                     y={y + 65 + index * 21}
-                    className="fill-zinc-800 text-xs dark:fill-zinc-200"
+                    className="fill-neutral-800 text-xs"
                   >
                     {`${column.primaryKey ? "PK " : ""}${column.name}: ${column.type}${column.nullable ? " ?" : ""}`.slice(
                       0,

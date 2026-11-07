@@ -3,7 +3,7 @@ import { useEffect, useState, useDeferredValue } from "react";
 import { executionSnapshotSummarySchema } from "@codaryn/contracts";
 import { workspaceRequest } from "@/src/lib/workspace-request";
 import { button, control } from "@/src/features/repositories/api";
-import { LoaderOrb } from "@/src/components/ui/loader-orb";
+import { LoadingIndicator } from "@/src/components/ui/loading-indicator";
 import {
   executionUrl,
   useExecutionResource,
@@ -207,7 +207,7 @@ export function ExecutionExplorer({
       </form>
       {jobs.loading && (
         <div className="py-2">
-          <LoaderOrb variant="inline" label="Loading analysis jobs…" />
+          <LoadingIndicator variant="inline" label="Loading analysis jobs…" />
         </div>
       )}
       {jobs.data && !jobs.data.jobs.length && (
@@ -263,24 +263,27 @@ export function ExecutionExplorer({
       </div>
       {history.loading && (
         <div className="py-2">
-          <LoaderOrb variant="inline" label="Loading snapshot history…" />
+          <LoadingIndicator
+            variant="inline"
+            label="Loading snapshot history…"
+          />
         </div>
       )}
       {history.data && !history.data.snapshots.length && (
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-neutral-600">
           No execution snapshots on this page.
         </p>
       )}
       {overview.loading && (
         <div className="py-6">
-          <LoaderOrb
+          <LoadingIndicator
             label="Loading execution overview…"
             description="Tracing function calls, entry points, and asynchronous dependencies"
           />
         </div>
       )}
       {overview.data && (
-        <section className="rounded-xl border border-dotted border-zinc-800 bg-[#111216] p-5">
+        <section className="rounded-xl border border-dotted border-neutral-300 bg-white p-5">
           <h2 className="text-xl font-semibold">Execution overview</h2>
           <p>
             {overview.data.snapshot.status} · {overview.data.functions}{" "}
@@ -342,7 +345,7 @@ export function ExecutionExplorer({
           </section>
           {functions.loading && (
             <div className="py-2">
-              <LoaderOrb variant="inline" label="Loading functions…" />
+              <LoadingIndicator variant="inline" label="Loading functions…" />
             </div>
           )}
           <section>
@@ -385,6 +388,12 @@ export function ExecutionExplorer({
                 </li>
               ))}
             </ul>
+            {entries.loading && (
+              <LoadingIndicator
+                variant="inline"
+                label="Loading entry points…"
+              />
+            )}
             {entries.data && !entries.data.items.length && (
               <p>No supported entry points on this page.</p>
             )}
@@ -397,7 +406,7 @@ export function ExecutionExplorer({
               {unresolved.data?.items.map((call) => (
                 <li
                   key={call.id}
-                  className="rounded-lg border border-zinc-300 p-3 text-sm dark:border-zinc-700"
+                  className="rounded-lg border border-dotted border-neutral-300 p-3 text-sm"
                 >
                   <button
                     className={control}
@@ -413,6 +422,12 @@ export function ExecutionExplorer({
                 </li>
               ))}
             </ul>
+            {unresolved.loading && (
+              <LoadingIndicator
+                variant="inline"
+                label="Loading unresolved calls…"
+              />
+            )}
             {unresolved.data && !unresolved.data.items.length && (
               <p>No unresolved calls on this page.</p>
             )}
@@ -435,7 +450,7 @@ export function ExecutionExplorer({
               </label>
               {neighborhood.loading && (
                 <div className="py-2">
-                  <LoaderOrb
+                  <LoadingIndicator
                     variant="inline"
                     label="Loading call neighborhood…"
                   />
@@ -467,7 +482,7 @@ export function ExecutionExplorer({
               )}
               {detail.loading && (
                 <div className="py-2">
-                  <LoaderOrb
+                  <LoadingIndicator
                     variant="inline"
                     label="Loading function inspector…"
                   />
@@ -545,7 +560,7 @@ export function ExecutionExplorer({
                 </button>
                 {paths.loading && (
                   <div className="py-2">
-                    <LoaderOrb
+                    <LoadingIndicator
                       variant="inline"
                       label="Searching bounded paths…"
                     />
@@ -562,14 +577,14 @@ export function ExecutionExplorer({
                       {paths.data.paths.map((path) => (
                         <li
                           key={path.join("|")}
-                          className="rounded-lg border border-zinc-300 p-3 dark:border-zinc-700"
+                          className="rounded-lg border border-dotted border-neutral-300 p-3"
                         >
                           {path.map((id, index) => (
                             <span key={id}>
                               {index > 0 && " → "}
                               <button
                                 type="button"
-                                className="text-zinc-300 underline transition-colors hover:text-white"
+                                className="text-neutral-900 underline transition-colors hover:text-neutral-950"
                                 onClick={() => setFunctionId(id)}
                               >
                                 {paths.data?.functions.find(

@@ -2,6 +2,7 @@ export async function api(
   path: string,
   input: Record<string, string>,
   mutation = false,
+  signal?: AbortSignal,
 ): Promise<unknown> {
   const query = mutation ? "" : "?" + new URLSearchParams(input).toString();
   const response = await fetch(`/api/v1/github/${path}${query}`, {
@@ -11,6 +12,9 @@ export async function api(
       : {},
     ...(mutation ? { body: JSON.stringify(input) } : {}),
     cache: "no-store",
+    signal: signal
+      ? AbortSignal.any([signal, AbortSignal.timeout(30000)])
+      : AbortSignal.timeout(30000),
   });
   if (!response.ok) {
     const messages: Record<number, string> = {
@@ -27,10 +31,10 @@ export async function api(
 }
 
 export const control =
-  "rounded-lg border border-dotted border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400 disabled:opacity-40 transition-colors";
+  "min-h-9 min-w-0 max-w-full rounded-md border border-dotted border-border bg-card px-3 py-1.5 text-sm text-foreground placeholder:text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-600 disabled:opacity-50 motion-safe:transition-colors";
 
 export const button =
-  "inline-flex items-center justify-center rounded-lg bg-zinc-200 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-zinc-950 border border-dotted border-zinc-400 shadow-[0_2px_0_0_#71717a] hover:bg-white active:translate-y-[1px] active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer";
+  "inline-flex min-h-9 items-center justify-center rounded-md border border-dotted border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white shadow-[0_2px_0_#525252] hover:bg-neutral-800 motion-safe:active:translate-y-px active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-600 disabled:opacity-50 disabled:pointer-events-none motion-safe:transition-[background-color,translate,box-shadow] motion-safe:duration-150 motion-safe:ease-control cursor-pointer";
 
 export type Repository = {
   id: string;

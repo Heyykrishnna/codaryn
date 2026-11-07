@@ -33,7 +33,7 @@ export function ExecutionGraph({
         references. Arrowheads show direction. Select a function to inspect its
         evidence.
       </p>
-      <div className="max-h-[600px] overflow-auto rounded-xl border border-zinc-300 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-950">
+      <div className="max-h-[600px] overflow-auto rounded-xl border border-dotted border-neutral-300 bg-neutral-50 p-3">
         <svg
           width="870"
           height={height}
@@ -52,7 +52,7 @@ export function ExecutionGraph({
               markerHeight="6"
               orient="auto-start-reverse"
             >
-              <path d="M 0 0 L 10 5 L 0 10 z" className="fill-indigo-500" />
+              <path d="M 0 0 L 10 5 L 0 10 z" className="fill-neutral-800" />
             </marker>
           </defs>
           {edges.slice(0, 500).map((edge) => {
@@ -70,8 +70,8 @@ export function ExecutionGraph({
                   markerEnd={`url(#${marker})`}
                   className={
                     edge.deferred
-                      ? "fill-none stroke-amber-500 [stroke-dasharray:6_4]"
-                      : "fill-none stroke-indigo-500"
+                      ? "fill-none stroke-neutral-500 [stroke-dasharray:6_4]"
+                      : "fill-none stroke-neutral-500"
                   }
                 />
                 <title>{edge.label}</title>
@@ -84,7 +84,7 @@ export function ExecutionGraph({
               href="#execution-inspector"
               onClick={() => onSelect?.(node.id)}
               aria-label={`Inspect ${node.name}`}
-              className="focus-visible:outline-2 focus-visible:outline-indigo-500"
+              className="focus-visible:outline-2 focus-visible:outline-neutral-500"
             >
               <rect
                 x={node.x}
@@ -92,19 +92,19 @@ export function ExecutionGraph({
                 width="230"
                 height="60"
                 rx="8"
-                className="fill-white stroke-zinc-400 dark:fill-zinc-900 dark:stroke-zinc-600"
+                className="fill-white stroke-neutral-400"
               />
               <text
                 x={node.x + 10}
                 y={node.y + 25}
-                className="fill-zinc-900 text-sm font-semibold dark:fill-zinc-50"
+                className="fill-neutral-900 text-sm font-semibold"
               >
                 {node.name.slice(0, 28)}
               </text>
               <text
                 x={node.x + 10}
                 y={node.y + 46}
-                className="fill-zinc-600 text-xs dark:fill-zinc-400"
+                className="fill-neutral-600 text-xs"
               >
                 {node.kind}
               </text>

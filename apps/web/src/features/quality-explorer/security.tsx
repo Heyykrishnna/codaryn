@@ -8,7 +8,7 @@ import {
 } from "@codaryn/contracts";
 import { workspaceRequest } from "@/src/lib/workspace-request";
 import { button, control } from "@/src/features/repositories/api";
-import { LoaderOrb } from "@/src/components/ui/loader-orb";
+import { LoadingIndicator } from "@/src/components/ui/loading-indicator";
 import {
   useArtifactResource,
   qualityUrl,
@@ -135,37 +135,37 @@ export function SecurityDashboard({
         ))}
       </div>
       {error && (
-        <p role="alert" className="text-xs text-red-300">
+        <p role="alert" className="text-xs text-neutral-800">
           {error}
         </p>
       )}
       {findings.loading && (
-        <LoaderOrb variant="inline" label="Loading security findings…" />
+        <LoadingIndicator variant="inline" label="Loading security findings…" />
       )}
       <ul className="grid gap-3 md:grid-cols-2">
         {findings.data?.items.map((finding) => (
           <li
             key={finding.id}
-            className="min-w-0 rounded-xl border border-dotted border-zinc-800 bg-[#121318] p-4 font-mono text-xs break-words text-zinc-300"
+            className="min-w-0 rounded-xl border border-dotted border-neutral-300 bg-white p-4 font-mono text-xs break-words text-neutral-900"
           >
             <button
-              className="text-left font-bold text-white transition-colors hover:text-zinc-200"
+              className="text-left font-bold text-neutral-950 transition-colors hover:text-neutral-900"
               onClick={() => setSelected(finding.id)}
             >
               {finding.title}
             </button>
-            <p className="mt-1 text-zinc-400">
+            <p className="mt-1 text-neutral-600">
               {finding.effectiveSeverity} · {finding.state} · {finding.tool} ·{" "}
               {finding.category}
             </p>
-            <p className="text-zinc-500">
+            <p className="text-neutral-600">
               {finding.evidence.path}:{finding.evidence.startLine}
             </p>
           </li>
         ))}
       </ul>
       {findings.data && !findings.data.items.length && (
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-neutral-600">
           No findings match these filters. Check scanner status and diagnostics
           before drawing conclusions.
         </p>
@@ -178,7 +178,7 @@ export function SecurityDashboard({
         >
           Previous findings
         </button>
-        <span className="font-mono text-xs text-zinc-400">
+        <span className="font-mono text-xs text-neutral-600">
           Page {page} · {findings.data?.total ?? 0} matching
         </span>
         <button
@@ -190,24 +190,24 @@ export function SecurityDashboard({
         </button>
       </div>
       {detail.loading && (
-        <LoaderOrb variant="inline" label="Loading finding inspector…" />
+        <LoadingIndicator variant="inline" label="Loading finding inspector…" />
       )}
       {detail.data && (
-        <aside className="flex min-w-0 flex-col gap-3 rounded-2xl border border-dotted border-zinc-800 bg-[#111216] p-5 font-mono text-xs break-words text-zinc-300">
-          <h3 className="text-base font-semibold text-white">
+        <aside className="flex min-w-0 flex-col gap-3 rounded-2xl border border-dotted border-neutral-300 bg-white p-5 font-mono text-xs break-words text-neutral-900">
+          <h3 className="text-base font-semibold text-neutral-950">
             {detail.data.finding.title}
           </h3>
-          <p className="text-zinc-400">{detail.data.finding.description}</p>
-          <p className="text-zinc-400">
+          <p className="text-neutral-600">{detail.data.finding.description}</p>
+          <p className="text-neutral-600">
             Rule: {detail.data.finding.ruleId} · {detail.data.finding.tool} ·
             confidence: {detail.data.finding.confidence}
           </p>
-          <p className="text-zinc-400">
+          <p className="text-neutral-600">
             Detected severity: {detail.data.finding.severity} · effective:{" "}
             {detail.data.finding.effectiveSeverity} · state:{" "}
             {detail.data.finding.state}
           </p>
-          <p className="text-zinc-500">
+          <p className="text-neutral-600">
             Evidence: {detail.data.finding.evidence.path}:
             {detail.data.finding.evidence.startLine}–
             {detail.data.finding.evidence.endLine}
@@ -239,9 +239,11 @@ export function SecurityDashboard({
           )}
         </aside>
       )}
-      <h3 className="text-base font-semibold text-white">Review history</h3>
+      <h3 className="text-base font-semibold text-neutral-950">
+        Review history
+      </h3>
       {audit.loading && (
-        <LoaderOrb variant="inline" label="Loading review history…" />
+        <LoadingIndicator variant="inline" label="Loading review history…" />
       )}
       <ol className="flex flex-col gap-2">
         {audit.data?.items.map((event) => (

@@ -1,263 +1,27 @@
 "use client";
 
-import React, {
-  createContext,
-  useContext,
+import {
   useEffect,
   useId,
   useRef,
   useState,
+  type KeyboardEvent,
+  type ReactNode,
 } from "react";
 import { cn } from "@/lib/utils";
-
-interface DropdownContextValue {
-  open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  close: () => void;
-  triggerId: string;
-  menuId: string;
-}
-
-const DropdownContext = createContext<DropdownContextValue | null>(null);
-
-function useDropdownContext() {
-  const context = useContext(DropdownContext);
-  if (!context) {
-    throw new Error("Dropdown components must be used within a CustomDropdown");
-  }
-  return context;
-}
-
-export interface CustomDropdownProps {
-  trigger?: React.ReactNode;
-  children: React.ReactNode;
-  align?: "left" | "right" | "center";
-  width?: "auto" | "trigger" | "sm" | "md" | "lg";
-  className?: string;
-  disabled?: boolean;
-}
-
-export function CustomDropdown({
-  trigger,
-  children,
-  align = "left",
-  width = "auto",
-  className,
-  disabled = false,
-}: CustomDropdownProps) {
-  const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const triggerId = useId();
-  const menuId = useId();
-
-  const close = () => setOpen(false);
-
-  useEffect(() => {
-    if (!open) return;
-
-    function handlePointerDown(event: PointerEvent) {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        setOpen(false);
-      }
-    }
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setOpen(false);
-      }
-    }
-
-    window.addEventListener("pointerdown", handlePointerDown);
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("pointerdown", handlePointerDown);
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [open]);
-
-  const alignmentClass =
-    align === "right"
-      ? "right-0 origin-top-right"
-      : align === "center"
-        ? "left-1/2 -translate-x-1/2 origin-top"
-        : "left-0 origin-top-left";
-
-  const widthClass =
-    width === "trigger"
-      ? "w-full"
-      : width === "sm"
-        ? "w-48"
-        : width === "md"
-          ? "w-64"
-          : width === "lg"
-            ? "w-80"
-            : "min-w-[12rem]";
-
-  return (
-    <DropdownContext.Provider
-      value={{ open, setOpen, close, triggerId, menuId }}
-    >
-      <div
-        ref={containerRef}
-        className={cn("relative inline-block text-left", className)}
-      >
-        {trigger && (
-          <div
-            onClick={() => {
-              if (!disabled) setOpen((prev) => !prev);
-            }}
-          >
-            {trigger}
-          </div>
-        )}
-
-        {open && (
-          <div
-            id={menuId}
-            role="menu"
-            aria-labelledby={triggerId}
-            className={cn(
-              "animate-in fade-in zoom-in-95 absolute z-40 mt-1.5 flex flex-col gap-0.5 rounded-xl border border-dotted border-zinc-700/80 bg-[#121318] p-1.5 shadow-2xl backdrop-blur-xl duration-100 ease-out",
-              alignmentClass,
-              widthClass,
-            )}
-          >
-            {children}
-          </div>
-        )}
-      </div>
-    </DropdownContext.Provider>
-  );
-}
-
-export function DropdownSection({
-  title,
-  children,
-  className,
-}: {
-  title?: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className={cn("flex flex-col py-1", className)}>
-      {title && (
-        <span className="px-2.5 py-1 text-[10px] font-semibold tracking-wider text-zinc-400 uppercase select-none">
-          {title}
-        </span>
-      )}
-      <div className="flex flex-col gap-0.5">{children}</div>
-    </div>
-  );
-}
-
-export interface DropdownItemProps {
-  label: React.ReactNode;
-  description?: string;
-  icon?: React.ReactNode;
-  shortcut?: string;
-  badge?: string;
-  active?: boolean;
-  disabled?: boolean;
-  variant?: "default" | "accent" | "danger";
-  onClick?: () => void;
-  className?: string;
-}
-
-export function DropdownItem({
-  label,
-  description,
-  icon,
-  shortcut,
-  badge,
-  active = false,
-  disabled = false,
-  variant = "default",
-  onClick,
-  className,
-}: DropdownItemProps) {
-  const { close } = useDropdownContext();
-
-  const variantClass =
-    variant === "danger"
-      ? "text-red-400 hover:bg-red-500/10 hover:text-red-300"
-      : variant === "accent"
-        ? "text-zinc-100 hover:bg-zinc-800 hover:text-white font-medium"
-        : active
-          ? "bg-zinc-800 text-white font-medium border border-dotted border-zinc-600"
-          : "text-zinc-300 hover:bg-zinc-800/70 hover:text-white";
-
-  return (
-    <button
-      type="button"
-      role="menuitem"
-      disabled={disabled}
-      onClick={() => {
-        if (!disabled && onClick) {
-          onClick();
-          close();
-        }
-      }}
-      className={cn(
-        "group flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors duration-100 outline-none select-none disabled:pointer-events-none disabled:opacity-40",
-        variantClass,
-        className,
-      )}
-    >
-      <div className="flex min-w-0 items-center gap-2.5">
-        {icon && (
-          <span className="shrink-0 text-zinc-400 transition-colors group-hover:text-white">
-            {icon}
-          </span>
-        )}
-        <div className="flex min-w-0 flex-col">
-          <span className="truncate">{label}</span>
-          {description && (
-            <span className="truncate text-[10px] text-zinc-500">
-              {description}
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className="flex shrink-0 items-center gap-1.5">
-        {badge && (
-          <span className="font-mono text-[10px] text-zinc-400">{badge}</span>
-        )}
-        {shortcut && (
-          <kbd className="rounded border border-dotted border-zinc-700 bg-zinc-900 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">
-            {shortcut}
-          </kbd>
-        )}
-      </div>
-    </button>
-  );
-}
-
-export function DropdownSeparator({ className }: { className?: string }) {
-  return (
-    <div
-      role="separator"
-      className={cn("-mx-1 my-1 h-px bg-zinc-800/80", className)}
-    />
-  );
-}
 
 export interface DropdownSelectOption {
   value: string;
   label: string;
   description?: string;
-  badge?: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
 }
 
 export interface DropdownSelectProps {
   value: string;
   options: DropdownSelectOption[];
   onChange: (value: string) => void;
+  label?: string;
   placeholder?: string;
   disabled?: boolean;
   className?: string;
@@ -268,87 +32,203 @@ export function DropdownSelect({
   value,
   options,
   onChange,
+  label,
   placeholder = "Select an option…",
   disabled = false,
   className,
   searchable = false,
 }: DropdownSelectProps) {
+  const [expanded, setExpanded] = useState(false);
   const [query, setQuery] = useState("");
-  const selectedOption = options.find((opt) => opt.value === value);
-
+  const root = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const search = useRef<HTMLInputElement>(null);
+  const id = useId();
+  const open = expanded && !disabled;
+  const selected = options.find((option) => option.value === value);
+  const needle = query.trim().toLowerCase();
   const filtered = searchable
-    ? options.filter((opt) =>
-        opt.label.toLowerCase().includes(query.toLowerCase()),
+    ? options.filter((option) =>
+        `${option.label} ${option.description ?? ""}`
+          .toLowerCase()
+          .includes(needle),
       )
     : options;
 
-  return (
-    <CustomDropdown
-      disabled={disabled}
-      width="trigger"
-      className={cn("w-full", className)}
-      trigger={
-        <button
-          type="button"
-          disabled={disabled}
-          className="flex h-9 w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-dotted border-zinc-700 bg-[#121318] px-3 py-1.5 text-xs text-zinc-200 transition-all duration-150 outline-none hover:border-zinc-500 hover:bg-[#181920] focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          <div className="flex items-center gap-2 truncate">
-            {selectedOption?.icon && (
-              <span className="shrink-0">{selectedOption.icon}</span>
-            )}
-            <span className="truncate">
-              {selectedOption ? selectedOption.label : placeholder}
-            </span>
-          </div>
-          <svg
-            className="h-3.5 w-3.5 shrink-0 text-zinc-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </button>
+  useEffect(() => {
+    if (!open) return;
+    function dismiss(event: PointerEvent) {
+      if (
+        event.target instanceof Node &&
+        !root.current?.contains(event.target)
+      ) {
+        setExpanded(false);
       }
+    }
+
+    const panel = root.current?.querySelector("[data-dropdown-panel]");
+    const initial =
+      panel?.querySelector<HTMLButtonElement>('[aria-pressed="true"]') ??
+      panel?.querySelector<HTMLButtonElement>("[data-dropdown-option]");
+    (search.current ?? initial)?.focus();
+    document.addEventListener("pointerdown", dismiss);
+    return () => document.removeEventListener("pointerdown", dismiss);
+  }, [open]);
+
+  function show() {
+    setQuery("");
+    setExpanded(true);
+  }
+
+  function close() {
+    setExpanded(false);
+    trigger.current?.focus();
+  }
+
+  function handleKeys(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Escape" && open) {
+      event.preventDefault();
+      event.stopPropagation();
+      close();
+      return;
+    }
+    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+    if (!open) {
+      if (!disabled && event.key.startsWith("Arrow")) {
+        event.preventDefault();
+        show();
+      }
+      return;
+    }
+    if (event.target === search.current && !event.key.startsWith("Arrow"))
+      return;
+    const choices = Array.from(
+      root.current?.querySelectorAll<HTMLButtonElement>(
+        "[data-dropdown-option]",
+      ) ?? [],
+    );
+    if (!choices.length) return;
+    event.preventDefault();
+    const index = choices.findIndex(
+      (option) => option === document.activeElement,
+    );
+    const next =
+      event.key === "Home"
+        ? 0
+        : event.key === "End"
+          ? choices.length - 1
+          : event.key === "ArrowDown"
+            ? (index + 1) % choices.length
+            : index <= 0
+              ? choices.length - 1
+              : index - 1;
+    choices[next]?.focus();
+  }
+
+  return (
+    <div
+      ref={root}
+      className={cn("relative min-w-0", className)}
+      onKeyDown={handleKeys}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget))
+          setExpanded(false);
+      }}
     >
-      {searchable && (
-        <div className="border-b border-dotted border-zinc-800 p-1">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search…"
-            className="w-full rounded border border-dotted border-zinc-800 bg-zinc-900 px-2 py-1 text-xs text-white placeholder-zinc-500 outline-none focus:ring-1 focus:ring-zinc-400"
-          />
+      <button
+        ref={trigger}
+        type="button"
+        disabled={disabled}
+        aria-label={
+          label ? `${label}: ${selected?.label ?? placeholder}` : undefined
+        }
+        aria-expanded={open}
+        aria-controls={open ? id : undefined}
+        onClick={() => (open ? close() : show())}
+        className="border-border bg-card text-foreground motion-safe:ease-control hover:bg-card-hover flex min-h-9 w-full min-w-0 cursor-pointer items-center justify-between gap-2 rounded-md border border-dotted px-3 py-1.5 text-left text-sm hover:border-neutral-500 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50 motion-safe:transition-colors motion-safe:duration-150"
+      >
+        <span className="flex min-w-0 items-center gap-2">
+          {selected?.icon && (
+            <span className="shrink-0" aria-hidden="true">
+              {selected.icon}
+            </span>
+          )}
+          <span className="truncate">{selected?.label ?? placeholder}</span>
+        </span>
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          className={cn(
+            "text-muted size-4 shrink-0 motion-safe:transition-transform",
+            open && "rotate-180",
+          )}
+        >
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+      {open && (
+        <div
+          id={id}
+          data-dropdown-panel
+          role="group"
+          aria-label={label ?? placeholder}
+          className="border-border bg-card motion-safe:animate-menu-in absolute inset-x-0 top-full z-20 mt-1.5 rounded-lg border border-dotted p-1.5 shadow-md"
+        >
+          {searchable && (
+            <input
+              ref={search}
+              type="search"
+              aria-label={
+                label
+                  ? `Search ${label.toLowerCase()} options`
+                  : "Search options"
+              }
+              placeholder="Search options…"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              className="border-border bg-background placeholder:text-muted mb-1 w-full min-w-0 rounded-md border border-dotted px-2.5 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-1"
+            />
+          )}
+          <div className="max-h-52 space-y-0.5 overflow-y-auto overscroll-contain">
+            {filtered.length === 0 && (
+              <p role="status" className="text-muted px-2.5 py-2 text-sm">
+                No matching options
+              </p>
+            )}
+            {filtered.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                data-dropdown-option
+                aria-pressed={option.value === value}
+                onClick={() => {
+                  onChange(option.value);
+                  close();
+                }}
+                className="text-foreground hover:bg-card-hover focus-visible:bg-card-hover flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm focus-visible:outline-2 focus-visible:-outline-offset-2 aria-pressed:bg-neutral-100 motion-safe:transition-colors"
+              >
+                {option.icon && (
+                  <span className="shrink-0" aria-hidden="true">
+                    {option.icon}
+                  </span>
+                )}
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate">{option.label}</span>
+                  {option.description && (
+                    <span className="text-muted block truncate text-xs">
+                      {option.description}
+                    </span>
+                  )}
+                </span>
+                {option.value === value && <span aria-hidden="true">✓</span>}
+              </button>
+            ))}
+          </div>
         </div>
       )}
-      <div className="max-h-60 overflow-y-auto">
-        {filtered.length === 0 ? (
-          <div className="px-3 py-2 text-xs text-zinc-500">
-            No results found
-          </div>
-        ) : (
-          filtered.map((opt) => (
-            <DropdownItem
-              key={opt.value}
-              label={opt.label}
-              description={opt.description}
-              icon={opt.icon}
-              badge={opt.badge}
-              active={opt.value === value}
-              onClick={() => onChange(opt.value)}
-            />
-          ))
-        )}
-      </div>
-    </CustomDropdown>
+    </div>
   );
 }
-
-export default CustomDropdown;

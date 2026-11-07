@@ -57,13 +57,13 @@ export function DependencyGraphView({
   });
 
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="flex flex-col gap-4 rounded-xl border border-dotted border-neutral-200 bg-white p-5 shadow-xs">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-sm font-semibold tracking-wider text-zinc-900 uppercase dark:text-zinc-100">
+          <h3 className="text-sm font-semibold tracking-wider text-neutral-900 uppercase">
             Interactive Dependency Graph
           </h3>
-          <p className="text-2xs text-zinc-500">
+          <p className="text-xs text-neutral-600">
             Showing {filteredNodes.length} nodes and {filteredEdges.length}{" "}
             edges
           </p>
@@ -79,7 +79,7 @@ export function DependencyGraphView({
             placeholder="Search nodes..."
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs text-zinc-900 focus:border-indigo-500 focus:outline-hidden dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+            className="rounded-md border border-dotted border-neutral-300 px-3 py-1.5 text-xs text-neutral-900 focus:border-neutral-500 focus:outline-hidden"
           />
           <label htmlFor="graph-resolution-filter" className="sr-only">
             Filter by resolution
@@ -88,7 +88,7 @@ export function DependencyGraphView({
             id="graph-resolution-filter"
             value={resolutionFilter}
             onChange={(e) => setResolutionFilter(e.target.value)}
-            className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs text-zinc-900 focus:border-indigo-500 focus:outline-hidden dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+            className="rounded-md border border-dotted border-neutral-300 px-3 py-1.5 text-xs text-neutral-900 focus:border-neutral-500 focus:outline-hidden"
           >
             <option value="all">All Resolutions</option>
             <option value="RESOLVED">Resolved Only</option>
@@ -98,7 +98,7 @@ export function DependencyGraphView({
         </div>
       </div>
 
-      <div className="relative overflow-hidden rounded-lg border border-zinc-100 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-950/40">
+      <div className="relative overflow-hidden rounded-lg border border-dotted border-neutral-100 bg-neutral-50/50">
         <svg
           role="group"
           aria-label="Dependency graph, select nodes or relationships with Enter"
@@ -115,7 +115,7 @@ export function DependencyGraphView({
               markerHeight="6"
               orient="auto-start-reverse"
             >
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#818cf8" />
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#737373" />
             </marker>
             <marker
               id="arrow-selected"
@@ -126,7 +126,7 @@ export function DependencyGraphView({
               markerHeight="7"
               orient="auto-start-reverse"
             >
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#4f46e5" />
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#262626" />
             </marker>
           </defs>
 
@@ -147,13 +147,13 @@ export function DependencyGraphView({
                 y1={start.y}
                 x2={end.x}
                 y2={end.y}
-                stroke={isConnected ? "#a1a1aa" : "#3f3f46"}
+                stroke={isConnected ? "#404040" : "#737373"}
                 strokeWidth={isConnected ? 2.5 : 1.2}
                 strokeDasharray={
                   edge.resolution === "UNRESOLVED" ? "4 4" : undefined
                 }
                 markerEnd={isConnected ? "url(#arrow-selected)" : "url(#arrow)"}
-                className="cursor-pointer transition-all hover:stroke-zinc-300 focus-visible:stroke-amber-500 focus-visible:stroke-3 focus-visible:outline-none"
+                className="cursor-pointer transition-all hover:stroke-neutral-300 focus-visible:stroke-neutral-500 focus-visible:stroke-3 focus-visible:outline-none"
                 role="button"
                 tabIndex={0}
                 aria-label={`Inspect relationship ${edge.sourceId} to ${edge.targetId}`}
@@ -179,7 +179,7 @@ export function DependencyGraphView({
               <g
                 key={node.id}
                 transform={`translate(${pos.x},${pos.y})`}
-                className="cursor-pointer focus:stroke-amber-500 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-500"
+                className="cursor-pointer focus:stroke-neutral-500 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-500"
                 role="button"
                 tabIndex={0}
                 aria-label={`Select ${node.path}`}
@@ -196,19 +196,19 @@ export function DependencyGraphView({
                   r={isSelected ? 16 : isExternal ? 10 : 13}
                   className={`transition-all ${
                     isSelected
-                      ? "fill-zinc-200 stroke-zinc-500 stroke-4 dark:stroke-zinc-400"
+                      ? "fill-neutral-900 stroke-neutral-400 stroke-4"
                       : isExternal
-                        ? "fill-zinc-500 hover:fill-zinc-400"
-                        : "fill-zinc-400 hover:fill-zinc-300"
+                        ? "fill-neutral-600 hover:fill-neutral-600"
+                        : "fill-neutral-600 hover:fill-neutral-900"
                   }`}
                 />
                 <text
                   dy={isSelected ? 26 : 22}
                   textAnchor="middle"
-                  className={`text-2xs font-mono font-semibold ${
+                  className={`font-mono text-xs font-semibold ${
                     isSelected
-                      ? "fill-zinc-100 font-bold dark:fill-white"
-                      : "fill-zinc-700 dark:fill-zinc-300"
+                      ? "fill-neutral-900 font-bold"
+                      : "fill-neutral-700"
                   }`}
                 >
                   {node.name.length > 14
@@ -221,7 +221,7 @@ export function DependencyGraphView({
         </svg>
 
         {filteredNodes.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center text-xs text-zinc-500 italic">
+          <div className="absolute inset-0 flex items-center justify-center text-xs text-neutral-600 italic">
             No graph nodes match current filters.
           </div>
         )}

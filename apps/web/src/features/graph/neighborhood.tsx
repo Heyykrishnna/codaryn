@@ -21,7 +21,7 @@ export function NeighborhoodPanel({
 }>) {
   if (!selectedNode) {
     return (
-      <div className="rounded-lg border border-dashed border-zinc-200 p-6 text-center text-xs text-zinc-500 dark:border-zinc-800">
+      <div className="rounded-lg border border-dotted border-neutral-200 p-6 text-center text-xs text-neutral-600">
         Select a node in the graph or table to inspect its incoming and outgoing
         neighborhood.
       </div>
@@ -34,13 +34,13 @@ export function NeighborhoodPanel({
     neighborhood?.edges.filter((e) => e.sourceId === selectedNode.id) ?? [];
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="flex flex-col gap-2 border-b border-zinc-200 pb-3 sm:flex-row sm:items-center sm:justify-between dark:border-zinc-800">
+    <div className="flex flex-col gap-4 rounded-lg border border-dotted border-neutral-200 bg-white p-5 shadow-xs">
+      <div className="flex flex-col gap-2 border-b border-dotted border-neutral-200 pb-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <span className="text-2xs font-semibold text-zinc-500 uppercase">
+          <span className="text-xs font-semibold text-neutral-600 uppercase">
             Neighborhood Inspector
           </span>
-          <h4 className="font-mono text-sm font-bold break-all text-zinc-900 dark:text-zinc-100">
+          <h4 className="font-mono text-sm font-bold break-all text-neutral-900">
             {selectedNode.path}
           </h4>
         </div>
@@ -52,7 +52,7 @@ export function NeighborhoodPanel({
             id="neighborhood-depth-select"
             value={depth}
             onChange={(e) => onDepthChange(Number(e.target.value))}
-            className="rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+            className="rounded-md border border-dotted border-neutral-300 px-2 py-1 text-xs text-neutral-900"
           >
             <option value={1}>1-hop (Direct)</option>
             <option value={2}>2-hop</option>
@@ -69,7 +69,7 @@ export function NeighborhoodPanel({
                 e.target.value as "incoming" | "outgoing" | "both",
               )
             }
-            className="rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+            className="rounded-md border border-dotted border-neutral-300 px-2 py-1 text-xs text-neutral-900"
           >
             <option value="both">Both Directions</option>
             <option value="incoming">Incoming Only</option>
@@ -80,7 +80,7 @@ export function NeighborhoodPanel({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-2">
-          <span className="text-xs font-semibold text-zinc-700 uppercase dark:text-zinc-300">
+          <span className="text-xs font-semibold text-neutral-700 uppercase">
             Incoming Dependencies ({incomingEdges.length})
           </span>
           <div className="flex max-h-48 flex-col gap-1.5 overflow-y-auto">
@@ -89,16 +89,16 @@ export function NeighborhoodPanel({
                 key={e.id}
                 type="button"
                 onClick={() => onSelectNode(e.sourceId)}
-                className="flex items-center justify-between rounded-md bg-zinc-50 px-2.5 py-1.5 text-left font-mono text-xs text-zinc-800 hover:bg-zinc-200 hover:text-zinc-950 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:hover:text-white"
+                className="flex items-center justify-between rounded-md bg-neutral-50 px-2.5 py-1.5 text-left font-mono text-xs text-neutral-800 hover:bg-neutral-200 hover:text-neutral-950"
               >
                 <span className="truncate">
                   {e.sourceId.replace("node:file:", "")}
                 </span>
-                <span className="text-2xs text-zinc-400">×{e.weight}</span>
+                <span className="text-xs text-neutral-600">×{e.weight}</span>
               </button>
             ))}
             {incomingEdges.length === 0 && (
-              <p className="text-2xs text-zinc-500 italic">
+              <p className="text-xs text-neutral-600 italic">
                 No incoming modules.
               </p>
             )}
@@ -106,7 +106,7 @@ export function NeighborhoodPanel({
         </div>
 
         <div className="flex flex-col gap-2">
-          <span className="text-xs font-semibold text-zinc-700 uppercase dark:text-zinc-300">
+          <span className="text-xs font-semibold text-neutral-700 uppercase">
             Outgoing Dependencies ({outgoingEdges.length})
           </span>
           <div className="flex max-h-48 flex-col gap-1.5 overflow-y-auto">
@@ -115,18 +115,18 @@ export function NeighborhoodPanel({
                 key={e.id}
                 type="button"
                 onClick={() => onSelectNode(e.targetId)}
-                className="flex items-center justify-between rounded-md bg-zinc-50 px-2.5 py-1.5 text-left font-mono text-xs text-zinc-800 hover:bg-zinc-200 hover:text-zinc-950 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:hover:text-white"
+                className="flex items-center justify-between rounded-md bg-neutral-50 px-2.5 py-1.5 text-left font-mono text-xs text-neutral-800 hover:bg-neutral-200 hover:text-neutral-950"
               >
                 <span className="truncate">
                   {e.targetId
                     .replace("node:file:", "")
                     .replace("node:ext:", "ext:")}
                 </span>
-                <span className="text-2xs text-zinc-400">×{e.weight}</span>
+                <span className="text-xs text-neutral-600">×{e.weight}</span>
               </button>
             ))}
             {outgoingEdges.length === 0 && (
-              <p className="text-2xs text-zinc-500 italic">
+              <p className="text-xs text-neutral-600 italic">
                 No outgoing modules.
               </p>
             )}

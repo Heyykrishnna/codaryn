@@ -18,10 +18,7 @@ export function AccessPortal({
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8">
       <meta name="referrer" content="no-referrer" />
-      <Link
-        href="/team"
-        className="text-indigo-600 underline dark:text-indigo-400"
-      >
+      <Link href="/team" className="text-neutral-800 underline">
         Organization dashboard
       </Link>
       <h1 className="text-3xl font-semibold">
@@ -33,10 +30,7 @@ export function AccessPortal({
         <p role="alert">Unable to check your session. Reload to retry.</p>
       ) : !session.data ? (
         <p>
-          <Link
-            href="/workspace"
-            className="text-indigo-600 underline dark:text-indigo-400"
-          >
+          <Link href="/workspace" className="text-neutral-800 underline">
             Sign in
           </Link>{" "}
           with the authorized account, then reopen this private link.
@@ -169,7 +163,7 @@ function SharedProjection({
           ? " · bounded projection, additional evidence omitted"
           : ""}
       </p>
-      <div className="max-h-96 overflow-auto rounded-xl border border-zinc-300 dark:border-zinc-700">
+      <div className="max-h-96 overflow-auto rounded-xl border border-dotted border-neutral-300">
         <svg
           className="w-full min-w-160"
           viewBox={`0 0 ${width} ${height}`}
@@ -187,7 +181,7 @@ function SharedProjection({
                 y1={from.y + 25}
                 x2={to.x + 105}
                 y2={to.y + 25}
-                className="stroke-zinc-400 dark:stroke-zinc-600"
+                className="stroke-neutral-400"
               />
             ) : null;
           })}
@@ -202,12 +196,12 @@ function SharedProjection({
                   width={210}
                   height={50}
                   rx={8}
-                  className="fill-indigo-50 stroke-indigo-500 dark:fill-zinc-900"
+                  className="fill-neutral-800 stroke-neutral-500"
                 />
                 <text
                   x={point.x + 10}
                   y={point.y + 28}
-                  className="fill-zinc-900 text-xs dark:fill-zinc-100"
+                  className="fill-neutral-900 text-xs"
                 >
                   {node.label.slice(0, 30)}
                 </text>

@@ -2,104 +2,122 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CandyButton } from "@/src/components/ui/candy-button";
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { WorkspaceSelectionProvider } from "./workspace-selection";
+import { dashboardSections } from "./dashboard-sections";
 
-const navItems = [
-  { href: "/", label: "Overview" },
-  { href: "/studio", label: "Studio" },
-  { href: "/quality", label: "Quality" },
-  { href: "/execution", label: "Execution" },
-  { href: "/schema", label: "Schema" },
-  { href: "/graph", label: "Graph" },
-  { href: "/comparisons", label: "Comparisons" },
-  { href: "/repositories", label: "Repositories" },
-];
-
-export function AppHeader() {
+export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const activeSection = dashboardSections.find(({ href }) => pathname === href);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-dotted border-zinc-800 bg-[#090a0d]/90 backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2.5 sm:px-6">
-        <div className="flex items-center gap-6">
+    <div className="min-h-screen lg:grid lg:grid-cols-[12rem_minmax(0,1fr)]">
+      <a
+        href="#dashboard-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-white focus:p-3"
+      >
+        Skip to content
+      </a>
+      <aside className="border-border bg-card sticky top-0 z-30 flex flex-col border-b border-dotted lg:h-dvh lg:border-r lg:border-b-0">
+        <div className="lg:border-border flex min-h-14 items-center justify-between gap-3 px-4 lg:border-b lg:border-dotted">
           <Link
             href="/"
-            className="flex items-center gap-2.5 text-base font-bold tracking-tight text-white transition-opacity hover:opacity-90"
+            className="inline-flex items-center gap-2.5 text-sm font-semibold tracking-tight"
           >
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-dotted border-zinc-700 bg-zinc-900 font-mono text-xs font-semibold text-zinc-200">
-              CD
-            </span>
-            <span>codaryn</span>
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              className="size-5"
+            >
+              <path d="m12 2 9 5v10l-9 5-9-5V7z M3 7l9 5 9-5 M12 12v10 M7.5 4.5l9 5" />
+            </svg>
+            Codaryn
           </Link>
-
-          <nav
-            aria-label="Primary navigation"
-            className="hidden items-center gap-1 md:flex"
-          >
-            {navItems.map((item) => {
-              const active =
-                item.href === "/"
-                  ? pathname === "/"
-                  : pathname?.startsWith(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors select-none",
-                    active
-                      ? "border border-dotted border-zinc-600 bg-zinc-800/80 text-white"
-                      : "text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-200",
-                  )}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="hidden items-center gap-2 rounded-full border border-dotted border-zinc-700 bg-zinc-900/80 px-2.5 py-1 font-mono text-[11px] text-zinc-400 sm:flex">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-            <span>Architecture Live</span>
-          </div>
-
           <Link
-            href="/docs"
-            className="hidden text-xs text-zinc-400 transition-colors hover:text-zinc-200 lg:block"
-          >
-            Docs
-          </Link>
-
-          <CandyButton
-            as="a"
             href="/workspace"
-            variant="obsidian"
-            size="sm"
-            leftIcon={
-              <svg
-                className="h-3.5 w-3.5 text-zinc-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                />
-              </svg>
-            }
+            className="text-muted text-xs underline-offset-4 hover:underline lg:hidden"
           >
             Workspace
-          </CandyButton>
+          </Link>
+        </div>
+        <nav
+          aria-label="Primary navigation"
+          className="grid grid-cols-4 gap-1 px-2 pb-2 sm:flex sm:flex-wrap sm:px-3 lg:flex-col lg:flex-nowrap lg:overflow-y-auto lg:py-4"
+        >
+          {dashboardSections.map(({ href, label, icon }) => (
+            <Link
+              key={href}
+              href={href}
+              aria-current={pathname === href ? "page" : undefined}
+              className={cn(
+                "text-muted motion-safe:ease-control hover:bg-card-hover hover:text-foreground flex min-w-0 items-center gap-1 rounded-md border border-dotted border-transparent px-1 py-1.5 text-xs focus-visible:outline-2 focus-visible:-outline-offset-2 active:bg-neutral-200 motion-safe:transition-colors motion-safe:duration-150 max-sm:flex-col sm:gap-2.5 sm:px-2.5 sm:py-2 sm:text-sm lg:shrink-0",
+                pathname === href &&
+                  "border-border text-foreground bg-neutral-100 font-semibold",
+              )}
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="size-4 shrink-0"
+              >
+                <path d={icon} />
+              </svg>
+              <span className="max-w-full truncate">{label}</span>
+            </Link>
+          ))}
+        </nav>
+        <nav
+          aria-label="Workspace links"
+          className="border-border mt-auto hidden space-y-1 border-t border-dotted p-3 lg:block"
+        >
+          <Link
+            href="/workspace"
+            className="text-muted hover:bg-card-hover hover:text-foreground block rounded-md px-2.5 py-2 text-sm"
+          >
+            Workspace settings
+          </Link>
+          <Link
+            href="/team"
+            className="text-muted hover:bg-card-hover hover:text-foreground block rounded-md px-2.5 py-2 text-sm"
+          >
+            Team
+          </Link>
+          <Link
+            href="/docs"
+            className="text-muted hover:bg-card-hover hover:text-foreground block rounded-md px-2.5 py-2 text-sm"
+          >
+            Guide
+          </Link>
+        </nav>
+      </aside>
+      <div className="min-w-0">
+        <div className="border-border bg-card text-muted hidden min-h-14 items-center justify-between border-b border-dotted px-8 text-xs lg:flex">
+          <p>
+            Workspace{" "}
+            <span aria-hidden="true" className="mx-2 text-neutral-400">
+              /
+            </span>{" "}
+            <span className="text-foreground font-medium">
+              {activeSection?.label ?? "Tools"}
+            </span>
+          </p>
+          <Link href="/docs" className="underline-offset-4 hover:underline">
+            Help &amp; guide
+          </Link>
+        </div>
+        <div id="dashboard-content" tabIndex={-1}>
+          <WorkspaceSelectionProvider>{children}</WorkspaceSelectionProvider>
         </div>
       </div>
-    </header>
+    </div>
   );
 }
-
-export default AppHeader;
