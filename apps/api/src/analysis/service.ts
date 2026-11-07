@@ -66,16 +66,22 @@ export class AnalysisService {
     manifestId: string,
     repositoryId: string,
     ref: string,
+    reuseExisting = false,
   ): Promise<AnalysisJobSummary> {
     const client = await this.pool.connect();
     try {
+      await client.query("BEGIN");
       await this.authorize(client, actor, workspace);
 
       const manifestRes = await client.query<{
         id: string;
         manifest: { commitSha: string };
       }>(
-        "SELECT id, manifest FROM analysis_manifests WHERE id=$1 AND organization_id=$2 AND repository_id=$3",
+        `SELECT m.id,m.manifest FROM analysis_manifests m
+         JOIN connected_repositories r ON r.id=m.repository_id
+         JOIN github_installations i ON i.id=r.installation_id
+         WHERE m.id=$1 AND m.organization_id=$2 AND r.id=$3 AND i.organization_id=$2
+         AND r.active=true AND i.connected=true FOR SHARE OF m,r,i`,
         [manifestId, workspace, repositoryId],
       );
       const manifestRow = manifestRes.rows[0];
@@ -100,7 +106,20 @@ export class AnalysisService {
         );
       const commitSha = parsedCommit.data;
 
-      await client.query("BEGIN");
+      if (reuseExisting) {
+        await client.query(
+          "SELECT pg_advisory_xact_lock(hashtextextended($1,0))",
+          [`analysis-manifest:${manifestId}`],
+        );
+        const existing = await client.query<{ id: string }>(
+          "SELECT id FROM analysis_jobs WHERE organization_id=$1 AND manifest_id=$2 AND status IN ('queued','running','completed') ORDER BY created_at DESC,id LIMIT 1",
+          [workspace, manifestId],
+        );
+        if (existing.rows[0]) {
+          await client.query("COMMIT");
+          return this.getJob(actor, workspace, existing.rows[0].id);
+        }
+      }
       await this.requireQueueCapacity(client, workspace);
       await client.query(
         "INSERT INTO analysis_jobs (id,organization_id,repository_id,manifest_id,actor_id,ref,commit_sha,status,current_stage) VALUES ($1,$2,$3,$4,$5,$6,$7,'queued','inventory')",
@@ -133,6 +152,32 @@ export class AnalysisService {
     } catch (error) {
       await client.query("ROLLBACK").catch(() => {});
       throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async listJobs(
+    actor: string,
+    workspace: string,
+    repositoryId?: string,
+    jobId?: string,
+  ) {
+    const client = await this.pool.connect();
+    try {
+      await this.authorize(client, actor, workspace);
+      const { rows } = await client.query(
+        `SELECT j.id,j.repository_id AS "repositoryId",r.full_name AS "repositoryName",
+                j.commit_sha AS "commitSha",j.ref,j.status,j.current_stage AS "stage"
+         FROM analysis_jobs j
+         JOIN connected_repositories r ON r.id=j.repository_id
+         JOIN github_installations i ON i.id=r.installation_id
+         WHERE j.organization_id=$1 AND i.organization_id=$1 AND i.connected=true AND r.active=true
+           AND ($2::uuid IS NULL OR r.id=$2 OR j.id=$3)
+         ORDER BY (j.id=$3) DESC NULLS LAST,j.created_at DESC,j.id LIMIT 100`,
+        [workspace, repositoryId ?? null, jobId ?? null],
+      );
+      return { jobs: rows };
     } finally {
       client.release();
     }

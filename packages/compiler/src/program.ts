@@ -37,6 +37,8 @@ export function createAnalysisProgram(
       return (
         norm.endsWith(".ts") ||
         norm.endsWith(".tsx") ||
+        norm.endsWith(".mts") ||
+        norm.endsWith(".cts") ||
         norm.endsWith(".js") ||
         norm.endsWith(".jsx") ||
         norm.endsWith(".mjs") ||

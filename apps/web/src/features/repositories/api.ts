@@ -1,3 +1,6 @@
+import { repositoryListSchema } from "@codaryn/contracts";
+import { z } from "zod";
+
 export async function api(
   path: string,
   input: Record<string, string>,
@@ -57,3 +60,32 @@ export type Run = {
     monorepo: boolean;
   } | null;
 };
+
+const catalogPageSchema = repositoryListSchema.extend({
+  next: z.uuid().nullable(),
+});
+
+export async function fetchRepositoryCatalog(
+  workspaceId: string,
+  signal: AbortSignal,
+) {
+  const repositories: Repository[] = [];
+  let after: string | null = null;
+  do {
+    const result: z.infer<typeof catalogPageSchema> = catalogPageSchema.parse(
+      await api(
+        "catalog",
+        { workspaceId, ...(after ? { after } : {}) },
+        false,
+        signal,
+      ),
+    );
+    repositories.push(...result.repositories);
+    if (result.next && result.next === after)
+      throw new Error("Repository catalog could not advance.");
+    after = result.next;
+  } while (after);
+  return repositories.sort(
+    (a, b) => a.fullName.localeCompare(b.fullName) || a.id.localeCompare(b.id),
+  );
+}

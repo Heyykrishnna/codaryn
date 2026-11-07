@@ -57,29 +57,62 @@ const assetExtensions = new Set([
   ".ttf",
 ]);
 
+const languageByExtension = new Map<string, FileLanguage>([
+  [".ts", "typescript"],
+  [".mts", "typescript"],
+  [".cts", "typescript"],
+  [".tsx", "tsx"],
+  [".js", "javascript"],
+  [".mjs", "javascript"],
+  [".cjs", "javascript"],
+  [".jsx", "jsx"],
+  [".json", "json"],
+  [".py", "python"],
+  [".java", "java"],
+  [".kt", "kotlin"],
+  [".kts", "kotlin"],
+  [".go", "go"],
+  [".rs", "rust"],
+  [".rb", "ruby"],
+  [".php", "php"],
+  [".swift", "swift"],
+  [".dart", "dart"],
+  [".cs", "csharp"],
+]);
+
 export function detectLanguage(filePath: string): {
   language: FileLanguage;
   extension: string;
 } {
-  const normalized = filePath.replace(/\\/g, "/");
-  const ext = path.extname(normalized).toLowerCase();
+  const extension = path.extname(filePath).toLowerCase();
+  return {
+    language: languageByExtension.get(extension) ?? "unknown",
+    extension,
+  };
+}
 
-  if (ext === ".ts") {
-    return { language: "typescript", extension: ext };
-  }
-  if (ext === ".tsx") {
-    return { language: "tsx", extension: ext };
-  }
-  if (ext === ".js" || ext === ".mjs" || ext === ".cjs") {
-    return { language: "javascript", extension: ext };
-  }
-  if (ext === ".jsx") {
-    return { language: "jsx", extension: ext };
-  }
-  if (ext === ".json") {
-    return { language: "json", extension: ext };
-  }
-  return { language: "unknown", extension: ext };
+const unitManifests = new Set([
+  "package.json",
+  "go.mod",
+  "go.work",
+  "Cargo.toml",
+  "pom.xml",
+  "build.gradle",
+  "build.gradle.kts",
+  "Gemfile",
+  "composer.json",
+  "Package.swift",
+  "pubspec.yaml",
+  "serverless.yml",
+  "serverless.yaml",
+  "cdk.json",
+  "samconfig.toml",
+]);
+
+export function isAnalysisManifest(filePath: string) {
+  return (
+    unitManifests.has(path.basename(filePath)) || filePath.endsWith(".csproj")
+  );
 }
 
 export function detectRole(
@@ -100,6 +133,8 @@ export function detectRole(
     }
   }
 
+  if (isAnalysisManifest(normalized)) return "config";
+
   for (const pattern of configPatterns) {
     if (pattern.test(normalized)) {
       return "config";
@@ -114,14 +149,7 @@ export function detectRole(
     return "asset";
   }
 
-  if (
-    language === "typescript" ||
-    language === "tsx" ||
-    language === "javascript" ||
-    language === "jsx"
-  ) {
-    return "source";
-  }
+  if (language !== "unknown" && language !== "json") return "source";
 
   return "other";
 }

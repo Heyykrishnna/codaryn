@@ -4,6 +4,7 @@ import { join } from "node:path";
 import type { Pool, PoolClient } from "pg";
 import type { GitHubGateway } from "@codaryn/github";
 import { withRepositoryArchive } from "@codaryn/repository-ingestion";
+import { detectLanguage, isAnalysisManifest } from "@codaryn/file-classifier";
 import { AnalysisProcessor } from "./processor.js";
 const accessible =
   "SELECT j.id,j.commit_sha,r.full_name,i.id AS installation_id,i.generation FROM analysis_jobs j JOIN organizations o ON o.id=j.organization_id JOIN organization_members m ON m.organization_id=o.id AND m.user_id=j.actor_id JOIN connected_repositories r ON r.id=j.repository_id JOIN github_installations i ON i.id=r.installation_id AND i.organization_id=o.id WHERE j.id=$1 AND j.lease_id=$2 AND j.status IN ('running','completed') AND o.deleted_at IS NULL AND r.active=true AND i.connected=true";
@@ -38,8 +39,10 @@ export async function runOneAnalysisJob(
       row.commit_sha,
     );
     await withRepositoryArchive(archive, {}, async (directory, inventory) => {
-      const candidates = inventory.files.filter((file) =>
-        /\.(?:[cm]?[jt]sx?|json)$/.test(file.path),
+      const candidates = inventory.files.filter(
+        (file) =>
+          detectLanguage(file.path).language !== "unknown" ||
+          isAnalysisManifest(file.path),
       );
       if (
         candidates.length > 1000 ||

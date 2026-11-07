@@ -34,6 +34,8 @@ export function repositoryActions(
     repositories: async ({ actor, workspace, input }) => ({
       repositories: await service.list(actor, workspace, page(input)),
     }),
+    catalog: ({ actor, workspace, input }) =>
+      service.catalog(actor, workspace, z.uuid().optional().parse(input.after)),
     branches: async ({ actor, workspace, input }) => ({
       branches: await service.branches(
         actor,

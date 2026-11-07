@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { z } from "zod";
 import { WorkspaceExplorer } from "@/src/components/workspace-explorer";
-import { GraphExplorer } from "@/src/features/graph/explorer";
+import { AtlasWorkspace } from "@/src/features/architecture/atlas-workspace";
 import { LoadingIndicator } from "@/src/components/ui/loading-indicator";
 
 function LinkedGraph() {
@@ -16,11 +16,11 @@ function LinkedGraph() {
   return (
     <WorkspaceExplorer
       title="Graph"
-      description="Explore dependencies, cycles, and the evidence behind each connection."
+      description="Drill into linked architecture diagrams from an analyzed commit."
       initialWorkspaceId={initialWorkspaceId}
     >
       {(workspaceId) => (
-        <GraphExplorer
+        <AtlasWorkspace
           key={`${workspaceId}:${initialJobId ?? ""}`}
           workspaceId={workspaceId}
           initialJobId={

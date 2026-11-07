@@ -161,6 +161,22 @@ export class RepositoryService {
       )
     ).rows;
   }
+  async catalog(actor: string, workspace: string, after?: string) {
+    await this.membership(actor, workspace);
+    const limit = 250;
+    const { rows } = await this.pool.query(
+      `SELECT r.id,r.full_name AS "fullName",r.private,r.default_branch AS "defaultBranch",r.installation_id AS "installationId"
+       FROM connected_repositories r JOIN github_installations i ON i.id=r.installation_id
+       WHERE i.organization_id=$1 AND i.connected=true AND r.active=true AND ($2::uuid IS NULL OR r.id>$2)
+       ORDER BY r.id LIMIT $3`,
+      [workspace, after ?? null, limit + 1],
+    );
+    const repositories = rows.slice(0, limit);
+    return {
+      repositories,
+      next: rows.length > limit ? repositories.at(-1)?.id : null,
+    };
+  }
   private async repository(actor: string, workspace: string, id: string) {
     await this.membership(actor, workspace);
     const result = await this.pool.query<StoredRepository>(

@@ -21,7 +21,6 @@ type Profile = z.infer<typeof studioProfileSchema>;
 type SelectionState = {
   repositories: Repository[];
   repositoryId: string;
-  repoPage: number;
   branch: string;
   branches: Branch[];
   branchPage: number;
@@ -39,7 +38,6 @@ type SelectionState = {
   setBranchPage: Setter<number>;
   setCommitPage: Setter<number>;
   setManifest: Setter<StudioManifestResponse | null>;
-  setRepoPage: Setter<number>;
   setProfile: Setter<Profile | null>;
   setName: Setter<string>;
   setConfiguration: Setter<StudioConfiguration>;
@@ -50,7 +48,6 @@ type SelectionState = {
 export function RepositoryStep({
   repositories,
   repositoryId,
-  repoPage,
   setRepositoryId,
   setBranch,
   setCommit,
@@ -59,13 +56,11 @@ export function RepositoryStep({
   setBranchPage,
   setCommitPage,
   setManifest,
-  setRepoPage,
 }: Readonly<
   Pick<
     SelectionState,
     | "repositories"
     | "repositoryId"
-    | "repoPage"
     | "setRepositoryId"
     | "setBranch"
     | "setCommit"
@@ -74,7 +69,6 @@ export function RepositoryStep({
     | "setBranchPage"
     | "setCommitPage"
     | "setManifest"
-    | "setRepoPage"
   >
 >) {
   const repoOptions = repositories.map((item) => ({
@@ -110,7 +104,7 @@ export function RepositoryStep({
 
       {repositories.length === 0 && (
         <div className="rounded-xl border border-dotted border-neutral-300 bg-white p-4 text-xs text-neutral-600">
-          No repositories found on page {repoPage}.{" "}
+          No connected repositories found.{" "}
           <Link
             className="text-neutral-900 underline hover:text-neutral-950"
             href="/repositories"
@@ -120,30 +114,6 @@ export function RepositoryStep({
           .
         </div>
       )}
-
-      <div className="flex items-center justify-between gap-3 pt-2">
-        <CandyButton
-          type="button"
-          variant="secondary"
-          size="xs"
-          disabled={repoPage === 1}
-          onClick={() => setRepoPage(repoPage - 1)}
-        >
-          Previous page
-        </CandyButton>
-        <span className="font-mono text-xs text-neutral-600">
-          Page {repoPage}
-        </span>
-        <CandyButton
-          type="button"
-          variant="secondary"
-          size="xs"
-          disabled={repositories.length < 50}
-          onClick={() => setRepoPage(repoPage + 1)}
-        >
-          Next page
-        </CandyButton>
-      </div>
     </div>
   );
 }

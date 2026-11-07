@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { RepositoryStep, RevisionStep, ProfileStep } from "./source-steps";
 import { useEffect, useState } from "react";
 import { z } from "zod";
@@ -7,7 +8,7 @@ import {
   branchListSchema,
   commitListSchema,
   normalizeStudioConfiguration,
-  repositoryListSchema,
+  analysisJobSummarySchema,
   studioConfigurationSchema,
   studioDefaults,
   studioManifestResponseSchema,
@@ -16,7 +17,12 @@ import {
   type WorkspaceSummary,
   type StudioManifestResponse,
 } from "@codaryn/contracts";
-import { api, type Repository } from "@/src/features/repositories/api";
+import {
+  api,
+  fetchRepositoryCatalog,
+  type Repository,
+} from "@/src/features/repositories/api";
+import { analysisRequest } from "@/src/features/analysis/api";
 import { studioRequest } from "./api";
 import { ModuleSelection } from "./selections";
 import { CandyButton } from "@/src/components/ui/candy-button";
@@ -48,7 +54,6 @@ export function Studio({
     useState<StudioConfiguration>(studioDefaults);
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [repositoryId, setRepositoryId] = useState("");
-  const [repoPage, setRepoPage] = useState(1);
   const [branches, setBranches] = useState<{ name: string; sha: string }[]>([]);
   const [branch, setBranch] = useState("");
   const [branchPage, setBranchPage] = useState(1);
@@ -64,11 +69,15 @@ export function Studio({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [manifest, setManifest] = useState<StudioManifestResponse | null>(null);
+  const [analysis, setAnalysis] = useState<{
+    manifestId: string;
+    jobId: string;
+  } | null>(null);
   const [history, setHistory] = useState<StudioManifestResponse[]>([]);
   const [settledSource, setSettledSource] = useState("");
   const [settledBranches, setSettledBranches] = useState("");
   const [settledCommits, setSettledCommits] = useState("");
-  const sourceKey = JSON.stringify([repoPage, profilePage]);
+  const sourceKey = String(profilePage);
   const branchKey = JSON.stringify([repositoryId, branchPage]);
   const commitKey = JSON.stringify([repositoryId, branch, commitPage]);
   const sourceLoading = settledSource !== sourceKey;
@@ -96,16 +105,14 @@ export function Studio({
 
   useEffect(() => {
     let current = true;
+    const controller = new AbortController();
     Promise.all([
-      api("repositories", {
-        workspaceId: workspace.id,
-        page: String(repoPage),
-      }),
+      fetchRepositoryCatalog(workspace.id, controller.signal),
       studioRequest("profiles", workspace.id, { page: profilePage }),
       studioRequest("manifests", workspace.id),
     ])
       .then(([rawRepos, rawProfiles, rawHistory]) => {
-        const repos = repositoryListSchema.parse(rawRepos).repositories;
+        const repos = rawRepos;
         const saved = studioProfileListSchema.parse(rawProfiles).profiles;
         const past = z
           .object({ manifests: z.array(studioManifestResponseSchema) })
@@ -127,8 +134,9 @@ export function Studio({
       });
     return () => {
       current = false;
+      controller.abort();
     };
-  }, [workspace.id, repoPage, profilePage, sourceKey]);
+  }, [workspace.id, profilePage, sourceKey]);
 
   useEffect(() => {
     if (!repositoryId) return;
@@ -207,6 +215,28 @@ export function Studio({
       studioProfileListSchema.parse(
         await studioRequest("profiles", workspace.id, { page: profilePage }),
       ).profiles,
+    );
+  }
+
+  async function startAnalysis(selected: StudioManifestResponse) {
+    const job = analysisJobSummarySchema.parse(
+      await analysisRequest(
+        "start",
+        workspace.id,
+        {
+          manifestId: selected.id,
+          repositoryId: selected.manifest.repositoryId,
+          ref: selected.manifest.commitSha,
+          reuseExisting: true,
+        },
+        true,
+      ),
+    );
+    setAnalysis({ manifestId: selected.id, jobId: job.id });
+    setMessage(
+      job.status === "completed"
+        ? "Analysis is ready. Open Graph to explore the snapshot."
+        : "Analysis requested. Track the job in Graph.",
     );
   }
 
@@ -332,7 +362,6 @@ export function Studio({
               {...{
                 repositories,
                 repositoryId,
-                repoPage,
                 setRepositoryId,
                 setBranch,
                 setCommit,
@@ -341,7 +370,6 @@ export function Studio({
                 setBranchPage,
                 setCommitPage,
                 setManifest,
-                setRepoPage,
               }}
             />
           )}
@@ -407,8 +435,7 @@ export function Studio({
               </div>
               <p className="text-xs text-neutral-600">
                 Review the normalized configuration below. The API verifies the
-                commit and permissions independently before triggering
-                ingestion.
+                commit and permissions before saving the manifest.
               </p>
               <CandyButton
                 type="button"
@@ -428,12 +455,14 @@ export function Studio({
                       ),
                     );
                     setManifest(created);
-                    setHistory([created, ...history].slice(0, 50));
-                    setMessage("Manifest created. Analyzer extraction queued.");
+                    setHistory((previous) =>
+                      [created, ...previous].slice(0, 50),
+                    );
+                    await startAnalysis(created);
                   });
                 }}
               >
-                Create analysis manifest
+                Create manifest and start analysis
               </CandyButton>
             </div>
           )}
@@ -629,6 +658,23 @@ export function Studio({
           <p className="font-mono text-xs break-all text-neutral-600">
             SHA-256: {manifest.hash}
           </p>
+          {analysis?.manifestId === manifest.id ? (
+            <Link
+              className="text-sm underline underline-offset-4"
+              href={`/graph?${new URLSearchParams({ workspaceId: workspace.id, jobId: analysis.jobId })}`}
+            >
+              Track analysis and open graph
+            </Link>
+          ) : (
+            <CandyButton
+              className="self-start"
+              variant="pearl"
+              disabled={busy}
+              onClick={() => run(() => startAnalysis(manifest))}
+            >
+              Start analysis
+            </CandyButton>
+          )}
           <pre className="max-h-80 overflow-auto rounded-xl border border-dotted border-neutral-300 bg-white p-4 font-mono text-xs text-neutral-900">
             {JSON.stringify(manifest, null, 2)}
           </pre>

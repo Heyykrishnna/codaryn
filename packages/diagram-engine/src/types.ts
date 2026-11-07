@@ -6,6 +6,7 @@ import type {
   DiagramType,
   SourceEvidence,
   Resolution,
+  ExecutionSnapshot,
 } from "@codaryn/contracts";
 
 export interface SnapshotFrontendInput {
@@ -63,6 +64,8 @@ export interface SnapshotBackendInput {
     method: string;
     path: string;
     controllerId?: string;
+    handler?: string;
+    middleware?: string[];
     filePath: string;
     startLine: number;
     endLine: number;
@@ -153,6 +156,8 @@ export interface SnapshotDependencyInput {
 }
 
 export interface SnapshotExecutionInput {
+  controlNodes?: ExecutionSnapshot["controlNodes"];
+  controlEdges?: ExecutionSnapshot["controlEdges"];
   functions: Array<{
     id: string;
     name: string;

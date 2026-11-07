@@ -21,6 +21,13 @@ export function registerAnalysis(
     string,
     (actor: string, workspace: string, input: Input) => Promise<unknown>
   > = {
+    jobs: (actor, workspace, input) =>
+      service.listJobs(
+        actor,
+        workspace,
+        z.uuid().optional().parse(input.repositoryId),
+        z.uuid().optional().parse(input.jobId),
+      ),
     job: (actor, workspace, input) =>
       service.getJob(actor, workspace, id(input.jobId)),
     inventory: (actor, workspace, input) =>
@@ -44,6 +51,7 @@ export function registerAnalysis(
         id(input.manifestId),
         id(input.repositoryId),
         z.string().trim().min(1).max(200).parse(input.ref),
+        z.boolean().optional().parse(input.reuseExisting),
       ),
     cancel: (actor, workspace, input) =>
       service.cancelJob(actor, workspace, id(input.jobId)),

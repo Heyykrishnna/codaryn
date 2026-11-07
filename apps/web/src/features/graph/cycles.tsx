@@ -60,7 +60,14 @@ export function DependencyCyclesPanel({
                 <React.Fragment key={`${cycle.id}-${segIdx}-${segment}`}>
                   <button
                     type="button"
-                    onClick={() => onSelectNode?.(`node:file:${segment}`)}
+                    onClick={() => {
+                      const id = cycle.nodeIds.find(
+                        (item) =>
+                          item === `node:file:${segment}` ||
+                          item === `${cycle.jobId}:node:file:${segment}`,
+                      );
+                      if (id) onSelectNode?.(id);
+                    }}
                     className="rounded-sm bg-neutral-100 px-2 py-1 text-neutral-800 hover:bg-neutral-100 hover:text-neutral-950"
                   >
                     {segment}

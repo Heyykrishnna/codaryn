@@ -23,6 +23,16 @@ export const fileLanguageSchema = z.enum([
   "javascript",
   "jsx",
   "json",
+  "python",
+  "java",
+  "kotlin",
+  "go",
+  "rust",
+  "ruby",
+  "php",
+  "swift",
+  "dart",
+  "csharp",
   "unknown",
 ]);
 

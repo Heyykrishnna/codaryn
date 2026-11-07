@@ -131,7 +131,9 @@ export class GraphService {
       id: r.id,
       jobId: r.job_id,
       length: r.length,
-      nodeIds: r.node_ids,
+      nodeIds: r.node_ids.map((id) =>
+        id.startsWith(`${jobId}:`) ? id : `${jobId}:${id}`,
+      ),
       path: r.path,
     }));
 
@@ -298,7 +300,9 @@ export class GraphService {
       id: r.id,
       jobId: r.job_id,
       length: r.length,
-      nodeIds: r.node_ids,
+      nodeIds: r.node_ids.map((id) =>
+        id.startsWith(`${jobId}:`) ? id : `${jobId}:${id}`,
+      ),
       path: r.path,
     }));
 
