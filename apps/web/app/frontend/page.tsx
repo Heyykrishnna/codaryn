@@ -191,13 +191,13 @@ function FrontendDashboard() {
         <h1 className="text-2xl font-semibold">
           Frontend Architecture Intelligence
         </h1>
-        <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+        <p className="mt-2 text-neutral-600">
           Sign in to inspect React component hierarchies, route maps, hooks, and
           state management patterns.
         </p>
         <Link
           href="/workspace"
-          className="mt-4 inline-block text-indigo-600 underline dark:text-indigo-400"
+          className="mt-4 inline-block text-neutral-800 underline"
         >
           Sign in to continue
         </Link>
@@ -207,69 +207,48 @@ function FrontendDashboard() {
 
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8">
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-200 pb-4 dark:border-zinc-800">
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-dotted border-neutral-200 pb-4">
         <div className="flex items-center gap-6">
           <Link href="/" className="text-xl font-semibold">
             codaryn
           </Link>
-          <nav className="flex items-center gap-4 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-            <Link
-              href="/repositories"
-              className="hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
+          <nav className="flex items-center gap-4 text-sm font-medium text-neutral-600">
+            <Link href="/repositories" className="hover:text-neutral-900">
               Repositories
             </Link>
-            <Link
-              href="/studio"
-              className="hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
+            <Link href="/studio" className="hover:text-neutral-900">
               Studio
             </Link>
-            <Link
-              href="/analysis"
-              className="hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
+            <Link href="/analysis" className="hover:text-neutral-900">
               Analysis
             </Link>
-            <Link
-              href="/graph"
-              className="hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
+            <Link href="/graph" className="hover:text-neutral-900">
               Dependency Graph
             </Link>
-            <Link
-              href="/frontend"
-              className="font-semibold text-indigo-600 dark:text-indigo-400"
-            >
+            <Link href="/frontend" className="font-semibold text-neutral-800">
               Frontend Explorer
             </Link>
-            <Link
-              href="/backend"
-              className="hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
+            <Link href="/backend" className="hover:text-neutral-900">
               Backend Explorer
             </Link>
           </nav>
         </div>
-        <Link
-          href="/workspace"
-          className="text-sm text-indigo-600 dark:text-indigo-400"
-        >
+        <Link href="/workspace" className="text-sm text-neutral-800">
           Workspace settings
         </Link>
       </header>
 
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
           Frontend Architecture Intelligence
         </h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="text-sm text-neutral-600">
           Explore React components, JSX rendering hierarchies, hooks, state
           stores, App/Pages routers, and API clients with source evidence.
         </p>
       </div>
 
-      <div className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+      <div className="flex flex-col gap-4 rounded-xl border border-dotted border-neutral-200 bg-white p-5 shadow-sm">
         <form
           onSubmit={handleLookup}
           className="flex flex-wrap items-end gap-3"
@@ -277,7 +256,7 @@ function FrontendDashboard() {
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="fe-workspace-select"
-              className="text-xs font-medium text-zinc-700 dark:text-zinc-300"
+              className="text-xs font-medium text-neutral-700"
             >
               Workspace
             </label>
@@ -298,7 +277,7 @@ function FrontendDashboard() {
           <div className="flex min-w-[240px] flex-1 flex-col gap-1.5">
             <label
               htmlFor="fe-job-input"
-              className="text-xs font-medium text-zinc-700 dark:text-zinc-300"
+              className="text-xs font-medium text-neutral-700"
             >
               Analysis Job ID
             </label>
@@ -324,7 +303,7 @@ function FrontendDashboard() {
         {message && (
           <p
             role="status"
-            className="rounded-lg bg-zinc-100 p-3 text-xs text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+            className="rounded-lg bg-neutral-100 p-3 text-xs text-neutral-700"
           >
             {message}
           </p>
@@ -334,85 +313,89 @@ function FrontendDashboard() {
       {overview && (
         <div className="flex flex-col gap-6">
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
-            <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-              <span className="text-xs text-zinc-500">Components</span>
-              <p className="mt-1 text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            <div className="rounded-xl border border-dotted border-neutral-200 bg-white p-4 shadow-sm">
+              <span className="text-xs text-neutral-600">Components</span>
+              <p className="mt-1 text-2xl font-bold text-neutral-900">
                 {overview.totalComponents}
               </p>
             </div>
-            <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-              <span className="text-xs text-zinc-500">Routes &amp; Pages</span>
-              <p className="mt-1 text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            <div className="rounded-xl border border-dotted border-neutral-200 bg-white p-4 shadow-sm">
+              <span className="text-xs text-neutral-600">
+                Routes &amp; Pages
+              </span>
+              <p className="mt-1 text-2xl font-bold text-neutral-900">
                 {overview.totalRoutes}
               </p>
             </div>
-            <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-              <span className="text-xs text-zinc-500">Hook References</span>
-              <p className="mt-1 text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            <div className="rounded-xl border border-dotted border-neutral-200 bg-white p-4 shadow-sm">
+              <span className="text-xs text-neutral-600">Hook References</span>
+              <p className="mt-1 text-2xl font-bold text-neutral-900">
                 {overview.totalHooks}
               </p>
             </div>
-            <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-              <span className="text-xs text-zinc-500">Context Providers</span>
-              <p className="mt-1 text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            <div className="rounded-xl border border-dotted border-neutral-200 bg-white p-4 shadow-sm">
+              <span className="text-xs text-neutral-600">
+                Context Providers
+              </span>
+              <p className="mt-1 text-2xl font-bold text-neutral-900">
                 {overview.totalContexts}
               </p>
             </div>
-            <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-              <span className="text-xs text-zinc-500">API Calls</span>
-              <p className="mt-1 text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            <div className="rounded-xl border border-dotted border-neutral-200 bg-white p-4 shadow-sm">
+              <span className="text-xs text-neutral-600">API Calls</span>
+              <p className="mt-1 text-2xl font-bold text-neutral-900">
                 {overview.totalApiClients}
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 rounded-lg bg-zinc-50 p-3 text-xs dark:bg-zinc-900">
+          <div className="flex flex-wrap items-center gap-4 rounded-lg bg-neutral-50 p-3 text-xs">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-zinc-700 dark:text-zinc-300">
+              <span className="font-semibold text-neutral-700">
                 Frameworks:
               </span>
               {overview.detectedFrameworks.length > 0 ? (
                 overview.detectedFrameworks.map((fw) => (
                   <span
                     key={fw}
-                    className="rounded bg-indigo-100 px-2 py-0.5 font-medium text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300"
+                    className="rounded bg-neutral-100 px-2 py-0.5 font-medium text-neutral-800"
                   >
                     {fw}
                   </span>
                 ))
               ) : (
-                <span className="text-zinc-500">React Generic</span>
+                <span className="text-neutral-600">React Generic</span>
               )}
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-zinc-700 dark:text-zinc-300">
+              <span className="font-semibold text-neutral-700">
                 State Patterns:
               </span>
               {overview.stateManagementPatterns.length > 0 ? (
                 overview.stateManagementPatterns.map((pat) => (
                   <span
                     key={pat}
-                    className="rounded bg-zinc-200 px-2 py-0.5 font-medium text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200"
+                    className="rounded bg-neutral-200 px-2 py-0.5 font-medium text-neutral-800"
                   >
                     {pat}
                   </span>
                 ))
               ) : (
-                <span className="text-zinc-500">None detected</span>
+                <span className="text-neutral-600">None detected</span>
               )}
             </div>
           </div>
 
-          <div className="border-b border-zinc-200 dark:border-zinc-800">
+          <div className="border-b border-dotted border-neutral-200">
             <nav className="flex gap-6">
               <button
                 type="button"
                 onClick={() => setActiveTab("components")}
                 className={`border-b-2 pb-3 text-sm font-medium ${
                   activeTab === "components"
-                    ? "border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
-                    : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:text-zinc-400"
+                    ? "border-neutral-500 text-neutral-800"
+                    : "border-transparent text-neutral-600 hover:border-neutral-300 hover:text-neutral-700"
                 }`}
               >
                 Components ({components.length})
@@ -422,8 +405,8 @@ function FrontendDashboard() {
                 onClick={() => setActiveTab("routes")}
                 className={`border-b-2 pb-3 text-sm font-medium ${
                   activeTab === "routes"
-                    ? "border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
-                    : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:text-zinc-400"
+                    ? "border-neutral-500 text-neutral-800"
+                    : "border-transparent text-neutral-600 hover:border-neutral-300 hover:text-neutral-700"
                 }`}
               >
                 Routes ({routes.length})
@@ -433,8 +416,8 @@ function FrontendDashboard() {
                 onClick={() => setActiveTab("hooks")}
                 className={`border-b-2 pb-3 text-sm font-medium ${
                   activeTab === "hooks"
-                    ? "border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
-                    : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:text-zinc-400"
+                    ? "border-neutral-500 text-neutral-800"
+                    : "border-transparent text-neutral-600 hover:border-neutral-300 hover:text-neutral-700"
                 }`}
               >
                 Hooks &amp; State ({hooks.length + state.length})
@@ -444,8 +427,8 @@ function FrontendDashboard() {
                 onClick={() => setActiveTab("contexts")}
                 className={`border-b-2 pb-3 text-sm font-medium ${
                   activeTab === "contexts"
-                    ? "border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
-                    : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:text-zinc-400"
+                    ? "border-neutral-500 text-neutral-800"
+                    : "border-transparent text-neutral-600 hover:border-neutral-300 hover:text-neutral-700"
                 }`}
               >
                 Contexts ({contexts.length})
@@ -455,8 +438,8 @@ function FrontendDashboard() {
                 onClick={() => setActiveTab("api")}
                 className={`border-b-2 pb-3 text-sm font-medium ${
                   activeTab === "api"
-                    ? "border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
-                    : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:text-zinc-400"
+                    ? "border-neutral-500 text-neutral-800"
+                    : "border-transparent text-neutral-600 hover:border-neutral-300 hover:text-neutral-700"
                 }`}
               >
                 API Clients ({apiCalls.length})
@@ -515,11 +498,11 @@ function FrontendDashboard() {
       )}
 
       {!overview && (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-800">
-          <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dotted border-neutral-300 p-12 text-center">
+          <p className="text-sm font-medium text-neutral-700">
             No active frontend intelligence selected
           </p>
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-neutral-600">
             Enter an analysis Job ID above to inspect React component
             hierarchies, routes, hooks, state stores, and network client calls.
           </p>

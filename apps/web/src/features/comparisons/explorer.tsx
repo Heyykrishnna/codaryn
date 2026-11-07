@@ -15,7 +15,7 @@ import {
 import { ComparisonResults } from "./results";
 import { CandyButton } from "@/src/components/ui/candy-button";
 import { DropdownSelect } from "@/src/components/ui/custom-dropdown";
-import { LoaderOrb } from "@/src/components/ui/loader-orb";
+import { LoadingIndicator } from "@/src/components/ui/loading-indicator";
 
 export function ComparisonExplorer({
   workspaceId,
@@ -102,7 +102,7 @@ export function ComparisonExplorer({
     jobs.data?.jobs.map((job) => ({
       value: job.id,
       label: `${job.full_name} · ${job.ref}`,
-      badge: job.commit_sha.slice(0, 8),
+
       description: job.id,
     })) ?? [];
 
@@ -112,49 +112,56 @@ export function ComparisonExplorer({
   const snapshotOptions = completedSnapshots.map((s) => ({
     value: s.id,
     label: `${s.commitSha.slice(0, 8)} · ${s.status}`,
-    badge: s.id.slice(0, 8),
+
     description: s.commitSha,
   }));
 
   return (
     <div className="flex min-w-0 flex-col gap-8">
-      <div className="flex flex-col gap-2 rounded-xl border border-[#232734] bg-[#14161f] p-4 text-xs text-zinc-300">
+      <div className="flex flex-col gap-2 rounded-xl border border-dotted border-neutral-300 bg-white p-4 text-xs text-neutral-900">
         <div className="flex items-center justify-between">
-          <span className="font-semibold text-white">
+          <span className="font-semibold text-neutral-950">
             Architecture Comparisons & Impact Diff
           </span>
           {busy && (
-            <LoaderOrb
+            <LoadingIndicator
               variant="inline"
               label="Comparing architecture graphs…"
             />
           )}
         </div>
-        <p className="text-zinc-400">
+        <p className="text-neutral-600">
           Compare immutable codebase versions side by side. Detect broken
           contracts, new dependency cycles, and structural drift before merge.
         </p>
         {message && (
           <div
             role="alert"
-            className="mt-1 rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 font-mono text-xs text-blue-300"
+            className="mt-1 rounded-lg border border-dotted border-neutral-300 bg-white px-3 py-1.5 font-mono text-xs text-neutral-900"
           >
             {message}
           </div>
         )}
       </div>
 
+      {(jobs.loading || versions.loading || policies.loading) && (
+        <LoadingIndicator label="Loading comparison inputs…" />
+      )}
+      {overview.loading && (
+        <LoadingIndicator variant="inline" label="Loading version overview…" />
+      )}
+
       {error && (
         <div
           role="alert"
-          className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300"
+          className="rounded-xl border border-neutral-500/20 bg-neutral-100/10 p-3 text-xs text-neutral-800"
         >
           {error}
         </div>
       )}
 
       <form
-        className="flex flex-col gap-4 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl"
+        className="flex flex-col gap-4 rounded-2xl border border-dotted border-neutral-300 bg-white p-6 shadow-sm"
         action={() =>
           mutate("request", {
             jobId,
@@ -164,7 +171,7 @@ export function ComparisonExplorer({
         }
       >
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+          <label className="text-xs font-semibold tracking-wider text-neutral-600 uppercase">
             Repository analysis job
           </label>
           <DropdownSelect
@@ -176,9 +183,9 @@ export function ComparisonExplorer({
           />
         </div>
 
-        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#232734] bg-[#161821] p-3 text-xs text-zinc-300">
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-dotted border-neutral-300 bg-white/60 p-3 text-xs text-neutral-900">
           <input
-            className="mt-0.5 rounded accent-blue-600"
+            className="mt-0.5 rounded accent-neutral-400"
             type="checkbox"
             checked={verify}
             onChange={(e) => setVerify(e.target.checked)}
@@ -201,14 +208,14 @@ export function ComparisonExplorer({
         </div>
       </form>
 
-      <section className="flex flex-col gap-4 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl">
-        <h2 className="text-sm font-bold tracking-wider text-zinc-300 uppercase">
+      <section className="flex flex-col gap-4 rounded-2xl border border-dotted border-neutral-300 bg-white p-6 shadow-sm">
+        <h2 className="text-sm font-bold tracking-wider text-neutral-900 uppercase">
           Diff Baseline & Target
         </h2>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+            <label className="text-xs font-semibold tracking-wider text-neutral-600 uppercase">
               Before snapshot (Baseline)
             </label>
             <DropdownSelect
@@ -224,7 +231,7 @@ export function ComparisonExplorer({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+            <label className="text-xs font-semibold tracking-wider text-neutral-600 uppercase">
               After snapshot (Target)
             </label>
             <DropdownSelect
@@ -240,7 +247,7 @@ export function ComparisonExplorer({
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-t border-[#222532] pt-2">
+        <div className="flex items-center justify-between border-t border-dotted border-neutral-300 pt-2">
           <CandyButton
             type="button"
             variant="pearl"
@@ -261,7 +268,9 @@ export function ComparisonExplorer({
             >
               ← Previous
             </CandyButton>
-            <span className="font-mono text-xs text-zinc-400">Page {page}</span>
+            <span className="font-mono text-xs text-neutral-600">
+              Page {page}
+            </span>
             <CandyButton
               type="button"
               variant="secondary"
@@ -276,39 +285,45 @@ export function ComparisonExplorer({
       </section>
 
       {overview.data && (
-        <section className="flex flex-col gap-4 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl">
-          <div className="flex items-center justify-between border-b border-[#222532] pb-4">
-            <h2 className="text-base font-bold text-white">
+        <section className="flex flex-col gap-4 rounded-2xl border border-dotted border-neutral-300 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between border-b border-dotted border-neutral-300 pb-4">
+            <h2 className="text-base font-bold text-neutral-950">
               Snapshot metadata ·{" "}
-              <span className="font-mono text-xs text-blue-400">{status}</span>
+              <span className="font-mono text-xs text-neutral-900">
+                {status}
+              </span>
             </h2>
-            <span className="font-mono text-xs text-zinc-400">
+            <span className="font-mono text-xs text-neutral-600">
               SHA: {overview.data.snapshot.commitSha.slice(0, 12)}
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-3 font-mono text-xs sm:grid-cols-4">
-            <div className="rounded-xl border border-[#252936] bg-[#161821] p-3">
-              <span className="mb-1 block text-zinc-500">Indexed Symbols</span>
-              <span className="font-semibold text-white">
+            <div className="rounded-xl border border-dotted border-neutral-300 bg-white/60 p-3">
+              <span className="mb-1 block text-neutral-600">
+                Indexed Symbols
+              </span>
+              <span className="font-semibold text-neutral-950">
                 {overview.data.symbols}
               </span>
             </div>
-            <div className="rounded-xl border border-[#252936] bg-[#161821] p-3">
-              <span className="mb-1 block text-zinc-500">Relationships</span>
-              <span className="font-semibold text-white">
+            <div className="rounded-xl border border-dotted border-neutral-300 bg-white/60 p-3">
+              <span className="mb-1 block text-neutral-600">Relationships</span>
+              <span className="font-semibold text-neutral-950">
                 {overview.data.relationships}
               </span>
             </div>
-            <div className="rounded-xl border border-[#252936] bg-[#161821] p-3">
-              <span className="mb-1 block text-zinc-500">Schema Objects</span>
-              <span className="font-semibold text-white">
+            <div className="rounded-xl border border-dotted border-neutral-300 bg-white/60 p-3">
+              <span className="mb-1 block text-neutral-600">
+                Schema Objects
+              </span>
+              <span className="font-semibold text-neutral-950">
                 {overview.data.schemaObjects}
               </span>
             </div>
-            <div className="rounded-xl border border-[#252936] bg-[#161821] p-3">
-              <span className="mb-1 block text-zinc-500">Diagnostics</span>
-              <span className="font-semibold text-white">
+            <div className="rounded-xl border border-dotted border-neutral-300 bg-white/60 p-3">
+              <span className="mb-1 block text-neutral-600">Diagnostics</span>
+              <span className="font-semibold text-neutral-950">
                 {overview.data.diagnostics}
               </span>
             </div>
@@ -326,13 +341,13 @@ export function ComparisonExplorer({
         />
       )}
 
-      <section className="flex flex-col gap-4 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl">
-        <h2 className="text-sm font-bold tracking-wider text-zinc-300 uppercase">
+      <section className="flex flex-col gap-4 rounded-2xl border border-dotted border-neutral-300 bg-white p-6 shadow-sm">
+        <h2 className="text-sm font-bold tracking-wider text-neutral-900 uppercase">
           Enforce Branch Push Policy
         </h2>
         <div className="flex flex-wrap items-center gap-3">
           <input
-            className="h-9 rounded-lg border border-[#2b2f3d] bg-[#14161f] px-3 font-mono text-xs text-white placeholder-zinc-500 outline-none focus:border-blue-500"
+            className="h-9 rounded-lg border border-dotted border-neutral-300 bg-white px-3 font-mono text-xs text-neutral-950 placeholder-neutral-600 outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400"
             value={ref}
             onChange={(e) => setRef(e.target.value)}
             placeholder="e.g. refs/heads/main"

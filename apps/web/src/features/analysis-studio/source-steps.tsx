@@ -81,13 +81,12 @@ export function RepositoryStep({
     value: item.id,
     label: item.fullName,
     description: `Default branch: ${item.defaultBranch}`,
-    badge: item.private ? "private" : "public",
   }));
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+        <label className="text-xs font-semibold tracking-wider text-neutral-600 uppercase">
           Connected repository
         </label>
         <DropdownSelect
@@ -110,9 +109,12 @@ export function RepositoryStep({
       </div>
 
       {repositories.length === 0 && (
-        <div className="rounded-xl border border-[#2b2f3d] bg-[#14161f] p-4 text-xs text-zinc-400">
+        <div className="rounded-xl border border-dotted border-neutral-300 bg-white p-4 text-xs text-neutral-600">
           No repositories found on page {repoPage}.{" "}
-          <Link className="text-blue-400 hover:underline" href="/repositories">
+          <Link
+            className="text-neutral-900 underline hover:text-neutral-950"
+            href="/repositories"
+          >
             Connect and sync your GitHub installation
           </Link>
           .
@@ -129,7 +131,9 @@ export function RepositoryStep({
         >
           Previous page
         </CandyButton>
-        <span className="font-mono text-xs text-zinc-400">Page {repoPage}</span>
+        <span className="font-mono text-xs text-neutral-600">
+          Page {repoPage}
+        </span>
         <CandyButton
           type="button"
           variant="secondary"
@@ -177,25 +181,23 @@ export function RevisionStep({
   const branchOptions = branches.map((item) => ({
     value: item.name,
     label: item.name,
-    badge: item.sha.slice(0, 7),
   }));
 
   const commitOptions = commits.map((item) => ({
     value: item.sha,
     label: `${item.sha.slice(0, 8)} · ${item.message.split("\n")[0]}`,
-    badge: item.sha.slice(0, 7),
   }));
 
   return (
     <div className="flex flex-col gap-5">
       {!repositoryId && (
-        <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-300">
+        <div className="rounded-xl border border-neutral-500/20 bg-neutral-100/10 p-3 text-xs text-neutral-800">
           Select a repository in step 1 before selecting branches.
         </div>
       )}
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+        <label className="text-xs font-semibold tracking-wider text-neutral-600 uppercase">
           Git branch
         </label>
         <DropdownSelect
@@ -221,7 +223,7 @@ export function RevisionStep({
           >
             ← Previous branches
           </CandyButton>
-          <span className="font-mono text-[11px] text-zinc-500">
+          <span className="font-mono text-[11px] text-neutral-600">
             Branch page {branchPage}
           </span>
           <CandyButton
@@ -237,7 +239,7 @@ export function RevisionStep({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+        <label className="text-xs font-semibold tracking-wider text-neutral-600 uppercase">
           Commit SHA
         </label>
         <DropdownSelect
@@ -258,7 +260,7 @@ export function RevisionStep({
           >
             ← Previous commits
           </CandyButton>
-          <span className="font-mono text-[11px] text-zinc-500">
+          <span className="font-mono text-[11px] text-neutral-600">
             Commit page {commitPage}
           </span>
           <CandyButton
@@ -274,11 +276,11 @@ export function RevisionStep({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+        <label className="text-xs font-semibold tracking-wider text-neutral-600 uppercase">
           Or manual commit SHA (40 hex characters)
         </label>
         <input
-          className="h-9 w-full rounded-lg border border-[#2b2f3d] bg-[#14161f] px-3 font-mono text-xs text-white placeholder-zinc-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          className="h-9 w-full rounded-lg border border-dotted border-neutral-300 bg-white px-3 font-mono text-xs text-neutral-950 placeholder-neutral-600 outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400"
           placeholder="e.g. 7ab99ec..."
           value={commit}
           maxLength={40}
@@ -314,13 +316,12 @@ export function ProfileStep({
   const profileOptions = profiles.map((item) => ({
     value: item.id,
     label: item.name,
-    badge: `rev ${item.revision}`,
   }));
 
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
-        <label className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+        <label className="text-xs font-semibold tracking-wider text-neutral-600 uppercase">
           Preset templates
         </label>
         <div className="grid gap-2.5 sm:grid-cols-2">
@@ -328,19 +329,19 @@ export function ProfileStep({
             <button
               type="button"
               key={preset.name}
-              className="flex cursor-pointer items-center justify-between rounded-xl border border-[#272b39] bg-[#161822] p-3 text-left transition-all duration-150 hover:border-[#383e52] hover:bg-[#1b1e2b]"
+              className="motion-safe:ease-control flex cursor-pointer items-center justify-between rounded-xl border border-dotted border-neutral-300 bg-white p-3 text-left hover:border-neutral-400 hover:bg-white motion-safe:transition-[background-color,border-color,color,translate,scale,box-shadow] motion-safe:duration-150"
               onClick={() => choosePreset(preset.configuration)}
             >
               <div className="flex flex-col">
-                <span className="text-xs font-semibold text-white">
+                <span className="text-xs font-semibold text-neutral-950">
                   {preset.name}
                 </span>
-                <span className="text-[11px] text-zinc-400">
+                <span className="text-[11px] text-neutral-600">
                   {preset.configuration.analyzers.length} analyzers · depth{" "}
                   {preset.configuration.depth}
                 </span>
               </div>
-              <span className="rounded bg-[#202330] px-2 py-0.5 font-mono text-[10px] text-blue-400">
+              <span className="font-mono text-[10px] text-neutral-900">
                 Load
               </span>
             </button>
@@ -349,7 +350,7 @@ export function ProfileStep({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+        <label className="text-xs font-semibold tracking-wider text-neutral-600 uppercase">
           Saved workspace profiles
         </label>
         <DropdownSelect
@@ -375,7 +376,7 @@ export function ProfileStep({
           >
             ← Previous profiles
           </CandyButton>
-          <span className="font-mono text-[11px] text-zinc-500">
+          <span className="font-mono text-[11px] text-neutral-600">
             Profile page {profilePage}
           </span>
           <CandyButton
@@ -390,7 +391,7 @@ export function ProfileStep({
         </div>
       </div>
 
-      <p className="text-xs leading-relaxed text-zinc-400">
+      <p className="text-xs leading-relaxed text-neutral-600">
         Select any preset, customize modules across analyzer steps, and save as
         a versioned profile below.
       </p>

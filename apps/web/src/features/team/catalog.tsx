@@ -124,7 +124,7 @@ export function TeamCatalog({
           <input className={control} value={link} readOnly />
           <a
             href={link}
-            className="text-indigo-600 underline dark:text-indigo-400"
+            className="text-neutral-800 underline"
             rel="noreferrer"
           >
             Open authorized link
@@ -153,7 +153,7 @@ export function TeamCatalog({
         {catalog.data?.items.map((item) => (
           <li
             key={item.id}
-            className="min-w-0 rounded-lg border border-zinc-300 p-4 break-words dark:border-zinc-700"
+            className="min-w-0 rounded-lg border border-dotted border-neutral-300 p-4 break-words"
           >
             <p>
               {item.name ??
@@ -210,16 +210,10 @@ export function TeamCatalog({
         >
           Next resources
         </button>
-        <a
-          href="/analysis"
-          className="text-indigo-600 underline dark:text-indigo-400"
-        >
+        <a href="/analysis" className="text-neutral-800 underline">
           Open analysis and saved diagrams
         </a>
-        <a
-          href="/studio"
-          className="text-indigo-600 underline dark:text-indigo-400"
-        >
+        <a href="/studio" className="text-neutral-800 underline">
           Manage organization presets in Studio
         </a>
       </div>

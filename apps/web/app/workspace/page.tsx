@@ -12,9 +12,9 @@ import {
 } from "@codaryn/contracts";
 
 const inputClass =
-  "w-full rounded-md border border-zinc-300 bg-background px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-indigo-500 dark:border-zinc-700";
+  "w-full rounded-md border border-dotted border-neutral-300 bg-background px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-neutral-500 ";
 const buttonClass =
-  "rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:opacity-50";
+  "rounded-md bg-neutral-800 px-4 py-2 text-sm font-medium text-neutral-950 hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-500 disabled:opacity-50";
 
 async function request(
   path: string,
@@ -122,7 +122,7 @@ export default function WorkspacePage() {
           codaryn
         </Link>
         <h1 className="text-3xl font-semibold">Sign in to your workspace</h1>
-        <p className="text-zinc-600 dark:text-zinc-400">
+        <p className="text-neutral-600">
           Use your GitHub account to manage your workspaces.
         </p>
         <button
@@ -168,10 +168,7 @@ export default function WorkspacePage() {
           Sign out
         </button>
       </header>
-      <Link
-        href="/repositories"
-        className="text-indigo-600 dark:text-indigo-400"
-      >
+      <Link href="/repositories" className="text-neutral-800">
         Connected repositories
       </Link>
       <h1 className="text-3xl font-semibold">Your workspaces</h1>
@@ -186,7 +183,7 @@ export default function WorkspacePage() {
       >
         Refresh
       </button>
-      <section className="rounded-xl border border-zinc-200 p-6 dark:border-zinc-800">
+      <section className="rounded-xl border border-dotted border-neutral-200 p-6">
         <h2 className="text-lg font-semibold">Account</h2>
         <p className="my-2 text-sm break-all">Account ID: {session.user.id}</p>
         <form
@@ -265,7 +262,7 @@ export default function WorkspacePage() {
         </label>
       )}
       {details && (
-        <section className="flex flex-col gap-6 rounded-xl border border-zinc-200 p-6 dark:border-zinc-800">
+        <section className="flex flex-col gap-6 rounded-xl border border-dotted border-neutral-200 p-6">
           <h2 className="text-xl font-semibold">{details.name}</h2>
           {details.role !== "member" && (
             <form

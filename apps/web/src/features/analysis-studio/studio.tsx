@@ -20,7 +20,7 @@ import { api, type Repository } from "@/src/features/repositories/api";
 import { studioRequest } from "./api";
 import { ModuleSelection } from "./selections";
 import { CandyButton } from "@/src/components/ui/candy-button";
-import { LoaderOrb } from "@/src/components/ui/loader-orb";
+import { LoadingIndicator } from "@/src/components/ui/loading-indicator";
 import { cn } from "@/lib/utils";
 
 const steps = [
@@ -65,6 +65,19 @@ export function Studio({
   const [message, setMessage] = useState("");
   const [manifest, setManifest] = useState<StudioManifestResponse | null>(null);
   const [history, setHistory] = useState<StudioManifestResponse[]>([]);
+  const [settledSource, setSettledSource] = useState("");
+  const [settledBranches, setSettledBranches] = useState("");
+  const [settledCommits, setSettledCommits] = useState("");
+  const sourceKey = JSON.stringify([repoPage, profilePage]);
+  const branchKey = JSON.stringify([repositoryId, branchPage]);
+  const commitKey = JSON.stringify([repositoryId, branch, commitPage]);
+  const sourceLoading = settledSource !== sourceKey;
+  const branchesLoading = !!repositoryId && settledBranches !== branchKey;
+  const commitsLoading =
+    !!repositoryId && !!branch && settledCommits !== commitKey;
+  const stepLoading =
+    ((step === 0 || step === 2) && sourceLoading) ||
+    (step === 1 && (branchesLoading || commitsLoading));
   const manage = workspace.role !== "member";
 
   let preview: StudioConfiguration | null = null;
@@ -108,11 +121,14 @@ export function Studio({
           setMessage(
             "Unable to load studio data. Verify the GitHub connection and reload to retry.",
           );
+      })
+      .finally(() => {
+        if (current) setSettledSource(sourceKey);
       });
     return () => {
       current = false;
     };
-  }, [workspace.id, repoPage, profilePage]);
+  }, [workspace.id, repoPage, profilePage, sourceKey]);
 
   useEffect(() => {
     if (!repositoryId) return;
@@ -129,11 +145,14 @@ export function Studio({
       .catch(() => {
         if (current)
           setMessage("Unable to load branches. Check access and retry.");
+      })
+      .finally(() => {
+        if (current) setSettledBranches(branchKey);
       });
     return () => {
       current = false;
     };
-  }, [repositoryId, workspace.id, branchPage]);
+  }, [repositoryId, workspace.id, branchPage, branchKey]);
 
   useEffect(() => {
     if (!repositoryId || !branch) return;
@@ -153,11 +172,14 @@ export function Studio({
           setMessage(
             "Unable to load commits. The repository may be empty or inaccessible.",
           );
+      })
+      .finally(() => {
+        if (current) setSettledCommits(commitKey);
       });
     return () => {
       current = false;
     };
-  }, [repositoryId, branch, workspace.id, commitPage]);
+  }, [repositoryId, branch, workspace.id, commitPage, commitKey]);
 
   async function run(operation: () => Promise<void>) {
     setBusy(true);
@@ -208,23 +230,26 @@ export function Studio({
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-2 rounded-xl border border-[#232734] bg-[#14161f] p-4 text-xs text-zinc-300">
+      <div className="flex flex-col gap-2 rounded-xl border border-dotted border-neutral-300 bg-white p-4 text-xs text-neutral-900">
         <div className="flex items-center justify-between">
-          <span className="font-semibold text-white">
+          <span className="font-semibold text-neutral-950">
             Workspace: {workspace.name} ({workspace.role})
           </span>
           {busy && (
-            <LoaderOrb variant="inline" label="Executing studio pipeline…" />
+            <LoadingIndicator
+              variant="inline"
+              label="Executing studio pipeline…"
+            />
           )}
         </div>
-        <p className="text-zinc-400">
+        <p className="text-neutral-600">
           Configure an immutable static analysis manifest. Analyzers extract
           evidence, AST topology, and API contracts.
         </p>
         {message && (
           <div
             role="alert"
-            className="mt-1 rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 font-mono text-xs text-blue-300"
+            className="mt-1 rounded-lg border border-dotted border-neutral-300 bg-white px-3 py-1.5 font-mono text-xs text-neutral-900"
           >
             {message}
           </div>
@@ -244,21 +269,21 @@ export function Studio({
               className={cn(
                 "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition-all outline-none select-none",
                 isCurrent
-                  ? "bg-white text-zinc-950 shadow-[0_2px_0_0_#d4d4d8]"
+                  ? "bg-neutral-100 text-neutral-950 shadow-[0_2px_0_0_#a1a1aa]"
                   : isDone
-                    ? "border border-[#262a37] bg-[#181a23] text-zinc-300 hover:bg-[#202330]"
-                    : "border border-[#1d202a] bg-[#12141a] text-zinc-500 hover:bg-[#181a23] hover:text-zinc-300",
+                    ? "border border-dotted border-neutral-300 bg-white text-neutral-900 hover:bg-white"
+                    : "border border-dotted border-neutral-300 bg-white text-neutral-600 hover:bg-white hover:text-neutral-900",
               )}
               onClick={() => setStep(index)}
             >
               <span
                 className={cn(
-                  "flex h-4 w-4 items-center justify-center rounded-full font-mono text-[10px]",
+                  "flex h-4 w-4 items-center justify-center font-mono text-xs",
                   isCurrent
-                    ? "bg-zinc-900 text-white"
+                    ? "text-neutral-950"
                     : isDone
-                      ? "bg-emerald-500/20 text-emerald-400"
-                      : "bg-[#202330] text-zinc-500",
+                      ? "bg-neutral-100 text-neutral-900"
+                      : "bg-white text-neutral-600",
                 )}
               >
                 {isDone ? "✓" : index + 1}
@@ -271,24 +296,38 @@ export function Studio({
 
       <section
         aria-label={steps[step]}
-        className="flex flex-col gap-6 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl"
+        className="flex flex-col gap-6 rounded-2xl border border-dotted border-neutral-300 bg-white p-6 shadow-sm"
       >
-        <div className="flex items-center justify-between border-b border-[#222532] pb-4">
+        <div className="flex items-center justify-between border-b border-dotted border-neutral-300 pb-4">
           <div className="flex items-center gap-3">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/10 font-mono text-xs font-bold text-blue-400">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-dotted border-neutral-300 bg-neutral-100 font-mono text-xs font-bold text-neutral-900">
               {step + 1}
             </span>
-            <h2 tabIndex={-1} className="text-lg font-bold text-white">
+            <h2 tabIndex={-1} className="text-lg font-bold text-neutral-950">
               {steps[step]}
             </h2>
           </div>
-          <span className="font-mono text-xs text-zinc-500">
+          <span className="font-mono text-xs text-neutral-600">
             Step {step + 1} of {steps.length}
           </span>
         </div>
 
-        <fieldset disabled={busy} className="flex min-w-0 flex-col gap-5">
-          {step === 0 && (
+        {stepLoading && (
+          <LoadingIndicator
+            label={
+              step === 1
+                ? "Loading branches and commits…"
+                : step === 2
+                  ? "Loading analysis profiles…"
+                  : "Loading repositories…"
+            }
+          />
+        )}
+        <fieldset
+          disabled={busy || stepLoading}
+          className="flex min-w-0 flex-col gap-5"
+        >
+          {!stepLoading && step === 0 && (
             <RepositoryStep
               {...{
                 repositories,
@@ -306,7 +345,7 @@ export function Studio({
               }}
             />
           )}
-          {step === 1 && (
+          {!stepLoading && step === 1 && (
             <RevisionStep
               {...{
                 repositoryId,
@@ -324,7 +363,7 @@ export function Studio({
               }}
             />
           )}
-          {step === 2 && (
+          {!stepLoading && step === 2 && (
             <ProfileStep
               {...{
                 profiles,
@@ -344,29 +383,29 @@ export function Studio({
             change={setConfiguration}
           />
           {step === 11 && (
-            <div className="flex flex-col gap-4 rounded-xl border border-[#2b2f3e] bg-[#161822] p-5">
-              <h3 className="text-sm font-semibold text-white">
+            <div className="flex flex-col gap-4 rounded-xl border border-dotted border-neutral-300 bg-white p-5">
+              <h3 className="text-sm font-semibold text-neutral-950">
                 Ready to generate manifest
               </h3>
               <div className="grid grid-cols-1 gap-3 font-mono text-xs sm:grid-cols-2">
-                <div className="rounded-lg border border-[#222632] bg-[#11131a] p-3">
-                  <span className="mb-1 block text-zinc-500">
+                <div className="rounded-lg border border-dotted border-neutral-300 bg-white p-3">
+                  <span className="mb-1 block text-neutral-600">
                     Target Repository
                   </span>
-                  <span className="break-all text-white">
+                  <span className="break-all text-neutral-950">
                     {repositoryId || "Not selected"}
                   </span>
                 </div>
-                <div className="rounded-lg border border-[#222632] bg-[#11131a] p-3">
-                  <span className="mb-1 block text-zinc-500">
+                <div className="rounded-lg border border-dotted border-neutral-300 bg-white p-3">
+                  <span className="mb-1 block text-neutral-600">
                     Target Commit
                   </span>
-                  <span className="break-all text-white">
+                  <span className="break-all text-neutral-950">
                     {commit || "Not selected"}
                   </span>
                 </div>
               </div>
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-neutral-600">
                 Review the normalized configuration below. The API verifies the
                 commit and permissions independently before triggering
                 ingestion.
@@ -400,7 +439,7 @@ export function Studio({
           )}
         </fieldset>
 
-        <div className="flex items-center justify-between border-t border-[#222532] pt-4">
+        <div className="flex items-center justify-between border-t border-dotted border-neutral-300 pt-4">
           <CandyButton
             type="button"
             variant="secondary"
@@ -412,9 +451,9 @@ export function Studio({
           </CandyButton>
           <CandyButton
             type="button"
-            variant={step === 11 ? "pearl" : "azure"}
+            variant="pearl"
             size="sm"
-            disabled={busy || step === 11}
+            disabled={busy || stepLoading || step === 11}
             onClick={() => setStep(step + 1)}
           >
             Next step →
@@ -424,13 +463,13 @@ export function Studio({
 
       <section
         aria-label="Configuration preview"
-        className="flex min-w-0 flex-col gap-4 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl"
+        className="flex min-w-0 flex-col gap-4 rounded-2xl border border-dotted border-neutral-300 bg-white p-6 shadow-sm"
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-white">
+          <h2 className="text-base font-bold text-neutral-950">
             Configuration preview
           </h2>
-          <span className="rounded bg-[#1c1f2b] px-2 py-0.5 font-mono text-[11px] text-zinc-400">
+          <span className="font-mono text-[11px] text-neutral-600">
             {configuration.analyzers.length} analyzers active
           </span>
         </div>
@@ -438,7 +477,7 @@ export function Studio({
         {validation && (
           <div
             role="alert"
-            className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300"
+            className="rounded-xl border border-neutral-500/20 bg-neutral-100/10 p-3 text-xs text-neutral-800"
           >
             {validation}
           </div>
@@ -446,16 +485,16 @@ export function Studio({
 
         {preview && (
           <div className="flex flex-col gap-2">
-            <p className="text-xs text-zinc-400">
+            <p className="text-xs text-neutral-600">
               Required dependency modules included automatically:{" "}
-              <span className="font-mono text-blue-400">
+              <span className="font-mono text-neutral-900">
                 {preview.analyzers
                   .filter((id) => !configuration.analyzers.includes(id))
                   .join(", ") || "none"}
               </span>
               .
             </p>
-            <pre className="max-h-80 overflow-auto rounded-xl border border-[#242735] bg-[#0c0d12] p-4 font-mono text-xs leading-relaxed text-zinc-300">
+            <pre className="max-h-80 overflow-auto rounded-xl border border-dotted border-neutral-300 bg-white p-4 font-mono text-xs leading-relaxed text-neutral-900">
               {JSON.stringify(preview, null, 2)}
             </pre>
           </div>
@@ -499,13 +538,13 @@ export function Studio({
         </div>
 
         {manage ? (
-          <div className="flex flex-wrap items-end gap-3 border-t border-[#222532] pt-4">
+          <div className="flex flex-wrap items-end gap-3 border-t border-dotted border-neutral-300 pt-4">
             <div className="flex min-w-[16rem] flex-1 flex-col gap-1.5">
-              <label className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+              <label className="text-xs font-semibold tracking-wider text-neutral-600 uppercase">
                 Custom profile name
               </label>
               <input
-                className="h-9 rounded-lg border border-[#2b2f3d] bg-[#14161f] px-3 text-xs text-white placeholder-zinc-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="h-9 rounded-lg border border-dotted border-neutral-300 bg-white px-3 text-xs text-neutral-950 placeholder-neutral-600 outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400"
                 placeholder="e.g. Full Security & AST Profile"
                 maxLength={100}
                 value={name}
@@ -570,7 +609,7 @@ export function Studio({
             )}
           </div>
         ) : (
-          <p className="pt-2 text-xs text-zinc-500">
+          <p className="pt-2 text-xs text-neutral-600">
             Workspace owners and admins can save and manage versioned profiles.
           </p>
         )}
@@ -579,49 +618,62 @@ export function Studio({
       {manifest && (
         <section
           aria-label="Created manifest"
-          className="flex flex-col gap-3 rounded-2xl border border-emerald-500/20 bg-[#13151d] p-6 shadow-xl"
+          className="flex flex-col gap-3 rounded-2xl border border-dotted border-neutral-300 bg-white p-6 shadow-sm"
         >
           <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            <h2 className="text-base font-bold text-white">Manifest created</h2>
+            <span className="h-2 w-2 rounded-full bg-neutral-800" />
+            <h2 className="text-base font-bold text-neutral-950">
+              Manifest created
+            </h2>
           </div>
-          <p className="font-mono text-xs break-all text-zinc-400">
+          <p className="font-mono text-xs break-all text-neutral-600">
             SHA-256: {manifest.hash}
           </p>
-          <pre className="max-h-80 overflow-auto rounded-xl border border-[#242735] bg-[#0c0d12] p-4 font-mono text-xs text-zinc-300">
+          <pre className="max-h-80 overflow-auto rounded-xl border border-dotted border-neutral-300 bg-white p-4 font-mono text-xs text-neutral-900">
             {JSON.stringify(manifest, null, 2)}
           </pre>
         </section>
       )}
 
-      <section className="flex flex-col gap-4 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl">
+      <section className="flex flex-col gap-4 rounded-2xl border border-dotted border-neutral-300 bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-white">Recent manifests</h2>
-          <span className="font-mono text-xs text-zinc-500">
-            {history.length} manifests recorded
+          <h2 className="text-base font-bold text-neutral-950">
+            Recent manifests
+          </h2>
+          <span className="font-mono text-xs text-neutral-600">
+            {sourceLoading
+              ? "Loading history…"
+              : `${history.length} manifests recorded`}
           </span>
         </div>
 
-        {history.length === 0 ? (
-          <p className="text-xs text-zinc-500">No manifests generated yet.</p>
+        {sourceLoading ? (
+          <LoadingIndicator
+            variant="inline"
+            label="Loading manifest history…"
+          />
+        ) : history.length === 0 ? (
+          <p className="text-xs text-neutral-600">
+            No manifests generated yet.
+          </p>
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {history.map((item) => (
               <button
                 type="button"
                 key={item.id}
-                className="flex cursor-pointer flex-col gap-2 rounded-xl border border-[#262a37] bg-[#161821] p-3 text-left transition-all duration-150 hover:border-[#383e52] hover:bg-[#1b1e2a]"
+                className="motion-safe:ease-control flex cursor-pointer flex-col gap-2 rounded-xl border border-dotted border-neutral-300 bg-white p-3 text-left hover:border-neutral-400 hover:bg-white motion-safe:transition-[background-color,border-color,color,translate,scale,box-shadow] motion-safe:duration-150"
                 onClick={() => setManifest(item)}
               >
                 <div className="flex items-center justify-between font-mono text-xs">
-                  <span className="font-semibold text-white">
+                  <span className="font-semibold text-neutral-950">
                     {item.manifest.commitSha.slice(0, 8)}
                   </span>
-                  <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] text-emerald-400">
+                  <span className="font-mono text-[10px] text-neutral-800">
                     {item.status}
                   </span>
                 </div>
-                <span className="truncate font-mono text-[11px] text-zinc-500">
+                <span className="truncate font-mono text-[11px] text-neutral-600">
                   {item.hash}
                 </span>
               </button>

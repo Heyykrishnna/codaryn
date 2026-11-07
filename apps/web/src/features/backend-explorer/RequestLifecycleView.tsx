@@ -38,14 +38,14 @@ export function RequestLifecycleView({
   });
 
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
+    <div className="flex flex-col gap-4 rounded-xl border border-dotted border-neutral-200 bg-white p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-sm font-semibold text-neutral-900">
             End-to-End Request Lifecycle Traces ({filtered.length} of{" "}
             {flows.length})
           </h2>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-neutral-600">
             Cross-layer call flows connecting routes through middleware,
             controllers, services, down to repositories.
           </p>
@@ -58,14 +58,14 @@ export function RequestLifecycleView({
             placeholder="Search path, service, repo…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-900 placeholder-zinc-400 focus:border-indigo-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="rounded-lg border border-dotted border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 placeholder-neutral-600 focus:border-neutral-500 focus:outline-none"
           />
 
           <select
             aria-label="Filter by method"
             value={methodFilter}
             onChange={(e) => setMethodFilter(e.target.value)}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-900 focus:border-indigo-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="rounded-lg border border-dotted border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 focus:border-neutral-500 focus:outline-none"
           >
             <option value="all">All Methods</option>
             <option value="GET">GET</option>
@@ -79,16 +79,16 @@ export function RequestLifecycleView({
 
       <div className="flex flex-col gap-3">
         {filtered.length === 0 ? (
-          <div className="py-8 text-center text-xs text-zinc-400">
+          <div className="py-8 text-center text-xs text-neutral-600">
             No request flows found matching criteria.
           </div>
         ) : (
           filtered.map((flow) => (
             <div
               key={flow.id}
-              className="flex flex-col gap-3 rounded-lg border border-zinc-200 bg-zinc-50/50 p-4 transition-colors hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/30 dark:hover:border-zinc-700"
+              className="flex flex-col gap-3 rounded-lg border border-dotted border-neutral-200 bg-neutral-50/50 p-4 transition-colors hover:border-neutral-300"
             >
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200/60 pb-2.5 dark:border-zinc-800/60">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-dotted border-neutral-200/60 pb-2.5">
                 <div className="flex items-center gap-2">
                   <span
                     className={`inline-block rounded border px-2 py-0.5 text-xs font-bold ${httpMethodClassName(
@@ -97,7 +97,7 @@ export function RequestLifecycleView({
                   >
                     {flow.httpMethod}
                   </span>
-                  <span className="font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                  <span className="font-mono text-xs font-semibold text-neutral-900">
                     {flow.routePath}
                   </span>
                 </div>
@@ -105,7 +105,7 @@ export function RequestLifecycleView({
                   <button
                     type="button"
                     onClick={() => onSelectRoute(flow.routeId)}
-                    className="text-[11px] font-medium text-indigo-600 hover:text-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 dark:text-indigo-400"
+                    className="text-[11px] font-medium text-neutral-800 hover:text-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-500"
                   >
                     View Details &rarr;
                   </button>
@@ -113,59 +113,59 @@ export function RequestLifecycleView({
               </div>
 
               <div className="flex flex-wrap items-center gap-2 text-xs">
-                <div className="flex items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-2.5 py-1 dark:border-zinc-800 dark:bg-zinc-950">
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase">
+                <div className="flex items-center gap-1.5 rounded-md border border-dotted border-neutral-200 bg-white px-2.5 py-1">
+                  <span className="text-[10px] font-bold text-neutral-600 uppercase">
                     Route
                   </span>
-                  <span className="font-mono text-[11px] font-medium text-zinc-800 dark:text-zinc-200">
+                  <span className="font-mono text-[11px] font-medium text-neutral-800">
                     {flow.httpMethod} {flow.routePath}
                   </span>
                 </div>
 
-                <span className="text-zinc-400">&rarr;</span>
+                <span className="text-neutral-600">&rarr;</span>
 
-                <div className="flex items-center gap-1.5 rounded-md border border-purple-200/70 bg-purple-50/50 px-2.5 py-1 dark:border-purple-900/40 dark:bg-purple-950/20">
-                  <span className="text-[10px] font-bold text-purple-600 uppercase dark:text-purple-400">
+                <div className="flex items-center gap-1.5 rounded-md border border-neutral-500/70 bg-neutral-100/50 px-2.5 py-1">
+                  <span className="text-[10px] font-bold text-neutral-800 uppercase">
                     Middleware ({flow.middlewareChain.length})
                   </span>
-                  <span className="font-mono text-[11px] text-purple-800 dark:text-purple-200">
+                  <span className="font-mono text-[11px] text-neutral-800">
                     {flow.middlewareChain.length > 0
                       ? flow.middlewareChain.join(" &bull; ")
                       : "Direct"}
                   </span>
                 </div>
 
-                <span className="text-zinc-400">&rarr;</span>
+                <span className="text-neutral-600">&rarr;</span>
 
-                <div className="flex items-center gap-1.5 rounded-md border border-indigo-200/70 bg-indigo-50/50 px-2.5 py-1 dark:border-indigo-900/40 dark:bg-indigo-950/20">
-                  <span className="text-[10px] font-bold text-indigo-600 uppercase dark:text-indigo-400">
+                <div className="flex items-center gap-1.5 rounded-md border border-neutral-500/70 bg-neutral-100/50 px-2.5 py-1">
+                  <span className="text-[10px] font-bold text-neutral-800 uppercase">
                     Controller
                   </span>
-                  <span className="font-mono text-[11px] font-medium text-indigo-800 dark:text-indigo-200">
+                  <span className="font-mono text-[11px] font-medium text-neutral-800">
                     {flow.controllerName ?? "Inline Handler"}
                   </span>
                 </div>
 
-                <span className="text-zinc-400">&rarr;</span>
+                <span className="text-neutral-600">&rarr;</span>
 
-                <div className="flex items-center gap-1.5 rounded-md border border-blue-200/70 bg-blue-50/50 px-2.5 py-1 dark:border-blue-900/40 dark:bg-blue-950/20">
-                  <span className="text-[10px] font-bold text-blue-600 uppercase dark:text-blue-400">
+                <div className="flex items-center gap-1.5 rounded-md border border-neutral-500/70 bg-neutral-100/50 px-2.5 py-1">
+                  <span className="text-[10px] font-bold text-neutral-800 uppercase">
                     Services ({flow.serviceNames.length})
                   </span>
-                  <span className="font-mono text-[11px] text-blue-800 dark:text-blue-200">
+                  <span className="font-mono text-[11px] text-neutral-800">
                     {flow.serviceNames.length > 0
                       ? flow.serviceNames.join(", ")
                       : "None"}
                   </span>
                 </div>
 
-                <span className="text-zinc-400">&rarr;</span>
+                <span className="text-neutral-600">&rarr;</span>
 
-                <div className="flex items-center gap-1.5 rounded-md border border-emerald-200/70 bg-emerald-50/50 px-2.5 py-1 dark:border-emerald-900/40 dark:bg-emerald-950/20">
-                  <span className="text-[10px] font-bold text-emerald-600 uppercase dark:text-emerald-400">
+                <div className="flex items-center gap-1.5 rounded-md border border-neutral-500/70 bg-neutral-100/50 px-2.5 py-1">
+                  <span className="text-[10px] font-bold text-neutral-800 uppercase">
                     Repositories ({flow.repositoryNames.length})
                   </span>
-                  <span className="font-mono text-[11px] text-emerald-800 dark:text-emerald-200">
+                  <span className="font-mono text-[11px] text-neutral-800">
                     {flow.repositoryNames.length > 0
                       ? flow.repositoryNames.join(", ")
                       : "None"}

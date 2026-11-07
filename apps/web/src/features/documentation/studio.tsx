@@ -179,9 +179,9 @@ export function DocumentationStudio({
   };
 
   return (
-    <div className="flex h-full bg-slate-50 text-slate-900">
-      <aside className="flex w-80 flex-col border-r border-slate-200 bg-white">
-        <div className="border-b border-slate-200 p-4">
+    <div className="flex h-full bg-neutral-50 text-neutral-900">
+      <aside className="flex w-80 flex-col border-r border-dotted border-neutral-200 bg-white">
+        <div className="border-b border-dotted border-neutral-200 p-4">
           <form onSubmit={handleSearch} className="flex gap-2">
             <input
               type="text"
@@ -189,12 +189,12 @@ export function DocumentationStudio({
               placeholder="Search documents..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-900 focus:border-indigo-600 focus:outline-none"
+              className="flex-1 rounded-lg border border-dotted border-neutral-300 px-3 py-1.5 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none"
             />
             <button
               type="submit"
               disabled={searching}
-              className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+              className="rounded-lg bg-neutral-800 px-3 py-1.5 text-sm font-medium text-neutral-950 hover:bg-neutral-800 disabled:opacity-50"
             >
               Search
             </button>
@@ -206,7 +206,7 @@ export function DocumentationStudio({
                 setSearchResults(null);
                 setSearchQuery("");
               }}
-              className="mt-2 text-xs font-medium text-indigo-600 hover:underline"
+              className="mt-2 text-xs font-medium text-neutral-800 hover:underline"
             >
               Clear search results
             </button>
@@ -216,11 +216,11 @@ export function DocumentationStudio({
         <div className="flex-1 overflow-y-auto p-3">
           {searchResults !== null ? (
             <div className="space-y-2">
-              <h4 className="px-2 text-xs font-semibold text-slate-500 uppercase">
+              <h4 className="px-2 text-xs font-semibold text-neutral-600 uppercase">
                 Search Results ({searchResults.length})
               </h4>
               {searchResults.length === 0 ? (
-                <p className="p-2 text-xs text-slate-500">
+                <p className="p-2 text-xs text-neutral-600">
                   No matching documentation sections found.
                 </p>
               ) : (
@@ -234,12 +234,12 @@ export function DocumentationStudio({
                         setSearchResults(null);
                       });
                     }}
-                    className="w-full rounded-lg border border-transparent p-2.5 text-left text-xs transition-colors hover:border-slate-200 hover:bg-slate-100"
+                    className="w-full rounded-lg border border-transparent p-2.5 text-left text-xs transition-colors hover:border-neutral-200 hover:bg-neutral-100"
                   >
-                    <p className="font-semibold text-slate-900">
+                    <p className="font-semibold text-neutral-900">
                       {r.documentTitle} · {r.sectionTitle}
                     </p>
-                    <p className="mt-1 line-clamp-2 text-slate-600">
+                    <p className="mt-1 line-clamp-2 text-neutral-600">
                       {r.snippet}
                     </p>
                   </button>
@@ -248,7 +248,7 @@ export function DocumentationStudio({
             </div>
           ) : (
             <div className="space-y-1">
-              <h4 className="px-3 py-1.5 text-xs font-semibold text-slate-500 uppercase">
+              <h4 className="px-3 py-1.5 text-xs font-semibold text-neutral-600 uppercase">
                 Documentation Catalog
               </h4>
               {templateList.map((tmpl) => {
@@ -266,13 +266,13 @@ export function DocumentationStudio({
                     }}
                     className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                       isSelected
-                        ? "bg-indigo-50 font-semibold text-indigo-700"
-                        : "text-slate-700 hover:bg-slate-100"
+                        ? "bg-neutral-100 font-semibold text-neutral-800"
+                        : "text-neutral-700 hover:bg-neutral-100"
                     }`}
                   >
                     <span>{tmpl.label}</span>
                     {summary && (
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">
+                      <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-600">
                         {summary.evidenceCount} ev
                       </span>
                     )}
@@ -285,16 +285,16 @@ export function DocumentationStudio({
       </aside>
 
       <main className="flex flex-1 flex-col overflow-hidden bg-white">
-        <header className="flex flex-wrap items-center justify-between border-b border-slate-200 px-8 py-4">
+        <header className="flex flex-wrap items-center justify-between border-b border-dotted border-neutral-200 px-8 py-4">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">
+            <h2 className="text-xl font-bold text-neutral-900">
               {currentDoc?.title || "Documentation Studio"}
             </h2>
             {currentDoc && (
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-neutral-600">
                 Repository:{" "}
                 <strong>{currentDoc.metadata.repositoryName}</strong> | Commit:{" "}
-                <code className="rounded bg-slate-100 px-1 py-0.5">
+                <code className="rounded bg-neutral-100 px-1 py-0.5">
                   {currentDoc.commitSha.slice(0, 7)}
                 </code>{" "}
                 | Analyzer: v{currentDoc.metadata.analyzerVersion} | Words:{" "}
@@ -309,7 +309,7 @@ export function DocumentationStudio({
               type="button"
               disabled={!currentDoc}
               onClick={handleCopyMarkdown}
-              className="rounded-lg border border-slate-300 bg-white px-3.5 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+              className="rounded-lg border border-dotted border-neutral-300 bg-white px-3.5 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
             >
               {copied ? "Copied!" : "Copy Markdown"}
             </button>
@@ -317,7 +317,7 @@ export function DocumentationStudio({
               type="button"
               disabled={!currentDoc}
               onClick={() => setShowExportModal(true)}
-              className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+              className="rounded-lg bg-neutral-800 px-4 py-1.5 text-sm font-medium text-neutral-950 hover:bg-neutral-800 disabled:opacity-50"
             >
               Export Document
             </button>
@@ -325,7 +325,7 @@ export function DocumentationStudio({
         </header>
 
         {error && (
-          <div className="m-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="m-6 rounded-lg border border-neutral-500 bg-neutral-100 p-4 text-sm text-neutral-800">
             <p className="font-semibold">Error loading document</p>
             <p>{error}</p>
           </div>
@@ -333,8 +333,8 @@ export function DocumentationStudio({
 
         {loading && !error && (
           <div className="flex flex-1 items-center justify-center">
-            <div className="text-center text-slate-500">
-              <div className="mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
+            <div className="text-center text-neutral-600">
+              <div className="mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-4 border-neutral-500 border-t-transparent" />
               <p className="text-sm font-medium">
                 Generating documentation from snapshot...
               </p>
@@ -348,48 +348,48 @@ export function DocumentationStudio({
               {currentDoc.sections.map((section) => (
                 <section
                   key={section.id}
-                  className="border-b border-slate-100 pb-6"
+                  className="border-b border-dotted border-neutral-100 pb-6"
                 >
                   {section.level === 1 && (
-                    <h2 className="mb-3 text-xl font-bold text-slate-900">
+                    <h2 className="mb-3 text-xl font-bold text-neutral-900">
                       {section.title}
                     </h2>
                   )}
                   {section.level === 2 && (
-                    <h3 className="mb-2 text-lg font-semibold text-slate-800">
+                    <h3 className="mb-2 text-lg font-semibold text-neutral-800">
                       {section.title}
                     </h3>
                   )}
                   {section.level >= 3 && (
-                    <h4 className="mb-2 text-base font-semibold text-slate-800">
+                    <h4 className="mb-2 text-base font-semibold text-neutral-800">
                       {section.title}
                     </h4>
                   )}
 
                   {section.diagramPreview && (
-                    <div className="my-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
-                      <p className="mb-2 text-xs font-semibold text-slate-500 uppercase">
+                    <div className="my-4 rounded-lg border border-dotted border-neutral-200 bg-neutral-50 p-4">
+                      <p className="mb-2 text-xs font-semibold text-neutral-600 uppercase">
                         Diagram Specification (Mermaid)
                       </p>
-                      <pre className="overflow-x-auto rounded bg-slate-900 p-3 font-mono text-xs text-slate-100">
+                      <pre className="overflow-x-auto rounded bg-white p-3 font-mono text-xs text-neutral-900">
                         {section.diagramPreview}
                       </pre>
                     </div>
                   )}
 
-                  <div className="text-sm leading-relaxed whitespace-pre-wrap text-slate-700">
+                  <div className="text-sm leading-relaxed whitespace-pre-wrap text-neutral-700">
                     {section.content}
                   </div>
 
                   {section.evidence && section.evidence.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <span className="text-xs font-semibold text-slate-500">
+                      <span className="text-xs font-semibold text-neutral-600">
                         Evidence:
                       </span>
                       {section.evidence.map((ev, i) => (
                         <span
                           key={`${ev.path}_${ev.startLine}_${i}`}
-                          className="rounded border border-indigo-100 bg-indigo-50 px-2 py-0.5 font-mono text-xs text-indigo-700"
+                          className="rounded border border-neutral-500 bg-neutral-100 px-2 py-0.5 font-mono text-xs text-neutral-800"
                         >
                           {ev.path}:{ev.startLine}-{ev.endLine}
                         </span>
@@ -405,18 +405,18 @@ export function DocumentationStudio({
 
       {showExportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-96 rounded-xl bg-white p-6 shadow-2xl">
-            <h3 className="text-base font-semibold text-slate-900">
+          <div className="w-96 rounded-xl bg-white p-6 shadow-sm">
+            <h3 className="text-base font-semibold text-neutral-900">
               Export Document
             </h3>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-neutral-600">
               Select format for {currentDoc?.title}.
             </p>
             <div className="mt-4 space-y-2">
               {(["markdown", "pdf", "json"] as const).map((fmt) => (
                 <label
                   key={fmt}
-                  className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 p-3 hover:bg-slate-50"
+                  className="flex cursor-pointer items-center gap-3 rounded-lg border border-dotted border-neutral-200 p-3 hover:bg-neutral-50"
                 >
                   <input
                     type="radio"
@@ -424,13 +424,13 @@ export function DocumentationStudio({
                     value={fmt}
                     checked={exportFormat === fmt}
                     onChange={() => setExportFormat(fmt)}
-                    className="accent-indigo-600"
+                    className="accent-neutral-500"
                   />
                   <div>
-                    <p className="text-sm font-semibold text-slate-900 uppercase">
+                    <p className="text-sm font-semibold text-neutral-900 uppercase">
                       {fmt === "pdf" ? "HTML / PDF Printable" : fmt}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-neutral-600">
                       {fmt === "markdown"
                         ? "Formatted Markdown document"
                         : fmt === "pdf"
@@ -443,14 +443,14 @@ export function DocumentationStudio({
             </div>
 
             {exportError && (
-              <p className="mt-3 text-xs text-red-600">{exportError}</p>
+              <p className="mt-3 text-xs text-neutral-800">{exportError}</p>
             )}
 
             <div className="mt-6 flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setShowExportModal(false)}
-                className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100"
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-neutral-600 hover:bg-neutral-100"
               >
                 Cancel
               </button>
@@ -458,7 +458,7 @@ export function DocumentationStudio({
                 type="button"
                 disabled={exporting}
                 onClick={handleExport}
-                className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="rounded-lg bg-neutral-800 px-4 py-1.5 text-sm font-medium text-neutral-950 hover:bg-neutral-800 disabled:opacity-50"
               >
                 {exporting ? "Exporting..." : "Download"}
               </button>

@@ -28,9 +28,9 @@ export function ModuleMetricsPanel({
     });
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="flex flex-col gap-4 rounded-lg border border-dotted border-neutral-200 bg-white p-5 shadow-xs">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="text-sm font-semibold tracking-wider text-zinc-900 uppercase dark:text-zinc-100">
+        <h3 className="text-sm font-semibold tracking-wider text-neutral-900 uppercase">
           Module Coupling &amp; Instability Metrics ({metrics.length})
         </h3>
         <div className="flex flex-wrap items-center gap-2">
@@ -43,7 +43,7 @@ export function ModuleMetricsPanel({
             placeholder="Search module path..."
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs text-zinc-900 focus:border-indigo-500 focus:outline-hidden dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+            className="rounded-md border border-dotted border-neutral-300 px-3 py-1.5 text-xs text-neutral-900 focus:border-neutral-500 focus:outline-hidden"
           />
           <label htmlFor="metrics-sort" className="sr-only">
             Sort metrics
@@ -56,7 +56,7 @@ export function ModuleMetricsPanel({
                 e.target.value as "path" | "instability" | "depth" | "afferent",
               )
             }
-            className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs text-zinc-900 focus:border-indigo-500 focus:outline-hidden dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+            className="rounded-md border border-dotted border-neutral-300 px-3 py-1.5 text-xs text-neutral-900 focus:border-neutral-500 focus:outline-hidden"
           >
             <option value="path">Sort by Path</option>
             <option value="instability">Sort by Instability (Highest)</option>
@@ -69,8 +69,8 @@ export function ModuleMetricsPanel({
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs text-zinc-600 dark:text-zinc-300">
-          <thead className="text-2xs border-b border-zinc-200 bg-zinc-50 font-semibold text-zinc-700 uppercase dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-400">
+        <table className="w-full text-left text-xs text-neutral-600">
+          <thead className="border-b border-dotted border-neutral-200 bg-neutral-50 text-xs font-semibold text-neutral-700 uppercase">
             <tr>
               <th className="px-3 py-2.5">Module Path</th>
               <th className="px-3 py-2.5">Afferent (Ca)</th>
@@ -79,41 +79,38 @@ export function ModuleMetricsPanel({
               <th className="px-3 py-2.5">Depth</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+          <tbody className="divide-y divide-dotted divide-neutral-200">
             {filtered.map((m) => (
-              <tr
-                key={m.path}
-                className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-              >
-                <td className="px-3 py-2 font-mono text-zinc-900 dark:text-zinc-100">
+              <tr key={m.path} className="hover:bg-neutral-50">
+                <td className="px-3 py-2 font-mono text-neutral-900">
                   {m.path}
                 </td>
-                <td className="px-3 py-2 font-mono font-medium text-emerald-600 dark:text-emerald-400">
+                <td className="px-3 py-2 font-mono font-medium text-neutral-800">
                   {m.afferentCoupling}
                 </td>
-                <td className="px-3 py-2 font-mono font-medium text-indigo-600 dark:text-indigo-400">
+                <td className="px-3 py-2 font-mono font-medium text-neutral-600">
                   {m.efferentCoupling}
                 </td>
                 <td className="px-3 py-2">
                   <div className="flex items-center gap-2">
-                    <div className="h-1.5 w-16 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
+                    <div className="h-1.5 w-16 overflow-hidden rounded-full bg-neutral-200">
                       <div
                         className={`h-full ${
                           m.instability > 0.7
-                            ? "bg-red-500"
+                            ? "bg-neutral-800"
                             : m.instability > 0.3
-                              ? "bg-amber-500"
-                              : "bg-emerald-500"
+                              ? "bg-neutral-800"
+                              : "bg-neutral-800"
                         }`}
                         style={{ width: `${Math.round(m.instability * 100)}%` }}
                       />
                     </div>
-                    <span className="text-2xs font-mono text-zinc-700 dark:text-zinc-300">
+                    <span className="font-mono text-xs text-neutral-700">
                       {m.instability.toFixed(2)}
                     </span>
                   </div>
                 </td>
-                <td className="px-3 py-2 font-mono text-zinc-700 dark:text-zinc-300">
+                <td className="px-3 py-2 font-mono text-neutral-700">
                   {m.depth}
                 </td>
               </tr>
@@ -122,7 +119,7 @@ export function ModuleMetricsPanel({
               <tr>
                 <td
                   colSpan={5}
-                  className="py-8 text-center text-zinc-500 italic"
+                  className="py-8 text-center text-neutral-600 italic"
                 >
                   No module metrics matched the filter.
                 </td>

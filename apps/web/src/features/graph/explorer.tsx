@@ -17,6 +17,7 @@ import { SourceEvidenceInspector } from "./evidence";
 import { DependencyCyclesPanel } from "./cycles";
 import { ModuleMetricsPanel } from "./metrics";
 import { NeighborhoodPanel } from "./neighborhood";
+import { LoadingIndicator } from "@/src/components/ui/loading-indicator";
 const neighborhoodSchema = z.object({
   nodes: z.array(dependencyNodeSchema),
   edges: z.array(dependencyEdgeSchema),
@@ -112,26 +113,37 @@ export function GraphExplorer({
           Refresh graph
         </button>
       </div>
-      {jobs.loading && <output>Loading analyses…</output>}
+      {jobs.loading && (
+        <LoadingIndicator variant="inline" label="Loading analysis jobs…" />
+      )}
       {jobs.data && !jobs.data.jobs.length && (
-        <p>
+        <p className="text-xs text-neutral-600">
           No analysis jobs are available. Create an analysis in Studio first.
         </p>
       )}
       {(jobs.error || snapshot.error || neighborhood.error) && (
-        <p role="alert">{jobs.error || snapshot.error || neighborhood.error}</p>
+        <p role="alert" className="text-xs text-neutral-800">
+          {jobs.error || snapshot.error || neighborhood.error}
+        </p>
       )}
-      {snapshot.loading && <output>Loading graph page…</output>}
+      {snapshot.loading && (
+        <div className="flex items-center justify-center py-8">
+          <LoadingIndicator
+            label="Loading graph page…"
+            description="Extracting node topology and edge dependencies"
+          />
+        </div>
+      )}
       {snapshot.data && (
         <>
-          <output aria-live="polite">
+          <div className="rounded-lg border border-dotted border-neutral-300 bg-white/40 px-3 py-2 font-mono text-xs text-neutral-600">
             Page {page} · {snapshot.data.nodes.length} of{" "}
             {snapshot.data.totalNodes} matching nodes. Up to 400 relationships
             within this page.{" "}
             {snapshot.data.truncated
               ? "Additional relationships or summaries were omitted by the display limit."
               : ""}
-          </output>
+          </div>
           <div className="flex flex-wrap gap-3">
             <button
               className={control}
@@ -163,6 +175,12 @@ export function GraphExplorer({
             onSelectNode={setSelected}
             onSelectEdge={setEdge}
           />
+          {neighborhood.loading && (
+            <LoadingIndicator
+              variant="inline"
+              label="Loading graph neighborhood…"
+            />
+          )}
           <NeighborhoodPanel
             selectedNode={
               snapshot.data.nodes.find((node) => node.id === selected) ?? null
@@ -175,7 +193,7 @@ export function GraphExplorer({
             onSelectNode={setSelected}
           />
           {neighborhood.data?.truncated && (
-            <p>
+            <p className="text-xs text-neutral-600">
               Neighborhood display limit reached. Use a smaller depth or a more
               specific node.
             </p>
@@ -188,15 +206,24 @@ export function GraphExplorer({
           <ModuleMetricsPanel metrics={snapshot.data.metrics} />
           <details
             onToggle={(event) => setShowUnresolved(event.currentTarget.open)}
-            className="rounded-lg border border-zinc-300 p-4 dark:border-zinc-700"
+            className="rounded-2xl border border-dotted border-neutral-300 bg-white p-4 text-xs text-neutral-900"
           >
-            <summary className="cursor-pointer font-semibold focus-visible:outline-2 focus-visible:outline-indigo-500">
+            <summary className="cursor-pointer font-semibold text-neutral-950 focus-visible:outline-1 focus-visible:outline-neutral-400">
               Unresolved references
             </summary>
             {unresolved.loading && (
-              <output>Loading unresolved evidence…</output>
+              <div className="py-2">
+                <LoadingIndicator
+                  variant="inline"
+                  label="Loading unresolved evidence…"
+                />
+              </div>
             )}
-            {unresolved.error && <p role="alert">{unresolved.error}</p>}
+            {unresolved.error && (
+              <p role="alert" className="mt-2 text-xs text-neutral-800">
+                {unresolved.error}
+              </p>
+            )}
             {unresolved.data && (
               <UnresolvedReferencesPanel
                 references={unresolved.data.references}

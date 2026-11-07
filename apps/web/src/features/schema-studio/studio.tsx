@@ -18,12 +18,15 @@ import {
 import { SchemaDiagram } from "./erd";
 import { SchemaInspector } from "./inspector";
 import { button, control } from "@/src/features/repositories/api";
+import { LoadingIndicator } from "@/src/components/ui/loading-indicator";
 type Snapshot = z.infer<typeof schemaSnapshotSummarySchema>;
 export function SchemaStudio({
   workspaceId,
 }: Readonly<{ workspaceId: string }>) {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [page, setPage] = useState(1);
+  const [settledHistory, setSettledHistory] = useState("");
+  const [historyError, setHistoryError] = useState(false);
   const [selected, setSelected] = useState("");
   const [jobId, setJobId] = useState("");
   const [infer, setInfer] = useState(false);
@@ -58,6 +61,8 @@ export function SchemaStudio({
     refresh,
   ]);
   const detailKey = JSON.stringify([selected, tableId, refresh]);
+  const historyKey = JSON.stringify([page, refresh]);
+  const historyLoading = historyKey !== settledHistory;
   const current = result?.key === key ? result : null;
   const inspector = detail?.key === detailKey ? detail.value : null;
   useEffect(() => {
@@ -65,18 +70,21 @@ export function SchemaStudio({
     schemaRequest("snapshots", workspaceId, { page })
       .then((raw) => {
         const data = snapshotsSchema.parse(raw);
-        if (active) setSnapshots(data.snapshots);
+        if (active) {
+          setSnapshots(data.snapshots);
+          setHistoryError(false);
+        }
       })
       .catch(() => {
-        if (active)
-          setMessage(
-            "Unable to load snapshots. Check workspace access and refresh.",
-          );
+        if (active) setHistoryError(true);
+      })
+      .finally(() => {
+        if (active) setSettledHistory(historyKey);
       });
     return () => {
       active = false;
     };
-  }, [workspaceId, page, refresh]);
+  }, [workspaceId, page, historyKey]);
   useEffect(() => {
     if (!selected) return;
     let active = true;
@@ -165,9 +173,12 @@ export function SchemaStudio({
         commit. The schema worker must be running. No database connection to the
         analyzed project is required.
       </p>
-      <output aria-live="polite" className="block text-sm">
-        {busy ? "Working…" : message}
-      </output>
+      {busy && <LoadingIndicator variant="inline" label="Working on schema…" />}
+      {!busy && message && (
+        <p role="status" className="text-sm">
+          {message}
+        </p>
+      )}
       <form
         className="flex flex-wrap items-end gap-3"
         action={async () => {
@@ -249,24 +260,37 @@ export function SchemaStudio({
         <button
           type="button"
           className={control}
-          disabled={snapshots.length < 20}
+          disabled={historyLoading || historyError || snapshots.length < 20}
           onClick={() => setPage(page + 1)}
         >
           Next snapshots
         </button>
       </div>
-      {!snapshots.length && (
+      {historyLoading && (
+        <LoadingIndicator variant="inline" label="Loading schema snapshots…" />
+      )}
+      {!historyLoading && historyError && (
+        <p role="alert">
+          Unable to load snapshots. Check workspace access and refresh.
+        </p>
+      )}
+      {!historyLoading && !historyError && !snapshots.length && (
         <p>
           No snapshots on this page. Create an analysis manifest and job in
           Analysis Studio first.
         </p>
       )}
       {selected && !current && failedKey !== key && (
-        <output>Loading schema…</output>
+        <div className="py-8">
+          <LoadingIndicator
+            label="Loading schema…"
+            description="Extracting table schemas, column types, and foreign key relations"
+          />
+        </div>
       )}
       {current && (
         <>
-          <section className="flex flex-wrap gap-5 rounded-xl border border-zinc-300 p-5 dark:border-zinc-700">
+          <section className="flex flex-wrap gap-5 rounded-xl border border-dotted border-neutral-300 bg-white p-5">
             <h2 className="w-full text-xl font-semibold">Schema overview</h2>
             <p>Status: {current.overview.snapshot.status}</p>
             <p>
@@ -400,7 +424,10 @@ export function SchemaStudio({
                 </div>
               </section>
               {tableId && !inspector && failedDetailKey !== detailKey && (
-                <output>Loading table inspector…</output>
+                <LoadingIndicator
+                  variant="inline"
+                  label="Loading table inspector…"
+                />
               )}
               {inspector && (
                 <SchemaInspector key={inspector.table.id} detail={inspector} />
@@ -456,7 +483,7 @@ export function SchemaStudio({
                       {comparison.changes.map((item) => (
                         <li
                           key={`${item.object}:${item.kind}:${item.name}`}
-                          className="rounded-lg border border-zinc-300 p-3 text-sm dark:border-zinc-700"
+                          className="rounded-lg border border-dotted border-neutral-300 p-3 text-sm"
                         >
                           <strong>
                             {item.kind} {item.object}: {item.name}

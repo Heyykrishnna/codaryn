@@ -9,6 +9,7 @@ import {
   testSchema,
 } from "./api";
 import { CandyButton } from "@/src/components/ui/candy-button";
+import { LoadingIndicator } from "@/src/components/ui/loading-indicator";
 import { cn } from "@/lib/utils";
 
 const views = [
@@ -51,12 +52,12 @@ export function QualityInventory({
   const error = list.error || resource.error || test.error;
 
   return (
-    <section className="flex min-w-0 flex-col gap-6 rounded-2xl border border-[#242835] bg-[#13151d] p-6 shadow-xl">
-      <div className="flex flex-col gap-1 border-b border-[#222532] pb-4">
-        <h2 className="text-lg font-bold text-white">
+    <section className="flex min-w-0 flex-col gap-6 rounded-2xl border border-dotted border-neutral-300 bg-white p-6 shadow-sm">
+      <div className="flex flex-col gap-1 border-b border-dotted border-neutral-300 pb-4">
+        <h2 className="text-lg font-bold text-neutral-950">
           Infrastructure, tests and dependencies
         </h2>
-        <p className="text-xs text-zinc-400">
+        <p className="text-xs text-neutral-600">
           Source evidence describes static configuration and potential test
           calls. Coverage is imported from committed reports; freshness and
           execution are bounded.
@@ -64,7 +65,7 @@ export function QualityInventory({
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap gap-1 rounded-xl border border-[#262a37] bg-[#161821] p-1">
+        <div className="flex flex-wrap gap-1 rounded-xl border border-dotted border-neutral-300 bg-white p-1">
           {views.map((v) => (
             <button
               key={v}
@@ -72,8 +73,8 @@ export function QualityInventory({
               className={cn(
                 "cursor-pointer rounded-lg px-3 py-1 text-xs font-medium capitalize transition-all select-none",
                 kind === v
-                  ? "bg-white font-semibold text-zinc-950 shadow-[0_2px_0_0_#d4d4d8]"
-                  : "text-zinc-400 hover:bg-[#202330] hover:text-white",
+                  ? "bg-white font-semibold text-neutral-950 shadow-[0_2px_0_0_#d4d4d8]"
+                  : "text-neutral-600 hover:bg-white hover:text-neutral-950",
               )}
               onClick={() => {
                 setKind(v);
@@ -86,9 +87,9 @@ export function QualityInventory({
           ))}
         </div>
 
-        <div className="flex max-w-md min-w-[16rem] flex-1 items-center rounded-lg border border-[#2b2f3d] bg-[#14161f] px-3 py-1.5 text-xs">
+        <div className="flex max-w-md min-w-[16rem] flex-1 items-center rounded-lg border border-dotted border-neutral-300 bg-white px-3 py-1.5 text-xs">
           <svg
-            className="mr-2 h-4 w-4 shrink-0 text-zinc-500"
+            className="mr-2 h-4 w-4 shrink-0 text-neutral-600"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -101,7 +102,7 @@ export function QualityInventory({
             />
           </svg>
           <input
-            className="w-full bg-transparent text-white placeholder-zinc-500 outline-none"
+            className="w-full bg-transparent text-neutral-950 placeholder-neutral-600 outline-none"
             placeholder={`Filter ${kind}…`}
             value={search}
             maxLength={100}
@@ -116,15 +117,18 @@ export function QualityInventory({
       {error && (
         <div
           role="alert"
-          className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-300"
+          className="rounded-xl border border-neutral-500/20 bg-neutral-100/10 p-3 text-xs text-neutral-800"
         >
           {error}
         </div>
       )}
 
       {list.loading && (
-        <div className="py-4 font-mono text-xs text-zinc-400">
-          Loading {kind} evidence…
+        <div className="py-4">
+          <LoadingIndicator
+            variant="inline"
+            label={`Loading ${kind} evidence…`}
+          />
         </div>
       )}
 
@@ -133,24 +137,24 @@ export function QualityInventory({
           <div
             key={item.id}
             className={cn(
-              "flex flex-col justify-between gap-3 rounded-xl border p-4 transition-all duration-150",
+              "motion-safe:ease-control flex flex-col justify-between gap-3 rounded-xl border p-4 motion-safe:transition-[background-color,border-color,color,translate,scale,box-shadow] motion-safe:duration-150",
               selected === item.id
-                ? "border-blue-500/50 bg-[#191d29]"
-                : "border-[#252936] bg-[#161821] hover:border-[#383e52]",
+                ? "border-dotted border-neutral-400 bg-neutral-100"
+                : "border-dotted border-neutral-300 bg-white hover:border-neutral-400",
             )}
           >
             {item.view === "resource" && (
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                  <span className="truncate text-sm font-semibold text-white">
+                  <span className="truncate text-sm font-semibold text-neutral-950">
                     {item.name}
                   </span>
-                  <span className="rounded border border-blue-500/20 bg-[#202432] px-2 py-0.5 font-mono text-[10px] text-blue-400">
+                  <span className="font-mono text-[10px] text-neutral-900">
                     {item.kind}
                   </span>
                 </div>
                 {item.details.length > 0 && (
-                  <ul className="flex flex-col gap-0.5 text-xs text-zinc-400">
+                  <ul className="flex flex-col gap-0.5 text-xs text-neutral-600">
                     {item.details.map((detail) => (
                       <li key={detail} className="truncate">
                         • {detail}
@@ -178,14 +182,12 @@ export function QualityInventory({
             {item.view === "test" && (
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                  <span className="truncate text-sm font-semibold text-white">
+                  <span className="truncate text-sm font-semibold text-neutral-950">
                     {item.name}
                   </span>
-                  <span className="rounded border border-teal-500/20 bg-[#202432] px-2 py-0.5 font-mono text-[10px] text-teal-400">
-                    {item.framework}
-                  </span>
+                  <span className="text-muted text-xs">{item.framework}</span>
                 </div>
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs text-neutral-600">
                   Mode: {item.mode}{" "}
                   {item.parameterized ? "· parameterized" : ""}
                 </p>
@@ -207,30 +209,28 @@ export function QualityInventory({
             {item.view === "coverage" && (
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                  <span className="max-w-xs truncate font-mono text-xs text-white">
+                  <span className="max-w-xs truncate font-mono text-xs text-neutral-950">
                     {item.path}
                   </span>
-                  <span className="rounded bg-[#202432] px-2 py-0.5 font-mono text-[10px] text-purple-400">
-                    {item.format}
-                  </span>
+                  <span className="text-muted text-xs">{item.format}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-zinc-400">
+                  <span className="text-neutral-600">
                     {item.covered}/{item.total} {item.metric}
                   </span>
-                  <span className="font-mono font-semibold text-emerald-400">
+                  <span className="font-mono font-semibold text-neutral-800">
                     {Math.round((item.covered / (item.total || 1)) * 100)}%
                   </span>
                 </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#202432]">
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-white">
                   <div
-                    className="h-full rounded-full bg-emerald-500"
+                    className="h-full rounded-full bg-neutral-800"
                     style={{
                       width: `${Math.min(100, Math.round((item.covered / (item.total || 1)) * 100))}%`,
                     }}
                   />
                 </div>
-                <span className="truncate font-mono text-[11px] text-zinc-500">
+                <span className="truncate font-mono text-[11px] text-neutral-600">
                   Report: {item.reportEvidence.path}:
                   {item.reportEvidence.startLine}
                 </span>
@@ -240,14 +240,12 @@ export function QualityInventory({
             {item.view === "dependency" && (
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="truncate text-sm font-semibold text-white">
+                  <span className="truncate text-sm font-semibold text-neutral-950">
                     {item.name}
                   </span>
-                  <span className="rounded bg-[#202432] px-2 py-0.5 font-mono text-[10px] text-zinc-300">
-                    v{item.version}
-                  </span>
+                  <span className="text-muted text-xs">v{item.version}</span>
                 </div>
-                <div className="flex items-center justify-between text-xs text-zinc-400">
+                <div className="flex items-center justify-between text-xs text-neutral-600">
                   <span>{item.provenance}</span>
                   <span className="font-mono text-[11px]">
                     {item.dev ? "development" : "production"}
@@ -258,17 +256,17 @@ export function QualityInventory({
 
             {item.view === "environment" && (
               <div className="flex flex-col gap-1">
-                <span className="font-mono text-sm font-semibold text-white">
+                <span className="font-mono text-sm font-semibold text-neutral-950">
                   {item.name}
                 </span>
-                <span className="text-xs text-zinc-400">
+                <span className="text-xs text-neutral-600">
                   Source: {item.source}
                 </span>
               </div>
             )}
 
             {"evidence" in item && (
-              <span className="truncate border-t border-[#222532] pt-1 font-mono text-[11px] text-zinc-500">
+              <span className="truncate border-t border-dotted border-neutral-300 pt-1 font-mono text-[11px] text-neutral-600">
                 {item.evidence.path}:{item.evidence.startLine}–
                 {item.evidence.endLine}
               </span>
@@ -278,13 +276,13 @@ export function QualityInventory({
       </div>
 
       {list.data && !list.data.items.length && (
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-neutral-600">
           No matching evidence found. Refine query or check snapshot boundary
           diagnostics.
         </p>
       )}
 
-      <div className="flex items-center justify-between border-t border-[#222532] pt-2">
+      <div className="flex items-center justify-between border-t border-dotted border-neutral-300 pt-2">
         <CandyButton
           type="button"
           variant="secondary"
@@ -294,7 +292,7 @@ export function QualityInventory({
         >
           ← Previous
         </CandyButton>
-        <span className="font-mono text-xs text-zinc-400">Page {page}</span>
+        <span className="font-mono text-xs text-neutral-600">Page {page}</span>
         <CandyButton
           type="button"
           variant="secondary"
@@ -306,27 +304,30 @@ export function QualityInventory({
         </CandyButton>
       </div>
 
+      {(resource.loading || test.loading) && (
+        <LoadingIndicator variant="inline" label="Loading evidence details…" />
+      )}
       {resource.data && (
-        <aside className="rounded-xl border border-blue-500/30 bg-[#141824] p-5">
-          <h3 className="mb-2 text-sm font-bold text-white">
+        <aside className="rounded-xl border border-dotted border-neutral-300 bg-white p-5">
+          <h3 className="mb-2 text-sm font-bold text-neutral-950">
             Resource topology: {resource.data.resource.name}
           </h3>
-          <ul className="flex flex-col gap-1.5 font-mono text-xs text-zinc-300">
+          <ul className="flex flex-col gap-1.5 font-mono text-xs text-neutral-900">
             {resource.data.relations.map((edge) => (
               <li key={edge.id} className="truncate">
                 {resource.data?.resources.find((r) => r.id === edge.sourceId)
                   ?.name ?? edge.sourceId}{" "}
-                → <span className="text-blue-400">{edge.kind}</span> →{" "}
+                → <span className="text-neutral-900">{edge.kind}</span> →{" "}
                 {resource.data?.resources.find((r) => r.id === edge.targetId)
                   ?.name ?? edge.targetId}{" "}
-                <span className="text-zinc-500">
+                <span className="text-neutral-600">
                   ({edge.evidence.path}:{edge.evidence.startLine})
                 </span>
               </li>
             ))}
           </ul>
           {!resource.data.relations.length && (
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-neutral-600">
               No supported resource relationships resolved.
             </p>
           )}
@@ -334,21 +335,21 @@ export function QualityInventory({
       )}
 
       {test.data && (
-        <aside className="rounded-xl border border-teal-500/30 bg-[#121c1f] p-5">
-          <h3 className="mb-2 text-sm font-bold text-white">
+        <aside className="rounded-xl border border-neutral-500/30 bg-white p-5">
+          <h3 className="mb-2 text-sm font-bold text-neutral-950">
             Test links: {test.data.test.name}
           </h3>
-          <ul className="flex flex-col gap-1.5 font-mono text-xs text-zinc-300">
+          <ul className="flex flex-col gap-1.5 font-mono text-xs text-neutral-900">
             {test.data.links.map((link) => (
               <li key={link.id} className="truncate">
-                <span className="text-teal-400">{link.kind}</span>:{" "}
+                <span className="text-neutral-800">{link.kind}</span>:{" "}
                 {link.symbolName} · target {link.targetEvidence.path}:
                 {link.targetEvidence.startLine}
               </li>
             ))}
           </ul>
           {!test.data.links.length && (
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-neutral-600">
               No supported source-symbol relationship resolved.
             </p>
           )}

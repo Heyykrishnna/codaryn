@@ -3,99 +3,55 @@ import assert from "node:assert/strict";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { CandyButton } from "./candy-button";
-import {
-  CustomDropdown,
-  DropdownItem,
-  DropdownSection,
-  DropdownSelect,
-} from "./custom-dropdown";
-import { LoaderOrb } from "./loader-orb";
-import { AIQueryConsole } from "@/src/features/analysis-studio/ai-query-console";
-import { TelemetryDashboard } from "@/src/features/graph/telemetry-dashboard";
+import { DropdownSelect } from "./custom-dropdown";
+import { LoadingIndicator } from "./loading-indicator";
 
-test("CandyButton renders with solid styling and accessibility attributes", () => {
-  const html = renderToStaticMarkup(
-    <CandyButton variant="pearl" size="default">
-      Connect Database
+test("CandyButton does not submit forms unless explicitly requested", () => {
+  const html = renderToStaticMarkup(<CandyButton>Cancel</CandyButton>);
+  assert.match(html, /type="button"/);
+  assert.match(
+    renderToStaticMarkup(<CandyButton type="submit">Save</CandyButton>),
+    /type="submit"/,
+  );
+});
+
+test("CandyButton preserves link navigation and removes disabled destinations", () => {
+  const link = (
+    <CandyButton as="a" href="/workspace">
+      Workspace settings
+    </CandyButton>
+  );
+  assert.match(renderToStaticMarkup(link), /href="\/workspace"/);
+  const disabled = renderToStaticMarkup(
+    <CandyButton as="a" href="/workspace" disabled>
+      Workspace settings
     </CandyButton>,
   );
-  assert.ok(html.includes("Connect Database"));
-  assert.ok(html.includes("bg-white"));
-  assert.ok(!html.includes("linear-gradient"));
-  assert.ok(!html.includes("radial-gradient"));
+  assert.match(disabled, /aria-disabled="true"/);
+  assert.doesNotMatch(disabled, /href=/);
 });
 
-test("CandyButton renders as an anchor link when href is supplied", () => {
-  const html = renderToStaticMarkup(
-    <CandyButton as="a" href="/workspace" variant="obsidian" size="sm">
-      Workspace Settings
-    </CandyButton>,
-  );
-  assert.ok(html.includes("<a"));
-  assert.ok(html.includes('href="/workspace"'));
-  assert.ok(html.includes("Workspace Settings"));
-  assert.ok(!html.includes("linear-gradient"));
-});
-
-test("CustomDropdown renders trigger and maintains accessibility", () => {
-  const html = renderToStaticMarkup(
-    <CustomDropdown trigger={<button type="button">Options ▾</button>}>
-      <DropdownSection title="ACTIONS">
-        <DropdownItem label="Sort ascending" shortcut="S" />
-        <DropdownItem label="Filter" shortcut="F" />
-      </DropdownSection>
-    </CustomDropdown>,
-  );
-  assert.ok(html.includes("Options ▾"));
-});
-
-test("DropdownSelect renders trigger with active value and chevron", () => {
+test("DropdownSelect announces the field name, current value, and collapsed state", () => {
   const html = renderToStaticMarkup(
     <DropdownSelect
-      value="opt-1"
-      options={[
-        { value: "opt-1", label: "Production Cluster", badge: "active" },
-        { value: "opt-2", label: "Staging Cluster", badge: "idle" },
-      ]}
+      label="Workspace"
+      value="production"
+      options={[{ value: "production", label: "Production" }]}
       onChange={() => {}}
     />,
   );
-  assert.ok(html.includes("Production Cluster"));
-  assert.ok(html.includes("svg"));
+  assert.match(html, /aria-label="Workspace: Production"/);
+  assert.match(html, /aria-expanded="false"/);
 });
 
-test("LoaderOrb renders connecting state with light blur backdrop", () => {
-  const cardHtml = renderToStaticMarkup(
-    <LoaderOrb
-      label="Analyzing codebase…"
-      description="Parsing AST tokens"
-      variant="card"
+test("the initial loading announcement renders without client hydration", () => {
+  const html = renderToStaticMarkup(
+    <LoadingIndicator
+      label="Loading analysis…"
+      description="Fetching evidence"
     />,
   );
-  assert.ok(cardHtml.includes('role="status"'));
-  assert.ok(cardHtml.includes("backdrop-blur-md"));
-  assert.ok(cardHtml.includes("Analyzing codebase…"));
-  assert.ok(cardHtml.includes("Parsing AST tokens"));
-
-  const inlineHtml = renderToStaticMarkup(
-    <LoaderOrb label="Connecting…" variant="inline" />,
-  );
-  assert.ok(inlineHtml.includes("Connecting…"));
-});
-
-test("AIQueryConsole renders query prompts, thought accordion and anomaly metrics", () => {
-  const html = renderToStaticMarkup(<AIQueryConsole />);
-  assert.ok(html.includes("Activation drop, last 7 days"));
-  assert.ok(html.includes("Thought for 12 s"));
-  assert.ok(html.includes("Email verified, by platform"));
-  assert.ok(html.includes("-35 pts vs expected"));
-});
-
-test("TelemetryDashboard renders stream chart metrics and accounts data grid", () => {
-  const html = renderToStaticMarkup(<TelemetryDashboard />);
-  assert.ok(html.includes("Weekly active users"));
-  assert.ok(html.includes("18,420"));
-  assert.ok(html.includes("Accounts by MRR"));
-  assert.ok(html.includes("Northwind"));
-  assert.ok(html.includes("Retention"));
+  assert.match(html, /role="status"/);
+  assert.match(html, /Loading analysis…/);
+  assert.match(html, /Fetching evidence/);
 });

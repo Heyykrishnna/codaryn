@@ -16,15 +16,12 @@ export default function PageError({
         workspace.
       </p>
       <button
-        className="rounded-lg border border-zinc-400 px-4 py-2 focus-visible:outline-2 focus-visible:outline-indigo-500"
+        className="rounded-lg border border-dotted border-neutral-400 px-4 py-2 focus-visible:outline-2 focus-visible:outline-neutral-500"
         onClick={retry}
       >
         Try again
       </button>
-      <Link
-        className="text-indigo-600 underline dark:text-indigo-400"
-        href="/workspace"
-      >
+      <Link className="text-neutral-800 underline" href="/workspace">
         Workspace settings
       </Link>
     </main>

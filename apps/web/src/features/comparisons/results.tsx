@@ -1,5 +1,6 @@
 import { useDeferredValue, useState } from "react";
 import { control } from "@/src/features/repositories/api";
+import { LoadingIndicator } from "@/src/components/ui/loading-indicator";
 import {
   comparisonUrl,
   useArtifactResource,
@@ -85,7 +86,14 @@ export function ComparisonResults({
           Next comparisons
         </button>
       </div>
-      {history.loading && <output>Loading comparison history…</output>}
+      {history.loading && (
+        <div className="py-2">
+          <LoadingIndicator
+            variant="inline"
+            label="Loading comparison history…"
+          />
+        </div>
+      )}
       {history.data && !history.data.items.length && (
         <p>No comparisons on this page.</p>
       )}
@@ -140,7 +148,14 @@ export function ComparisonResults({
               />
             </label>
           </div>
-          {detail.loading && <output>Loading comparison evidence…</output>}
+          {detail.loading && (
+            <div className="py-6">
+              <LoadingIndicator
+                label="Loading comparison evidence…"
+                description="Comparing AST topology and calculating structural drift"
+              />
+            </div>
+          )}
           {detail.data && (
             <>
               <p>
@@ -160,7 +175,7 @@ export function ComparisonResults({
                 {detail.data.items.map((item) => (
                   <li
                     key={"id" in item ? item.id : item.path}
-                    className="min-w-0 rounded-lg border border-zinc-300 p-4 break-words dark:border-zinc-700"
+                    className="min-w-0 rounded-lg border border-dotted border-neutral-300 p-4 break-words"
                   >
                     {"object" in item ? (
                       <>

@@ -22,7 +22,7 @@ export function FunctionInspector({
   return (
     <section
       id="execution-inspector"
-      className="flex min-w-0 flex-col gap-4 rounded-xl border border-zinc-300 p-5 dark:border-zinc-700"
+      className="flex min-w-0 flex-col gap-4 rounded-xl border border-dotted border-neutral-300 p-5"
     >
       <h2 className="text-xl font-semibold">Function inspector: {fn.name}</h2>
       <p className="text-sm">
@@ -44,7 +44,7 @@ export function FunctionInspector({
         {detail.calls.map((call) => (
           <li
             key={call.id}
-            className="rounded-lg border border-zinc-300 p-3 text-sm dark:border-zinc-700"
+            className="rounded-lg border border-dotted border-neutral-300 p-3 text-sm"
           >
             <p className="break-all">
               {call.expression} · {call.kind} · {call.resolution}
@@ -101,7 +101,7 @@ export function FunctionInspector({
             {detail.controlEdges.map((edge) => (
               <tr
                 key={edge.id}
-                className="border-t border-zinc-300 dark:border-zinc-700"
+                className="border-t border-dotted border-neutral-300"
               >
                 <td className="p-2 break-all">
                   {detail.controlNodes.find((node) => node.id === edge.sourceId)
@@ -136,7 +136,7 @@ export function FunctionInspector({
         {values.map((value) => (
           <li
             key={value.id}
-            className="rounded-lg border border-zinc-300 p-3 text-sm dark:border-zinc-700"
+            className="rounded-lg border border-dotted border-neutral-300 p-3 text-sm"
           >
             {value.name} · {value.kind} · line {value.evidence.startLine}
           </li>

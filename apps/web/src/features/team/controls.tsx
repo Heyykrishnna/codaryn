@@ -53,7 +53,7 @@ export function TeamControls({
     }
   }
   return (
-    <section className="flex flex-col gap-3 rounded-xl border border-zinc-300 p-5 dark:border-zinc-700">
+    <section className="flex flex-col gap-3 rounded-xl border border-dotted border-neutral-300 p-5">
       <h2 className="text-xl font-semibold">
         Workspace controls and retention
       </h2>

@@ -214,8 +214,8 @@ export function DiagramWorkspace({
   };
 
   return (
-    <div className="flex h-full flex-col bg-slate-50 text-slate-900">
-      <header className="flex flex-wrap items-center justify-between border-b border-slate-200 bg-white px-6 py-3">
+    <div className="flex h-full flex-col bg-neutral-50 text-neutral-900">
+      <header className="flex flex-wrap items-center justify-between border-b border-dotted border-neutral-200 bg-white px-6 py-3">
         <div className="flex items-center gap-2 overflow-x-auto">
           {diagramTypes.map((type) => (
             <button
@@ -230,8 +230,8 @@ export function DiagramWorkspace({
               }}
               className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                 selectedType === type.id
-                  ? "bg-indigo-600 text-white"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                  ? "bg-neutral-800 text-neutral-950"
+                  : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900"
               }`}
             >
               {type.label}
@@ -240,23 +240,23 @@ export function DiagramWorkspace({
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center rounded-lg border border-slate-200 bg-slate-50 p-1">
+          <div className="flex items-center rounded-lg border border-dotted border-neutral-200 bg-neutral-50 p-1">
             <button
               type="button"
               aria-label="Zoom out"
               onClick={() => setZoom((z) => Math.max(0.2, z - 0.15))}
-              className="rounded px-2.5 py-1 text-sm font-bold text-slate-700 hover:bg-slate-200"
+              className="rounded px-2.5 py-1 text-sm font-bold text-neutral-700 hover:bg-neutral-200"
             >
               -
             </button>
-            <span className="px-2 text-xs font-semibold text-slate-600">
+            <span className="px-2 text-xs font-semibold text-neutral-600">
               {Math.round(zoom * 100)}%
             </span>
             <button
               type="button"
               aria-label="Zoom in"
               onClick={() => setZoom((z) => Math.min(3, z + 0.15))}
-              className="rounded px-2.5 py-1 text-sm font-bold text-slate-700 hover:bg-slate-200"
+              className="rounded px-2.5 py-1 text-sm font-bold text-neutral-700 hover:bg-neutral-200"
             >
               +
             </button>
@@ -264,7 +264,7 @@ export function DiagramWorkspace({
               type="button"
               aria-label="Reset view"
               onClick={resetView}
-              className="ml-1 rounded px-2.5 py-1 text-xs text-slate-700 hover:bg-slate-200"
+              className="ml-1 rounded px-2.5 py-1 text-xs text-neutral-700 hover:bg-neutral-200"
             >
               Reset
             </button>
@@ -275,7 +275,7 @@ export function DiagramWorkspace({
               aria-label="Saved layouts"
               value={selectedLayoutId}
               onChange={(e) => handleApplyLayout(e.target.value)}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700"
+              className="rounded-lg border border-dotted border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-700"
             >
               <option value="">Load saved layout...</option>
               {savedLayouts.map((l) => (
@@ -289,7 +289,7 @@ export function DiagramWorkspace({
           <button
             type="button"
             onClick={() => setShowSaveModal(true)}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="rounded-lg border border-dotted border-neutral-300 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
           >
             Save Layout
           </button>
@@ -297,7 +297,7 @@ export function DiagramWorkspace({
           <button
             type="button"
             onClick={() => setShowExportModal(true)}
-            className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
+            className="rounded-lg bg-neutral-800 px-4 py-1.5 text-sm font-medium text-neutral-950 hover:bg-neutral-800"
           >
             Export
           </button>
@@ -305,7 +305,7 @@ export function DiagramWorkspace({
       </header>
 
       {error && (
-        <div className="m-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="m-4 rounded-lg border border-neutral-500 bg-neutral-100 p-4 text-sm text-neutral-800">
           <p className="font-semibold">Error loading diagram</p>
           <p>{error}</p>
         </div>
@@ -313,8 +313,8 @@ export function DiagramWorkspace({
 
       {loading && !error && (
         <div className="flex flex-1 items-center justify-center">
-          <div className="text-center text-slate-500">
-            <div className="mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
+          <div className="text-center text-neutral-600">
+            <div className="mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-4 border-neutral-500 border-t-transparent" />
             <p className="text-sm font-medium">
               Rendering architecture graph...
             </p>
@@ -324,7 +324,7 @@ export function DiagramWorkspace({
 
       {!loading && !error && graph && (
         <div className="relative flex flex-1 overflow-hidden">
-          <div className="flex-1 overflow-auto bg-slate-50 p-8">
+          <div className="flex-1 overflow-auto bg-neutral-50 p-8">
             <svg
               className="min-h-full min-w-full"
               style={{
@@ -344,7 +344,7 @@ export function DiagramWorkspace({
                   markerHeight="6"
                   orient="auto"
                 >
-                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b" />
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#737373" />
                 </marker>
               </defs>
 
@@ -360,12 +360,12 @@ export function DiagramWorkspace({
 
                 const strokeColor =
                   edge.status === "DIRECT"
-                    ? "#16a34a"
+                    ? "#404040"
                     : edge.status === "RESOLVED"
-                      ? "#2563eb"
+                      ? "#525252"
                       : edge.status === "INFERRED"
-                        ? "#d97706"
-                        : "#dc2626";
+                        ? "#737373"
+                        : "#262626";
 
                 const isSelected = selectedEdge?.id === edge.id;
 
@@ -394,7 +394,7 @@ export function DiagramWorkspace({
                       <text
                         x={(x1 + x2) / 2}
                         y={(y1 + y2) / 2 - 6}
-                        fill="#475569"
+                        fill="#525252"
                         fontSize="11"
                         textAnchor="middle"
                         className="bg-white font-sans select-none"
@@ -412,21 +412,21 @@ export function DiagramWorkspace({
 
                 const fillBg =
                   node.status === "DIRECT"
-                    ? "#dcfce7"
+                    ? "#fafafa"
                     : node.status === "RESOLVED"
-                      ? "#dbeafe"
+                      ? "#f5f5f5"
                       : node.status === "INFERRED"
-                        ? "#fef3c7"
-                        : "#fee2e2";
+                        ? "#e5e5e5"
+                        : "#d4d4d4";
 
                 const strokeColor =
                   node.status === "DIRECT"
-                    ? "#16a34a"
+                    ? "#404040"
                     : node.status === "RESOLVED"
-                      ? "#2563eb"
+                      ? "#525252"
                       : node.status === "INFERRED"
-                        ? "#d97706"
-                        : "#dc2626";
+                        ? "#737373"
+                        : "#262626";
 
                 return (
                   <g
@@ -443,7 +443,7 @@ export function DiagramWorkspace({
                       height="70"
                       rx="8"
                       fill={fillBg}
-                      stroke={isSelected ? "#4f46e5" : strokeColor}
+                      stroke={isSelected ? "#171717" : strokeColor}
                       strokeWidth={isSelected ? 3 : 1.5}
                       className="transition-all hover:brightness-95"
                     />
@@ -452,7 +452,7 @@ export function DiagramWorkspace({
                       y="26"
                       fontSize="13"
                       fontWeight="bold"
-                      fill="#0f172a"
+                      fill="#171717"
                       className="font-sans select-none"
                     >
                       {node.label.length > 24
@@ -463,7 +463,7 @@ export function DiagramWorkspace({
                       x="12"
                       y="46"
                       fontSize="11"
-                      fill="#475569"
+                      fill="#525252"
                       className="font-sans select-none"
                     >
                       {node.kind} · {node.status}
@@ -475,9 +475,9 @@ export function DiagramWorkspace({
           </div>
 
           {(selectedNode || selectedEdge) && (
-            <aside className="w-80 border-l border-slate-200 bg-white p-6 shadow-lg">
-              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-                <h3 className="text-base font-semibold text-slate-900">
+            <aside className="w-80 border-l border-dotted border-neutral-200 bg-white p-6 shadow-sm">
+              <div className="flex items-center justify-between border-b border-dotted border-neutral-200 pb-3">
+                <h3 className="text-base font-semibold text-neutral-900">
                   Source Evidence & Details
                 </h3>
                 <button
@@ -487,7 +487,7 @@ export function DiagramWorkspace({
                     setSelectedNode(null);
                     setSelectedEdge(null);
                   }}
-                  className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                  className="rounded p-1 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-600"
                 >
                   ✕
                 </button>
@@ -496,24 +496,24 @@ export function DiagramWorkspace({
               {selectedNode && (
                 <div className="mt-4 space-y-3 text-sm">
                   <div>
-                    <span className="text-xs font-semibold text-slate-500 uppercase">
+                    <span className="text-xs font-semibold text-neutral-600 uppercase">
                       Label
                     </span>
-                    <p className="font-medium text-slate-900">
+                    <p className="font-medium text-neutral-900">
                       {selectedNode.label}
                     </p>
                   </div>
                   <div>
-                    <span className="text-xs font-semibold text-slate-500 uppercase">
+                    <span className="text-xs font-semibold text-neutral-600 uppercase">
                       Kind & Group
                     </span>
-                    <p className="text-slate-700">
+                    <p className="text-neutral-700">
                       {selectedNode.kind}{" "}
                       {selectedNode.group ? `(${selectedNode.group})` : ""}
                     </p>
                   </div>
                   <div>
-                    <span className="text-xs font-semibold text-slate-500 uppercase">
+                    <span className="text-xs font-semibold text-neutral-600 uppercase">
                       Resolution Confidence
                     </span>
                     <p className="inline-block rounded px-2 py-0.5 text-xs font-bold uppercase">
@@ -522,17 +522,17 @@ export function DiagramWorkspace({
                   </div>
                   {selectedNode.evidence ? (
                     <div>
-                      <span className="text-xs font-semibold text-slate-500 uppercase">
+                      <span className="text-xs font-semibold text-neutral-600 uppercase">
                         Source Evidence
                       </span>
-                      <p className="font-mono text-xs text-indigo-600">
+                      <p className="font-mono text-xs text-neutral-800">
                         {selectedNode.evidence.path}:
                         {selectedNode.evidence.startLine}-
                         {selectedNode.evidence.endLine}
                       </p>
                     </div>
                   ) : (
-                    <p className="text-xs text-amber-600">
+                    <p className="text-xs text-neutral-800">
                       No explicit AST evidence attached. Relationship inferred.
                     </p>
                   )}
@@ -542,21 +542,21 @@ export function DiagramWorkspace({
               {selectedEdge && (
                 <div className="mt-4 space-y-3 text-sm">
                   <div>
-                    <span className="text-xs font-semibold text-slate-500 uppercase">
+                    <span className="text-xs font-semibold text-neutral-600 uppercase">
                       Relationship
                     </span>
-                    <p className="font-medium text-slate-900">
+                    <p className="font-medium text-neutral-900">
                       {selectedEdge.source} → {selectedEdge.target}
                     </p>
                   </div>
                   <div>
-                    <span className="text-xs font-semibold text-slate-500 uppercase">
+                    <span className="text-xs font-semibold text-neutral-600 uppercase">
                       Kind
                     </span>
-                    <p className="text-slate-700">{selectedEdge.kind}</p>
+                    <p className="text-neutral-700">{selectedEdge.kind}</p>
                   </div>
                   <div>
-                    <span className="text-xs font-semibold text-slate-500 uppercase">
+                    <span className="text-xs font-semibold text-neutral-600 uppercase">
                       Status
                     </span>
                     <p className="text-xs font-bold uppercase">
@@ -565,10 +565,10 @@ export function DiagramWorkspace({
                   </div>
                   {selectedEdge.evidence && (
                     <div>
-                      <span className="text-xs font-semibold text-slate-500 uppercase">
+                      <span className="text-xs font-semibold text-neutral-600 uppercase">
                         Evidence
                       </span>
-                      <p className="font-mono text-xs text-indigo-600">
+                      <p className="font-mono text-xs text-neutral-800">
                         {selectedEdge.evidence.path}:
                         {selectedEdge.evidence.startLine}-
                         {selectedEdge.evidence.endLine}
@@ -580,24 +580,24 @@ export function DiagramWorkspace({
             </aside>
           )}
 
-          <footer className="absolute bottom-4 left-4 flex flex-wrap gap-4 rounded-lg border border-slate-200 bg-white/95 px-4 py-2.5 shadow-md backdrop-blur">
-            <span className="text-xs font-bold text-slate-500 uppercase">
+          <footer className="absolute bottom-4 left-4 flex flex-wrap gap-4 rounded-lg border border-dotted border-neutral-200 bg-white/95 px-4 py-2.5 shadow-md backdrop-blur">
+            <span className="text-xs font-bold text-neutral-600 uppercase">
               Legend:
             </span>
             <div className="flex items-center gap-1.5 text-xs">
-              <span className="h-3 w-3 rounded-full bg-green-500" />
+              <span className="h-3 w-3 rounded-full bg-neutral-800" />
               <span>Direct / Confirmed</span>
             </div>
             <div className="flex items-center gap-1.5 text-xs">
-              <span className="h-3 w-3 rounded-full bg-blue-500" />
+              <span className="h-3 w-3 rounded-full bg-neutral-800" />
               <span>Resolved</span>
             </div>
             <div className="flex items-center gap-1.5 text-xs">
-              <span className="h-3 w-3 rounded-full bg-amber-500" />
+              <span className="h-3 w-3 rounded-full bg-neutral-800" />
               <span>Inferred</span>
             </div>
             <div className="flex items-center gap-1.5 text-xs">
-              <span className="h-3 w-3 rounded-full bg-red-500" />
+              <span className="h-3 w-3 rounded-full bg-neutral-800" />
               <span>Unresolved</span>
             </div>
           </footer>
@@ -606,11 +606,11 @@ export function DiagramWorkspace({
 
       {showSaveModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-96 rounded-xl bg-white p-6 shadow-2xl">
-            <h3 className="text-base font-semibold text-slate-900">
+          <div className="w-96 rounded-xl bg-white p-6 shadow-sm">
+            <h3 className="text-base font-semibold text-neutral-900">
               Save Diagram Layout
             </h3>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-neutral-600">
               Persist custom positions and zoom for this analysis view.
             </p>
             <input
@@ -619,20 +619,20 @@ export function DiagramWorkspace({
               placeholder="e.g. Overview Layout"
               value={layoutName}
               onChange={(e) => setLayoutName(e.target.value)}
-              className="mt-4 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-600 focus:outline-none"
+              className="mt-4 w-full rounded-lg border border-dotted border-neutral-300 px-3 py-2 text-sm text-neutral-900 focus:border-neutral-500 focus:outline-none"
             />
             <div className="mt-6 flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setShowSaveModal(false)}
-                className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100"
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-neutral-600 hover:bg-neutral-100"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleSaveLayout}
-                className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
+                className="rounded-lg bg-neutral-800 px-4 py-1.5 text-sm font-medium text-neutral-950 hover:bg-neutral-800"
               >
                 Save
               </button>
@@ -643,18 +643,18 @@ export function DiagramWorkspace({
 
       {showExportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-96 rounded-xl bg-white p-6 shadow-2xl">
-            <h3 className="text-base font-semibold text-slate-900">
+          <div className="w-96 rounded-xl bg-white p-6 shadow-sm">
+            <h3 className="text-base font-semibold text-neutral-900">
               Export Diagram
             </h3>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-neutral-600">
               Select export format for {selectedType} diagram.
             </p>
             <div className="mt-4 space-y-2">
               {(["svg", "mermaid", "json", "dbml"] as const).map((fmt) => (
                 <label
                   key={fmt}
-                  className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 p-3 hover:bg-slate-50"
+                  className="flex cursor-pointer items-center gap-3 rounded-lg border border-dotted border-neutral-200 p-3 hover:bg-neutral-50"
                 >
                   <input
                     type="radio"
@@ -662,13 +662,13 @@ export function DiagramWorkspace({
                     value={fmt}
                     checked={exportFormat === fmt}
                     onChange={() => setExportFormat(fmt)}
-                    className="accent-indigo-600"
+                    className="accent-neutral-500"
                   />
                   <div>
-                    <p className="text-sm font-semibold text-slate-900 uppercase">
+                    <p className="text-sm font-semibold text-neutral-900 uppercase">
                       {fmt}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-neutral-600">
                       {fmt === "svg"
                         ? "Vector graphic representation"
                         : fmt === "mermaid"
@@ -683,14 +683,14 @@ export function DiagramWorkspace({
             </div>
 
             {exportError && (
-              <p className="mt-3 text-xs text-red-600">{exportError}</p>
+              <p className="mt-3 text-xs text-neutral-800">{exportError}</p>
             )}
 
             <div className="mt-6 flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setShowExportModal(false)}
-                className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100"
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-neutral-600 hover:bg-neutral-100"
               >
                 Cancel
               </button>
@@ -698,7 +698,7 @@ export function DiagramWorkspace({
                 type="button"
                 disabled={exporting}
                 onClick={handleStartExport}
-                className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="rounded-lg bg-neutral-800 px-4 py-1.5 text-sm font-medium text-neutral-950 hover:bg-neutral-800 disabled:opacity-50"
               >
                 {exporting ? "Exporting..." : "Download"}
               </button>
